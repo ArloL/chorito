@@ -39,8 +39,8 @@ public class GitHubActionChore {
 			on:
 			  workflow_dispatch:
 			  repository_dispatch:
-			 	types:
-			 	- chores
+			    types:
+			    - chores
 			  schedule:
 			  - cron: '26 15 * * 5'
 
