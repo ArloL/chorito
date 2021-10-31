@@ -44,7 +44,7 @@ public class GitChoreContext implements ChoreContext {
 
 	@Override
 	public List<Path> files() {
-		return files;
+		return List.copyOf(files);
 	}
 
 	@Override
