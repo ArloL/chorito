@@ -22,7 +22,6 @@ public class EditorConfigChore {
 
 			[*.{sh}]
 			end_of_line = lf
-
 			""";
 
 	private ChoreContext context;
