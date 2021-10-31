@@ -2,6 +2,8 @@ name: Notify workflow_run
 
 on:
   workflow_run:
+    workflows: ["Main"]
+    branches: [main]
     types:
     - completed
 
