@@ -289,7 +289,7 @@ jobs:
         asset_content_type: application/octet-stream
     - uses: eregon/publish-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.PAT }}
       with:
         release_id: ${{ steps.create_release.outputs.id }}
     - name: Make sure build did not change anything
