@@ -1,10 +1,10 @@
 package io.github.arlol.chorito.chores;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import io.github.arlol.chorito.tools.ChoreContext;
+import io.github.arlol.chorito.tools.MyFiles;
 import io.github.arlol.chorito.tools.Renamer;
 
 public class GitHubActionChore {
@@ -28,7 +28,7 @@ public class GitHubActionChore {
 				.forEach(
 						path -> Renamer.replaceInFilename(path, ".yml", ".yaml")
 				);
-		Files.writeString(
+		MyFiles.writeString(
 				context.resolve(".github/workflows/chores.yaml"),
 				CHORES_YAML
 		);
