@@ -42,4 +42,9 @@ jobs:
     steps:
     - name: Notify workflow_run
       run: |
-        echo Hi
+        curl \
+          --request POST \
+          --header "Accept: application/vnd.github.everest-preview+json" \
+          --header "Authorization: token ${{ secrets.PAT }}" \
+          --data '{"event_type": "chores"}' \
+          https://api.github.com/repos/ArloL/chorito/dispatches
