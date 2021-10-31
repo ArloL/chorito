@@ -15,7 +15,11 @@ public abstract class MyFiles {
 			CharSequence content,
 			OpenOption... options
 	) throws IOException {
-		Files.createDirectories(path.getParent());
+		Path parent = path.getParent();
+		if (parent == null) {
+			throw new IllegalArgumentException();
+		}
+		Files.createDirectories(parent);
 		Files.writeString(path, content, options);
 	}
 
