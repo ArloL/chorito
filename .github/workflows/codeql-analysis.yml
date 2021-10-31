@@ -62,3 +62,5 @@ jobs:
       uses: github/codeql-action/autobuild@v1
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
+    - name: Make sure build did not change anything
+      run: git diff --exit-code
