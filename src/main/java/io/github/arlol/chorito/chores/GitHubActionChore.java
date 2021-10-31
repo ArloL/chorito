@@ -38,6 +38,7 @@ public class GitHubActionChore {
 
 			on:
 			  workflow_dispatch:
+			  repository_dispatch:
 			  schedule:
 			  - cron: '26 15 * * 5'
 
