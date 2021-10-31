@@ -2,6 +2,7 @@ package io.github.arlol.chorito.commands;
 
 import io.github.arlol.chorito.chores.EditorConfigChore;
 import io.github.arlol.chorito.chores.GitAttributesChore;
+import io.github.arlol.chorito.chores.MavenWrapperChore;
 import io.github.arlol.chorito.chores.ShellScriptNewlineChore;
 import io.github.arlol.chorito.chores.WindowsScriptNewlineChore;
 import io.github.arlol.chorito.tools.ChoreContext;
@@ -22,6 +23,7 @@ public class ChoritoCommand {
 	public void execute() throws Exception {
 		new GitAttributesChore(context).doit();
 		new EditorConfigChore(context).doit();
+		new MavenWrapperChore(context).doit();
 		new WindowsScriptNewlineChore(context).doit();
 		new ShellScriptNewlineChore(context).doit();
 	}
