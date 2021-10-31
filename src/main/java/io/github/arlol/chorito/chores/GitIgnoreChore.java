@@ -23,6 +23,8 @@ public class GitIgnoreChore {
 				lines.add(".project");
 				Files.write(gitignore, lines);
 			}
+		} else {
+			Files.writeString(gitignore, ".project\n");
 		}
 	}
 
