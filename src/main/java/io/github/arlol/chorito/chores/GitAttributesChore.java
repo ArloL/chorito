@@ -1,9 +1,9 @@
 package io.github.arlol.chorito.chores;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import io.github.arlol.chorito.tools.ChoreContext;
+import io.github.arlol.chorito.tools.FilesSilent;
 
 public class GitAttributesChore {
 
@@ -21,10 +21,10 @@ public class GitAttributesChore {
 		this.context = context;
 	}
 
-	public void doit() throws Exception {
+	public void doit() {
 		Path path = context.resolve(".gitattributes");
-		if (!Files.exists(path)) {
-			Files.writeString(path, DEFAULT_GITATTRIBUTES);
+		if (!FilesSilent.exists(path)) {
+			FilesSilent.writeString(path, DEFAULT_GITATTRIBUTES);
 		}
 	}
 

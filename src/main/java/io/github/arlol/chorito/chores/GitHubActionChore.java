@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import io.github.arlol.chorito.tools.ChoreContext;
-import io.github.arlol.chorito.tools.MyFiles;
+import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.Renamer;
 
 public class GitHubActionChore {
@@ -15,8 +15,7 @@ public class GitHubActionChore {
 		this.context = context;
 	}
 
-	public void doit() throws Exception {
-		// on: workflow_dispatch
+	public void doit() {
 		Path workflowsLocation = Paths.get(".github/workflows");
 		context.files().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
@@ -28,7 +27,7 @@ public class GitHubActionChore {
 				.forEach(
 						path -> Renamer.replaceInFilename(path, ".yml", ".yaml")
 				);
-		MyFiles.writeString(
+		FilesSilent.writeString(
 				context.resolve(".github/workflows/chores.yaml"),
 				CHORES_YAML
 		);

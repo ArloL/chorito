@@ -1,11 +1,11 @@
 package io.github.arlol.chorito.chores;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.github.arlol.chorito.tools.ChoreContext;
+import io.github.arlol.chorito.tools.FilesSilent;
 
 public class GitIgnoreChore {
 
@@ -15,16 +15,18 @@ public class GitIgnoreChore {
 		this.context = context;
 	}
 
-	public void doit() throws Exception {
+	public void doit() {
 		Path gitignore = context.resolve(".gitignore");
-		if (Files.exists(gitignore)) {
-			List<String> lines = new ArrayList<>(Files.readAllLines(gitignore));
+		if (FilesSilent.exists(gitignore)) {
+			List<String> lines = new ArrayList<>(
+					FilesSilent.readAllLines(gitignore)
+			);
 			if (!lines.contains(".project")) {
 				lines.add(".project");
-				Files.write(gitignore, lines);
+				FilesSilent.write(gitignore, lines);
 			}
 		} else {
-			Files.writeString(gitignore, ".project\n");
+			FilesSilent.writeString(gitignore, ".project\n");
 		}
 	}
 

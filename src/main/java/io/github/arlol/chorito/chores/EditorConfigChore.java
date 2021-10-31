@@ -1,10 +1,9 @@
 package io.github.arlol.chorito.chores;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import io.github.arlol.chorito.tools.ChoreContext;
+import io.github.arlol.chorito.tools.FilesSilent;
 
 public class EditorConfigChore {
 
@@ -30,10 +29,10 @@ public class EditorConfigChore {
 		this.context = context;
 	}
 
-	public void doit() throws IOException {
+	public void doit() {
 		Path path = context.resolve(".editorconfig");
-		if (!Files.exists(path)) {
-			Files.writeString(path, DEFAULT_EDITORCONFIG);
+		if (!FilesSilent.exists(path)) {
+			FilesSilent.writeString(path, DEFAULT_EDITORCONFIG);
 		}
 	}
 

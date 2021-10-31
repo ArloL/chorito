@@ -1,10 +1,11 @@
 package io.github.arlol.chorito.chores;
 
-import java.nio.file.Files;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 import io.github.arlol.chorito.tools.ChoreContext;
+import io.github.arlol.chorito.tools.FilesSilent;
 
 public class MavenWrapperChore {
 
@@ -19,17 +20,21 @@ public class MavenWrapperChore {
 		this.context = context;
 	}
 
-	public void doit() throws Exception {
+	public void doit() {
 		Path path = context.resolve(".mvn/wrapper/maven-wrapper.properties");
-		if (Files.exists(path)) {
-			String content = Files.readString(path);
+		if (FilesSilent.exists(path)) {
+			String content = FilesSilent.readString(path);
 			if (!DEFAULT_PROPERTIES.equals(content)) {
-				new ProcessBuilder(
-						"./mvnw",
-						"-N",
-						"io.takari:maven:wrapper",
-						"-Dmaven=3.8.3"
-				).start().waitFor(2, TimeUnit.MINUTES);
+				try {
+					new ProcessBuilder(
+							"./mvnw",
+							"-N",
+							"io.takari:maven:wrapper",
+							"-Dmaven=3.8.3"
+					).start().waitFor(2, TimeUnit.MINUTES);
+				} catch (InterruptedException | IOException e) {
+					throw new IllegalStateException(e);
+				}
 			}
 		}
 	}
