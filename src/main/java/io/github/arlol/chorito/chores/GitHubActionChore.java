@@ -1,12 +1,11 @@
 package io.github.arlol.chorito.chores;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import io.github.arlol.chorito.tools.ChoreContext;
+import io.github.arlol.chorito.tools.Renamer;
 
 public class GitHubActionChore {
 
@@ -24,26 +23,15 @@ public class GitHubActionChore {
 				return path.toString().endsWith(".yml");
 			}
 			return false;
-		}).map(context::resolve).forEach(this::rename);
+		})
+				.map(context::resolve)
+				.forEach(
+						path -> Renamer.replaceInFilename(path, ".yml", ".yaml")
+				);
 		Files.writeString(
 				context.resolve(".github/workflows/chores.yaml"),
 				CHORES_YAML
 		);
-	}
-
-	private void rename(Path path) {
-		try {
-			Files.move(
-					path,
-					path.resolveSibling(
-							path.getFileName()
-									.toString()
-									.replace(".yml", ".yaml")
-					)
-			);
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
 	}
 
 	private static final String CHORES_YAML = """
