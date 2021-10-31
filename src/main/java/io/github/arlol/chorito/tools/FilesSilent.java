@@ -18,10 +18,7 @@ public abstract class FilesSilent {
 			OpenOption... options
 	) {
 		try {
-			Path parent = path.getParent();
-			if (parent == null) {
-				throw new IllegalArgumentException();
-			}
+			Path parent = MyPaths.getParent(path);
 			Files.createDirectories(parent);
 			Files.writeString(path, content, options);
 		} catch (IOException e) {

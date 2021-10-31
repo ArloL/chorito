@@ -16,10 +16,7 @@ public abstract class Renamer {
 			String replacement
 	) {
 		try {
-			Path fileName = path.getFileName();
-			if (fileName == null) {
-				throw new IllegalArgumentException();
-			}
+			Path fileName = MyPaths.getFileName(path);
 			Files.move(
 					path,
 					path.resolveSibling(
