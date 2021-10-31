@@ -1,6 +1,6 @@
 package io.github.arlol.chorito.tools;
 
-import static io.github.arlol.chorito.filter.FileIsEmptyOrBinaryFilter.fileIsEmptyOrBinary;
+import static io.github.arlol.chorito.filter.FileIsEmptyOrBinaryFilter.fileIsGoneEmptyOrBinary;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -78,7 +78,7 @@ public class GitChoreContext implements ChoreContext {
 					treeWalk.enterSubtree();
 				} else {
 					Path path = Paths.get(treeWalk.getPathString());
-					if (!fileIsEmptyOrBinary(path)) {
+					if (!fileIsGoneEmptyOrBinary(path)) {
 						result.add(path);
 					}
 				}
