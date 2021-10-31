@@ -39,52 +39,21 @@ jobs:
     name: Trigger chores
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    strategy:
+      matrix:
+        repo:
+        - ArloL/chorito
+        - ArloL/dotfiles
+        - ArloL/gitfx
+        - ArloL/mvnx
+        - ArloL/newlinechecker
+        - ArloL/wait-for-ports
     steps:
-    - name: Trigger chores on ArloL/chorito
+    - name: Trigger chores on ${{ matrix.repo }}
       run: |
         curl \
           --request POST \
           --header "Accept: application/vnd.github.everest-preview+json" \
           --header "Authorization: token ${{ secrets.PAT }}" \
           --data '{"event_type": "chores"}' \
-          https://api.github.com/repos/ArloL/chorito/dispatches
-    - name: Trigger chores on ArloL/chorito
-      run: |
-        curl \
-          --request POST \
-          --header "Accept: application/vnd.github.everest-preview+json" \
-          --header "Authorization: token ${{ secrets.PAT }}" \
-          --data '{"event_type": "chores"}' \
-          https://api.github.com/repos/ArloL/dotfiles/dispatches
-    - name: Trigger chores on ArloL/chorito
-      run: |
-        curl \
-          --request POST \
-          --header "Accept: application/vnd.github.everest-preview+json" \
-          --header "Authorization: token ${{ secrets.PAT }}" \
-          --data '{"event_type": "chores"}' \
-          https://api.github.com/repos/ArloL/gitfx/dispatches
-    - name: Trigger chores on ArloL/chorito
-      run: |
-        curl \
-          --request POST \
-          --header "Accept: application/vnd.github.everest-preview+json" \
-          --header "Authorization: token ${{ secrets.PAT }}" \
-          --data '{"event_type": "chores"}' \
-          https://api.github.com/repos/ArloL/mvnx/dispatches
-    - name: Trigger chores on ArloL/chorito
-      run: |
-        curl \
-          --request POST \
-          --header "Accept: application/vnd.github.everest-preview+json" \
-          --header "Authorization: token ${{ secrets.PAT }}" \
-          --data '{"event_type": "chores"}' \
-          https://api.github.com/repos/ArloL/newlinechecker/dispatches
-    - name: Trigger chores on ArloL/chorito
-      run: |
-        curl \
-          --request POST \
-          --header "Accept: application/vnd.github.everest-preview+json" \
-          --header "Authorization: token ${{ secrets.PAT }}" \
-          --data '{"event_type": "chores"}' \
-          https://api.github.com/repos/ArloL/wait-for-ports/dispatches
+          https://api.github.com/repos/${{ matrix.repo }}/dispatches
