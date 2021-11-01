@@ -49,7 +49,7 @@ jobs:
         - ArloL/newlinechecker
         - ArloL/spring-security-drupal-password-encoder
         - ArloL/wait-for-ports
-        - sprinteins/drupal-clients
+        - sprinteins/drupal-client
     steps:
     - name: Trigger chores on ${{ matrix.repo }}
       run: |
