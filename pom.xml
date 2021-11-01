@@ -36,6 +36,7 @@
         <revision>0.0.1-SNAPSHOT</revision>
         <platform>unknown</platform>
         <mainClass>io.github.arlol.chorito.Main</mainClass>
+        <ec4j.version>0.2.1</ec4j.version>
     </properties>
 
     <profiles>
@@ -102,6 +103,18 @@
         </profile>
     </profiles>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.ec4j.linters</groupId>
+                <artifactId>editorconfig-linters-bom</artifactId>
+                <version>${ec4j.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
@@ -111,6 +124,10 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-nop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.ec4j.linters</groupId>
+            <artifactId>editorconfig-linters</artifactId>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

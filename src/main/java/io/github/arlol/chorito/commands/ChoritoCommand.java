@@ -1,5 +1,6 @@
 package io.github.arlol.chorito.commands;
 
+import io.github.arlol.chorito.chores.Ec4jChore;
 import io.github.arlol.chorito.chores.EditorConfigChore;
 import io.github.arlol.chorito.chores.GitAttributesChore;
 import io.github.arlol.chorito.chores.GitHubActionChore;
@@ -30,6 +31,7 @@ public class ChoritoCommand {
 		new ShellScriptNewlineChore(context).doit();
 		new GitHubActionChore(context).doit();
 		new GitIgnoreChore(context).doit();
+		new Ec4jChore(context).doit();
 	}
 
 }
