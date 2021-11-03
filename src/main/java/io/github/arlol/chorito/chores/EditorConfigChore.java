@@ -24,7 +24,7 @@ public class EditorConfigChore {
 			end_of_line = lf
 			""";
 
-	private ChoreContext context;
+	private final ChoreContext context;
 
 	public EditorConfigChore(ChoreContext context) {
 		this.context = context;

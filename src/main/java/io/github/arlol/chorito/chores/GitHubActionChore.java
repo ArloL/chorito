@@ -9,7 +9,7 @@ import io.github.arlol.chorito.tools.Renamer;
 
 public class GitHubActionChore {
 
-	private ChoreContext context;
+	private final ChoreContext context;
 
 	public GitHubActionChore(ChoreContext context) {
 		this.context = context;

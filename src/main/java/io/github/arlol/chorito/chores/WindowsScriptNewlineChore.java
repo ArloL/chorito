@@ -5,7 +5,7 @@ import io.github.arlol.chorito.tools.Newliner;
 
 public class WindowsScriptNewlineChore {
 
-	private ChoreContext context;
+	private final ChoreContext context;
 
 	public WindowsScriptNewlineChore(ChoreContext context) {
 		this.context = context;

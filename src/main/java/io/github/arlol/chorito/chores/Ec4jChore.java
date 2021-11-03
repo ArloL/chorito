@@ -30,7 +30,7 @@ public class Ec4jChore {
 
 	private static final org.ec4j.lint.api.Logger EC4J_LOGGER = org.ec4j.lint.api.Logger.NO_OP;
 
-	private ChoreContext context;
+	private final ChoreContext context;
 
 	public Ec4jChore(ChoreContext context) {
 		this.context = context;

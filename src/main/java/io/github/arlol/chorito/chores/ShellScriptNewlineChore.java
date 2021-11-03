@@ -5,7 +5,7 @@ import io.github.arlol.chorito.tools.Newliner;
 
 public class ShellScriptNewlineChore {
 
-	private ChoreContext context;
+	private final ChoreContext context;
 
 	public ShellScriptNewlineChore(ChoreContext context) {
 		this.context = context;
