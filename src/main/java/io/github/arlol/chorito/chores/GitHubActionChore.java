@@ -77,7 +77,7 @@ public class GitHubActionChore {
 			    runs-on: ubuntu-latest
 			    steps:
 			    - name: Checkout repository
-			      uses: actions/checkout@v2.3.5
+			      uses: actions/checkout@v2.4.0
 			    - name: Chores
 			      run: |
 			        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/ArloL/chorito/HEAD/run-latest.sh)"
