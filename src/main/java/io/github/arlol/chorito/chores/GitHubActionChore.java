@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import io.github.arlol.chorito.tools.ChoreContext;
+import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.Renamer;
 
@@ -29,60 +30,8 @@ public class GitHubActionChore {
 				);
 		FilesSilent.writeString(
 				context.resolve(".github/workflows/chores.yaml"),
-				CHORES_YAML
+				ClassPathFiles.readString("/workflows/chores.yaml")
 		);
 	}
-
-	private static final String CHORES_YAML = """
-			name: Chores
-
-			on:
-			  workflow_dispatch:
-			  repository_dispatch:
-			    types:
-			    - chores
-			  schedule:
-			  - cron: '26 15 * * 5'
-
-			jobs:
-			  debug:
-			    runs-on: ubuntu-latest
-			    steps:
-			    - name: Dump GitHub context
-			      env:
-			        GITHUB_CONTEXT: ${{ toJSON(github) }}
-			      run: echo "$GITHUB_CONTEXT"
-			    - name: Dump job context
-			      env:
-			        JOB_CONTEXT: ${{ toJSON(job) }}
-			      run: echo "$JOB_CONTEXT"
-			    - name: Dump steps context
-			      env:
-			        STEPS_CONTEXT: ${{ toJSON(steps) }}
-			      run: echo "$STEPS_CONTEXT"
-			    - name: Dump runner context
-			      env:
-			        RUNNER_CONTEXT: ${{ toJSON(runner) }}
-			      run: echo "$RUNNER_CONTEXT"
-			    - name: Dump strategy context
-			      env:
-			        STRATEGY_CONTEXT: ${{ toJSON(strategy) }}
-			      run: echo "$STRATEGY_CONTEXT"
-			    - name: Dump matrix context
-			      env:
-			        MATRIX_CONTEXT: ${{ toJSON(matrix) }}
-			      run: echo "$MATRIX_CONTEXT"
-			  chores:
-			    name: Chores
-			    runs-on: ubuntu-latest
-			    steps:
-			    - name: Checkout repository
-			      uses: actions/checkout@v2.4.0
-			    - name: Chores
-			      run: |
-			        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/ArloL/chorito/HEAD/run-latest.sh)"
-			    - name: Create Pull Request
-			      uses: peter-evans/create-pull-request@v3.10.1
-			""";
 
 }
