@@ -145,7 +145,10 @@
     <build>
         <resources>
             <resource>
-                <directory>.github</directory>
+                <directory>${basedir}/src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>${basedir}/.github</directory>
             </resource>
         </resources>
         <plugins>
