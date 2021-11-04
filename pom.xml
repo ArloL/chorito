@@ -143,6 +143,11 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>.github</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
