@@ -43,6 +43,7 @@ jobs:
       matrix:
         repo:
         - ArloL/abenteuer-irland
+        - ArloL/arlol.github.io
         - ArloL/business-english
         - ArloL/chorito
         - ArloL/dotfiles
