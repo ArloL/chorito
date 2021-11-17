@@ -21,6 +21,12 @@ public class DependabotChore {
 			    schedule:
 			      interval: "daily"
 			""";
+	private static String DEFAULT_BUNDLER_DEPENDABOT = """
+			  - package-ecosystem: "bundler"
+			    directory: "/"
+			    schedule:
+			      interval: "daily"
+			""";
 
 	private final ChoreContext context;
 
@@ -32,6 +38,9 @@ public class DependabotChore {
 		String content = DEFAULT_DEPENDABOT;
 		if (FilesSilent.exists(context.resolve("pom.xml"))) {
 			content += DEFAULT_MAVEN_DEPENDABOT;
+		}
+		if (FilesSilent.exists(context.resolve("Gemfile.lock"))) {
+			content += DEFAULT_BUNDLER_DEPENDABOT;
 		}
 		content += DEFAULT_GITHUB_ACTIONS_DEPENDABOT;
 		FilesSilent.writeString(
