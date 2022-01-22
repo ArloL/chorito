@@ -2,6 +2,7 @@ package io.github.arlol.chorito.chores;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.concurrent.TimeUnit;
 
 import io.github.arlol.chorito.tools.ChoreContext;
@@ -21,6 +22,14 @@ public class MavenWrapperChore {
 	}
 
 	public void doit() {
+		Path wrapper = context.resolve("mvnw");
+		if (FilesSilent.exists(wrapper)) {
+			var permissions = FilesSilent.getPosixFilePermissions(wrapper);
+			permissions.add(PosixFilePermission.OWNER_EXECUTE);
+			permissions.add(PosixFilePermission.GROUP_EXECUTE);
+			permissions.add(PosixFilePermission.OTHERS_EXECUTE);
+			FilesSilent.setPosixFilePermissions(wrapper, permissions);
+		}
 		Path path = context.resolve(".mvn/wrapper/maven-wrapper.properties");
 		if (FilesSilent.exists(path)) {
 			String content = FilesSilent.readString(path);
