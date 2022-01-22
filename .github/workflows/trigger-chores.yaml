@@ -1,6 +1,7 @@
 name: Trigger chores
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["Main"]
     branches: [main]
