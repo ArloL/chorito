@@ -59,7 +59,9 @@ jobs:
     - name: Trigger chores on ${{ matrix.repo }}
       run: |
         curl \
-          --fail-with-body \
+          --silent \
+          --show-error \
+          --fail \
           --request POST \
           --header "Accept: application/vnd.github.everest-preview+json" \
           --header "Authorization: token ${{ secrets.PAT }}" \
