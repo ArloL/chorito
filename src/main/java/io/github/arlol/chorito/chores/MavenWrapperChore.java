@@ -11,7 +11,7 @@ import io.github.arlol.chorito.tools.FilesSilent;
 public class MavenWrapperChore {
 
 	private static String DEFAULT_PROPERTIES = """
-			distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.8.3/apache-maven-3.8.3-bin.zip
+			distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.8.4/apache-maven-3.8.4-bin.zip
 			wrapperUrl=https://repo.maven.apache.org/maven2/io/takari/maven-wrapper/0.5.6/maven-wrapper-0.5.6.jar
 			""";
 
@@ -39,7 +39,7 @@ public class MavenWrapperChore {
 							"./mvnw",
 							"-N",
 							"io.takari:maven:wrapper",
-							"-Dmaven=3.8.3"
+							"-Dmaven=3.8.4"
 					).start().waitFor(2, TimeUnit.MINUTES);
 				} catch (InterruptedException | IOException e) {
 					throw new IllegalStateException(e);
