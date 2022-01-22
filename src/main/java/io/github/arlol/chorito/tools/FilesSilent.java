@@ -29,6 +29,24 @@ public abstract class FilesSilent {
 		}
 	}
 
+	public static boolean anyExists(Path... paths) {
+		for (Path path : paths) {
+			if (exists(path)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean noneExists(Path... paths) {
+		for (Path path : paths) {
+			if (exists(path)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public static boolean exists(Path path) {
 		return Files.exists(path);
 	}
