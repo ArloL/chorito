@@ -71,6 +71,7 @@ jobs:
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: adopt
+        cache: 'maven'
     - name: Setup Graalvm
       uses: DeLaGuardo/setup-graalvm@5.0
       with:
@@ -80,12 +81,6 @@ jobs:
       run: gu install native-image
     - name: Install upx
       run: brew install upx
-    - name: Cache Maven packages
-      uses: actions/cache@v2.1.7
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
     - name: Build with Maven
       run: |
         set -o xtrace
@@ -120,6 +115,7 @@ jobs:
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: adopt
+        cache: 'maven'
     - name: Setup Graalvm
       uses: DeLaGuardo/setup-graalvm@5.0
       with:
@@ -131,12 +127,6 @@ jobs:
       run: |
         wget -q https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz
         tar xf upx-3.96-amd64_linux.tar.xz
-    - name: Cache Maven packages
-      uses: actions/cache@v2.1.7
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
     - name: Build with Maven
       run: |
         set -o xtrace
@@ -172,6 +162,7 @@ jobs:
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: adopt
+        cache: 'maven'
     - name: Setup Graalvm
       uses: DeLaGuardo/setup-graalvm@5.0
       with:
@@ -181,12 +172,6 @@ jobs:
       run: '& "$env:JAVA_HOME\bin\gu" install native-image'
     - name: Install upx
       run: choco install upx --version=3.96 --no-progress
-    - name: Cache Maven packages
-      uses: actions/cache@v2.1.7
-      with:
-        path: .m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
     - name: Build with Maven
       shell: cmd
       run: |
@@ -302,12 +287,7 @@ jobs:
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: adopt
-    - name: Cache Maven packages
-      uses: actions/cache@v2.1.7
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-        restore-keys: ${{ runner.os }}-m2
+        cache: 'maven'
     - name: Publish to GitHub Packages Apache Maven
       env:
         GITHUB_TOKEN: ${{ github.token }}
