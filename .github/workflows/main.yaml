@@ -195,8 +195,6 @@ jobs:
     - name: Test and compress executable
       run: |
         & "./target/${{ env.ARTIFACT }}-windows-$env:REVISION.exe" --% "--version"
-        upx "target/${{ env.ARTIFACT }}-windows-$env:REVISION.exe"
-        & "./target/${{ env.ARTIFACT }}-windows-$env:REVISION.exe" --% "--version"
     - name: Move artifacts
       run: |
         mkdir target/artifacts
