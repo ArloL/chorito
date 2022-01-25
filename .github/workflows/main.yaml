@@ -310,7 +310,7 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
     - name: Publish to GitHub Packages Apache Maven
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ github.token }}
         REVISION: ${{ needs.version.outputs.new_version }}
       run: |
         ./mvnw \
