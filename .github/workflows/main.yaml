@@ -155,7 +155,6 @@ jobs:
     needs: version
     env:
       REVISION: ${{ needs.version.outputs.new_version }}
-      VCVARS_BAT: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat
     steps:
     - uses: actions/checkout@v2.4.0
     - uses: actions/setup-java@v2
