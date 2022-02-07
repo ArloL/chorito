@@ -172,11 +172,11 @@ jobs:
       run: '& "$env:JAVA_HOME\bin\gu" install native-image'
     - name: Install upx
       run: choco install upx --version=3.96 --no-progress
+    - name: Set up Visual Studio shell
+      uses: egor-tensin/vs-shell@v2
     - name: Build with Maven
-      shell: cmd
       run: |
-        call "%VCVARS_BAT%"
-        call .\mvnw --batch-mode -Dsha1="%GITHUB_SHA%" -Drevision="%REVISION%" --settings .\.github\github-actions-windows-maven-settings.xml verify
+        .\mvnw --batch-mode -Dsha1="$env:GITHUB_SHA" -Drevision="$env:REVISION" --settings .\.github\github-actions-windows-maven-settings.xml verify
     - name: Test and compress executable
       run: |
         & "./target/${{ env.ARTIFACT }}-windows-$env:REVISION.exe" --% "--version"
