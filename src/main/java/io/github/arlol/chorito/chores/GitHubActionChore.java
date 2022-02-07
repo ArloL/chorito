@@ -2,6 +2,7 @@ package io.github.arlol.chorito.chores;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
@@ -17,6 +18,12 @@ public class GitHubActionChore {
 	}
 
 	public void doit() {
+		ensureYamlFileExtension();
+		updateChoresWOrkflow();
+		updateGraalVmVersion();
+	}
+
+	private void ensureYamlFileExtension() {
 		Path workflowsLocation = Paths.get(".github/workflows");
 		context.files().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
@@ -28,10 +35,29 @@ public class GitHubActionChore {
 				.forEach(
 						path -> Renamer.replaceInFilename(path, ".yml", ".yaml")
 				);
+	}
+
+	private void updateChoresWOrkflow() {
 		FilesSilent.writeString(
 				context.resolve(".github/workflows/chores.yaml"),
 				ClassPathFiles.readString("/workflows/chores.yaml")
 		);
+	}
+
+	private void updateGraalVmVersion() {
+		Path main = context.resolve(".github/workflows/main.yaml");
+		if (FilesSilent.exists(main)) {
+			List<String> updated = FilesSilent.readAllLines(main)
+					.stream()
+					.map(s -> {
+						if (s.startsWith("  GRAALVM_VERSION: ")) {
+							return "  GRAALVM_VERSION: 22.0.0.2";
+						}
+						return s;
+					})
+					.toList();
+			FilesSilent.write(main, updated);
+		}
 	}
 
 }
