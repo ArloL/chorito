@@ -27,6 +27,12 @@ public class DependabotChore {
 			    schedule:
 			      interval: "daily"
 			""";
+	private static String DEFAULT_DOCKER_DEPENDABOT = """
+			  - package-ecosystem: "docker"
+			    directory: "/"
+			    schedule:
+			      interval: "daily"
+			""";
 
 	private final ChoreContext context;
 
@@ -43,6 +49,9 @@ public class DependabotChore {
 			content += DEFAULT_BUNDLER_DEPENDABOT;
 		}
 		content += DEFAULT_GITHUB_ACTIONS_DEPENDABOT;
+		if (FilesSilent.exists(context.resolve("Dockerfile"))) {
+			content += DEFAULT_DOCKER_DEPENDABOT;
+		}
 		FilesSilent.writeString(
 				context.resolve(".github/dependabot.yml"),
 				content
