@@ -21,6 +21,7 @@ public class GitHubActionChore {
 		ensureYamlFileExtension();
 		updateChoresWOrkflow();
 		updateGraalVmVersion();
+		removeCustomGithubPackagesMavenSettings();
 	}
 
 	private void ensureYamlFileExtension() {
@@ -44,6 +45,19 @@ public class GitHubActionChore {
 			List<String> updated = FilesSilent.readAllLines(main).stream().map(s -> {
 				if (s.startsWith("  GRAALVM_VERSION: ")) {
 					return "  GRAALVM_VERSION: 22.1.0";
+				}
+				return s;
+			}).toList();
+			FilesSilent.write(main, updated);
+		}
+	}
+
+	private void removeCustomGithubPackagesMavenSettings() {
+		Path main = context.resolve(".github/workflows/main.yaml");
+		if (FilesSilent.exists(main)) {
+			List<String> updated = FilesSilent.readAllLines(main).stream().map(s -> {
+				if (s.startsWith("          --settings ./.github/github-packages-maven-settings.xml \\")) {
+					return "          \\";
 				}
 				return s;
 			}).toList();
