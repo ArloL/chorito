@@ -1,5 +1,6 @@
 package io.github.arlol.chorito.commands;
 
+import io.github.arlol.chorito.chores.DeleteUnnecessaryFilesChore;
 import io.github.arlol.chorito.chores.DependabotChore;
 import io.github.arlol.chorito.chores.Ec4jChore;
 import io.github.arlol.chorito.chores.EditorConfigChore;
@@ -36,6 +37,7 @@ public class ChoritoCommand {
 		new DependabotChore(context).doit();
 		new GitIgnoreChore(context).doit();
 		new Ec4jChore(context).doit();
+		new DeleteUnnecessaryFilesChore(context).doit();
 	}
 
 }
