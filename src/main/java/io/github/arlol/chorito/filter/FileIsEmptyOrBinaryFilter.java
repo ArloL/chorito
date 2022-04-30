@@ -13,7 +13,7 @@ public abstract class FileIsEmptyOrBinaryFilter {
 
 	public static boolean fileIsGoneEmptyOrBinary(Path path) {
 		if (!Files.exists(path)) {
-			return false;
+			return true;
 		}
 		try (InputStream inputStream = Files.newInputStream(path)) {
 			// this matches git's own binary detection algorithm
