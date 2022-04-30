@@ -30,32 +30,23 @@ public class GitHubActionChore {
 				return path.toString().endsWith(".yml");
 			}
 			return false;
-		})
-				.map(context::resolve)
-				.forEach(
-						path -> Renamer.replaceInFilename(path, ".yml", ".yaml")
-				);
+		}).map(context::resolve).forEach(path -> Renamer.replaceInFilename(path, ".yml", ".yaml"));
 	}
 
 	private void updateChoresWOrkflow() {
-		FilesSilent.writeString(
-				context.resolve(".github/workflows/chores.yaml"),
-				ClassPathFiles.readString("/workflows/chores.yaml")
-		);
+		FilesSilent.writeString(context.resolve(".github/workflows/chores.yaml"),
+				ClassPathFiles.readString("/workflows/chores.yaml"));
 	}
 
 	private void updateGraalVmVersion() {
 		Path main = context.resolve(".github/workflows/main.yaml");
 		if (FilesSilent.exists(main)) {
-			List<String> updated = FilesSilent.readAllLines(main)
-					.stream()
-					.map(s -> {
-						if (s.startsWith("  GRAALVM_VERSION: ")) {
-							return "  GRAALVM_VERSION: 22.0.0.2";
-						}
-						return s;
-					})
-					.toList();
+			List<String> updated = FilesSilent.readAllLines(main).stream().map(s -> {
+				if (s.startsWith("  GRAALVM_VERSION: ")) {
+					return "  GRAALVM_VERSION: 22.1.0";
+				}
+				return s;
+			}).toList();
 			FilesSilent.write(main, updated);
 		}
 	}
