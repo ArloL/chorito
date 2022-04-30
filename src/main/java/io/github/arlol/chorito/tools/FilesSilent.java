@@ -101,4 +101,20 @@ public abstract class FilesSilent {
 		}
 	}
 
+	public static boolean deleteIfExists(Path path) {
+		try {
+			return Files.deleteIfExists(path);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
+	public static void delete(Path path) {
+		try {
+			Files.delete(path);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
 }
