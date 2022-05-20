@@ -1,5 +1,7 @@
 package io.github.arlol.chorito.commands;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.jar.Attributes;
@@ -7,20 +9,24 @@ import java.util.jar.Manifest;
 
 public class VersionCommand {
 
-	public void execute() throws Exception {
-		Enumeration<URL> resources = VersionCommand.class.getClassLoader()
-				.getResources("META-INF/MANIFEST.MF");
-		while (resources.hasMoreElements()) {
-			URL url = resources.nextElement();
-
-			Manifest manifest = new Manifest(url.openStream());
-			if (isApplicableManifest(manifest)) {
-				Attributes attr = manifest.getMainAttributes();
-				System.out.println(
-						get(attr, "Implementation-Title") + " version \""
-								+ get(attr, "Implementation-Version") + "\""
-				);
+	public void execute() {
+		try {
+			Enumeration<URL> resources = VersionCommand.class.getClassLoader()
+					.getResources("META-INF/MANIFEST.MF");
+			while (resources.hasMoreElements()) {
+				URL url = resources.nextElement();
+	
+				Manifest manifest = new Manifest(url.openStream());
+				if (isApplicableManifest(manifest)) {
+					Attributes attr = manifest.getMainAttributes();
+					System.out.println(
+							get(attr, "Implementation-Title") + " version \""
+									+ get(attr, "Implementation-Version") + "\""
+					);
+				}
 			}
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
 		}
 	}
 

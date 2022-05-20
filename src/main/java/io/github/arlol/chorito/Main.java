@@ -5,7 +5,7 @@ import io.github.arlol.chorito.commands.VersionCommand;
 
 public class Main {
 
-	public static void main(String[] args) throws Exception {
+	public static void main(String[] args) {
 		if (args.length == 1 && "--version".equals(args[0])) {
 			new VersionCommand().execute();
 			return;

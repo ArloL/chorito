@@ -26,7 +26,7 @@ public class ChoritoCommand {
 		this.context = new GitChoreContext(root);
 	}
 
-	public void execute() throws Exception {
+	public void execute() {
 		new ReadmeChore(context).doit();
 		new GitAttributesChore(context).doit();
 		new EditorConfigChore(context).doit();
