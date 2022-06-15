@@ -14,7 +14,8 @@ public class DeleteUnnecessaryFilesChore {
 	}
 
 	public void doit() {
-		Path mavenSettings = context.resolve(".github/github-packages-maven-settings.xml");
+		Path mavenSettings = context
+				.resolve(".github/github-packages-maven-settings.xml");
 		FilesSilent.deleteIfExists(mavenSettings);
 	}
 

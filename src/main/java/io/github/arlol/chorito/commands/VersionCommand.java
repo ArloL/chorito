@@ -15,7 +15,7 @@ public class VersionCommand {
 					.getResources("META-INF/MANIFEST.MF");
 			while (resources.hasMoreElements()) {
 				URL url = resources.nextElement();
-	
+
 				Manifest manifest = new Manifest(url.openStream());
 				if (isApplicableManifest(manifest)) {
 					Attributes attr = manifest.getMainAttributes();
