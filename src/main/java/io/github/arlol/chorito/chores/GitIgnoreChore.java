@@ -17,16 +17,18 @@ public class GitIgnoreChore {
 
 	public void doit() {
 		Path gitignore = context.resolve(".gitignore");
-		if (FilesSilent.exists(gitignore)) {
-			List<String> lines = new ArrayList<>(
-					FilesSilent.readAllLines(gitignore)
-			);
-			if (!lines.contains(".project")) {
-				lines.add(".project");
-				FilesSilent.write(gitignore, lines);
+		if (FilesSilent.exists(context.resolve("pom.xml"))) {
+			if (FilesSilent.exists(gitignore)) {
+				List<String> lines = new ArrayList<>(
+						FilesSilent.readAllLines(gitignore)
+				);
+				if (!lines.contains(".project")) {
+					lines.add(".project");
+					FilesSilent.write(gitignore, lines);
+				}
+			} else {
+				FilesSilent.writeString(gitignore, ".project\n");
 			}
-		} else {
-			FilesSilent.writeString(gitignore, ".project\n");
 		}
 	}
 
