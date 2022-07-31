@@ -102,6 +102,10 @@ public class GitChoreContext implements ChoreContext {
 		return result;
 	}
 
+	@SuppressFBWarnings(
+			value = "BC_UNCONFIRMED_CAST_OF_RETURN_VALUE",
+			justification = "FileRepositoryBuilder uses generics which spotbugs cant know"
+	)
 	private static boolean jgitHasGitHubRemote(Path gitDir) {
 		try (Repository repository = new FileRepositoryBuilder()
 				.setMustExist(true)
