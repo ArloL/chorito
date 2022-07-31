@@ -19,7 +19,7 @@ public class GitHubActionChore {
 
 	public void doit() {
 		ensureYamlFileExtension();
-		updateChoresWOrkflow();
+		updateChoresWorkflow();
 		updateGraalVmVersion();
 		removeCustomGithubPackagesMavenSettings();
 	}
@@ -38,7 +38,7 @@ public class GitHubActionChore {
 				);
 	}
 
-	private void updateChoresWOrkflow() {
+	private void updateChoresWorkflow() {
 		FilesSilent.writeString(
 				context.resolve(".github/workflows/chores.yaml"),
 				ClassPathFiles.readString("/workflows/chores.yaml")
