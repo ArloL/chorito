@@ -17,4 +17,6 @@ public interface ChoreContext {
 		return root().resolve(path);
 	}
 
+	public boolean hasGitHubRemote();
+
 }

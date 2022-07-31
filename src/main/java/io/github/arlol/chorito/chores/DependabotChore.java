@@ -41,21 +41,23 @@ public class DependabotChore {
 	}
 
 	public void doit() {
-		String content = DEFAULT_DEPENDABOT;
-		if (FilesSilent.exists(context.resolve("pom.xml"))) {
-			content += DEFAULT_MAVEN_DEPENDABOT;
+		if (context.hasGitHubRemote()) {
+			String content = DEFAULT_DEPENDABOT;
+			if (FilesSilent.exists(context.resolve("pom.xml"))) {
+				content += DEFAULT_MAVEN_DEPENDABOT;
+			}
+			if (FilesSilent.exists(context.resolve("Gemfile.lock"))) {
+				content += DEFAULT_BUNDLER_DEPENDABOT;
+			}
+			content += DEFAULT_GITHUB_ACTIONS_DEPENDABOT;
+			if (FilesSilent.exists(context.resolve("Dockerfile"))) {
+				content += DEFAULT_DOCKER_DEPENDABOT;
+			}
+			FilesSilent.writeString(
+					context.resolve(".github/dependabot.yml"),
+					content
+			);
 		}
-		if (FilesSilent.exists(context.resolve("Gemfile.lock"))) {
-			content += DEFAULT_BUNDLER_DEPENDABOT;
-		}
-		content += DEFAULT_GITHUB_ACTIONS_DEPENDABOT;
-		if (FilesSilent.exists(context.resolve("Dockerfile"))) {
-			content += DEFAULT_DOCKER_DEPENDABOT;
-		}
-		FilesSilent.writeString(
-				context.resolve(".github/dependabot.yml"),
-				content
-		);
 	}
 
 }

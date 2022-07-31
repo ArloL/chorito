@@ -9,6 +9,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jgit.lib.Config;
+import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
@@ -23,18 +25,24 @@ public class GitChoreContext implements ChoreContext {
 
 	private final Path root;
 	private final List<Path> files;
+	private final boolean hasGitHubRemote;
 
 	public GitChoreContext(String root) {
 		this(Paths.get(root).toAbsolutePath().normalize());
 	}
 
 	public GitChoreContext(Path root) {
-		this(root, jgit(root));
+		this(root, jgitResolvePaths(root), jgitHasGitHubRemote(root));
 	}
 
-	public GitChoreContext(Path root, List<Path> files) {
+	public GitChoreContext(
+			Path root,
+			List<Path> files,
+			boolean hasGitHubRemote
+	) {
 		this.root = root;
 		this.files = List.copyOf(files);
+		this.hasGitHubRemote = hasGitHubRemote;
 	}
 
 	@Override
@@ -57,11 +65,16 @@ public class GitChoreContext implements ChoreContext {
 		return root.resolve(path);
 	}
 
+	@Override
+	public boolean hasGitHubRemote() {
+		return hasGitHubRemote;
+	}
+
 	@SuppressFBWarnings(
 			value = "BC_UNCONFIRMED_CAST_OF_RETURN_VALUE",
 			justification = "FileRepositoryBuilder uses generics which spotbugs cant know"
 	)
-	private static List<Path> jgit(Path gitDir) {
+	private static List<Path> jgitResolvePaths(Path gitDir) {
 		List<Path> result = new ArrayList<>();
 		try (Repository repository = new FileRepositoryBuilder()
 				.setMustExist(true)
@@ -87,6 +100,29 @@ public class GitChoreContext implements ChoreContext {
 			throw new UncheckedIOException(e);
 		}
 		return result;
+	}
+
+	private static boolean jgitHasGitHubRemote(Path gitDir) {
+		try (Repository repository = new FileRepositoryBuilder()
+				.setMustExist(true)
+				.readEnvironment()
+				.findGitDir(gitDir.toFile())
+				.build();) {
+			for (String remoteName : repository.getRemoteNames()) {
+				Config config = repository.getConfig();
+				String remoteUrl = config.getString(
+						ConfigConstants.CONFIG_REMOTE_SECTION,
+						remoteName,
+						"url"
+				);
+				if (remoteUrl.startsWith("https://github.com")) {
+					return true;
+				}
+			}
+			return false;
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 }

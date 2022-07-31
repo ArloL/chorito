@@ -39,10 +39,12 @@ public class GitHubActionChore {
 	}
 
 	private void updateChoresWorkflow() {
-		FilesSilent.writeString(
-				context.resolve(".github/workflows/chores.yaml"),
-				ClassPathFiles.readString("/workflows/chores.yaml")
-		);
+		if (context.hasGitHubRemote()) {
+			FilesSilent.writeString(
+					context.resolve(".github/workflows/chores.yaml"),
+					ClassPathFiles.readString("/workflows/chores.yaml")
+			);
+		}
 	}
 
 	private void updateGraalVmVersion() {
