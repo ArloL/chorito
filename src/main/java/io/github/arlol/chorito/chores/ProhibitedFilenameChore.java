@@ -41,8 +41,12 @@ public class ProhibitedFilenameChore {
 
 	public void doit() {
 		context.files().stream().forEach(path -> {
-			String filename = path.toString();
-			if (PROHIBITED_FILENAMES.contains(filename)) {
+			String filenameNoExtension = path.toString();
+			if (filenameNoExtension.contains(".")) {
+				filenameNoExtension = filenameNoExtension
+						.substring(0, filenameNoExtension.lastIndexOf('.'));
+			}
+			if (PROHIBITED_FILENAMES.contains(filenameNoExtension)) {
 				FilesSilent.deleteIfExists(path);
 			}
 		});
