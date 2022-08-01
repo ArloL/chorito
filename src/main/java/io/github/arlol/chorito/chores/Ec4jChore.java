@@ -50,7 +50,7 @@ public class Ec4jChore {
 					.build();
 			handler.startFiles();
 			boolean propertyMatched = false;
-			for (Path file : context.files()) {
+			for (Path file : context.textFiles()) {
 				final Path absFile = context.resolve(file);
 				final ResourceProperties editorConfigProperties = resourcePropertiesService
 						.queryProperties(Resources.ofPath(absFile, UTF_8));

@@ -12,7 +12,7 @@ public class ShellScriptNewlineChore {
 	}
 
 	public void doit() {
-		context.files().stream().filter(name -> {
+		context.textFiles().stream().filter(name -> {
 			var filename = name.toString();
 			return filename.endsWith(".sh");
 		}).map(context::resolve).forEach(Newliner::makeAllNewlinesLf);

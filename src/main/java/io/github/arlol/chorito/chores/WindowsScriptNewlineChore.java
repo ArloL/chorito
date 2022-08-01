@@ -12,7 +12,7 @@ public class WindowsScriptNewlineChore {
 	}
 
 	public void doit() {
-		context.files().stream().filter(name -> {
+		context.textFiles().stream().filter(name -> {
 			var filename = name.toString();
 			return filename.endsWith(".cmd") || filename.endsWith(".bat")
 					|| filename.endsWith(".ps1");

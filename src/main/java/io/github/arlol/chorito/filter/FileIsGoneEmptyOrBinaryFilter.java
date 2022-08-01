@@ -6,9 +6,9 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public abstract class FileIsEmptyOrBinaryFilter {
+public abstract class FileIsGoneEmptyOrBinaryFilter {
 
-	private FileIsEmptyOrBinaryFilter() {
+	private FileIsGoneEmptyOrBinaryFilter() {
 	}
 
 	public static boolean fileIsGoneEmptyOrBinary(Path path) {

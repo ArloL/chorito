@@ -1,6 +1,6 @@
 package io.github.arlol.chorito.tools;
 
-import static io.github.arlol.chorito.filter.FileIsEmptyOrBinaryFilter.fileIsGoneEmptyOrBinary;
+import static io.github.arlol.chorito.filter.FileIsGoneEmptyOrBinaryFilter.fileIsGoneEmptyOrBinary;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -24,6 +24,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public class GitChoreContext implements ChoreContext {
 
 	private final Path root;
+	private final List<Path> textFiles;
 	private final List<Path> files;
 	private final boolean hasGitHubRemote;
 
@@ -32,15 +33,22 @@ public class GitChoreContext implements ChoreContext {
 	}
 
 	public GitChoreContext(Path root) {
-		this(root, jgitResolvePaths(root), jgitHasGitHubRemote(root));
+		this(
+				root,
+				jgitResolveTextFiles(root),
+				jgitResolveFiles(root),
+				jgitHasGitHubRemote(root)
+		);
 	}
 
 	public GitChoreContext(
 			Path root,
+			List<Path> textFiles,
 			List<Path> files,
 			boolean hasGitHubRemote
 	) {
 		this.root = root;
+		this.textFiles = List.copyOf(textFiles);
 		this.files = List.copyOf(files);
 		this.hasGitHubRemote = hasGitHubRemote;
 	}
@@ -48,6 +56,11 @@ public class GitChoreContext implements ChoreContext {
 	@Override
 	public Path root() {
 		return root;
+	}
+
+	@Override
+	public List<Path> textFiles() {
+		return List.copyOf(textFiles);
 	}
 
 	@Override
@@ -74,7 +87,39 @@ public class GitChoreContext implements ChoreContext {
 			value = "BC_UNCONFIRMED_CAST_OF_RETURN_VALUE",
 			justification = "FileRepositoryBuilder uses generics which spotbugs cant know"
 	)
-	private static List<Path> jgitResolvePaths(Path gitDir) {
+	private static List<Path> jgitResolveTextFiles(Path gitDir) {
+		List<Path> result = new ArrayList<>();
+		try (Repository repository = new FileRepositoryBuilder()
+				.setMustExist(true)
+				.readEnvironment()
+				.findGitDir(gitDir.toFile())
+				.build();
+				RevWalk revWalk = new RevWalk(repository);
+				TreeWalk treeWalk = new TreeWalk(repository)) {
+			ObjectId headId = repository.resolve(Constants.HEAD);
+			RevCommit headCommit = revWalk.parseCommit(headId);
+			treeWalk.addTree(headCommit.getTree());
+			while (treeWalk.next()) {
+				if (treeWalk.isSubtree()) {
+					treeWalk.enterSubtree();
+				} else {
+					Path path = Paths.get(treeWalk.getPathString());
+					if (!fileIsGoneEmptyOrBinary(path)) {
+						result.add(path);
+					}
+				}
+			}
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+		return result;
+	}
+
+	@SuppressFBWarnings(
+			value = "BC_UNCONFIRMED_CAST_OF_RETURN_VALUE",
+			justification = "FileRepositoryBuilder uses generics which spotbugs cant know"
+	)
+	private static List<Path> jgitResolveFiles(Path gitDir) {
 		List<Path> result = new ArrayList<>();
 		try (Repository repository = new FileRepositoryBuilder()
 				.setMustExist(true)

@@ -8,6 +8,7 @@ import io.github.arlol.chorito.chores.GitAttributesChore;
 import io.github.arlol.chorito.chores.GitHubActionChore;
 import io.github.arlol.chorito.chores.GitIgnoreChore;
 import io.github.arlol.chorito.chores.MavenWrapperChore;
+import io.github.arlol.chorito.chores.ProhibitedFilenameChore;
 import io.github.arlol.chorito.chores.ReadmeChore;
 import io.github.arlol.chorito.chores.ShellScriptNewlineChore;
 import io.github.arlol.chorito.chores.WindowsScriptNewlineChore;
@@ -38,6 +39,7 @@ public class ChoritoCommand {
 		new GitIgnoreChore(context).doit();
 		new Ec4jChore(context).doit();
 		new DeleteUnnecessaryFilesChore(context).doit();
+		new ProhibitedFilenameChore(context).doit();
 	}
 
 }

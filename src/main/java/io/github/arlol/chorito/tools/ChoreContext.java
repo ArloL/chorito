@@ -7,6 +7,8 @@ public interface ChoreContext {
 
 	public Path root();
 
+	public List<Path> textFiles();
+
 	public List<Path> files();
 
 	public default Path resolve(Path path) {

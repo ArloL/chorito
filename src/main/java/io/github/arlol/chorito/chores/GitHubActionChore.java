@@ -26,7 +26,7 @@ public class GitHubActionChore {
 
 	private void ensureYamlFileExtension() {
 		Path workflowsLocation = Paths.get(".github/workflows");
-		context.files().stream().filter(path -> {
+		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
 				return path.toString().endsWith(".yml");
 			}

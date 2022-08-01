@@ -14,7 +14,7 @@ public class NewlineChore {
 	}
 
 	public void doit() {
-		context.files()
+		context.textFiles()
 				.stream()
 				.filter(NewlineChore::filterByFilename)
 				.map(context::resolve)

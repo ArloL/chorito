@@ -49,7 +49,7 @@ public class EditorConfigChore {
 		var content = FilesSilent.readAllLines(editorConfigPath);
 		if (!content.contains("[.vscode/**.json]")) {
 			Path vsCodeLocation = Paths.get(".vscode");
-			if (context.files().stream().anyMatch(path -> {
+			if (context.textFiles().stream().anyMatch(path -> {
 				if (path.startsWith(vsCodeLocation)) {
 					return path.toString().endsWith(".json");
 				}
@@ -60,7 +60,7 @@ public class EditorConfigChore {
 		}
 		if (!content.contains("[.idea/**]")) {
 			Path vsCodeLocation = Paths.get(".idea");
-			if (context.files().stream().anyMatch(path -> {
+			if (context.textFiles().stream().anyMatch(path -> {
 				if (path.startsWith(vsCodeLocation)) {
 					return true;
 				}

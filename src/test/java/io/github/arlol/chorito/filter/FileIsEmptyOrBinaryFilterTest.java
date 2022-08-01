@@ -26,7 +26,7 @@ public class FileIsEmptyOrBinaryFilterTest {
 	}
 
 	private void test(boolean expected, String path) throws IOException {
-		boolean actual = FileIsEmptyOrBinaryFilter
+		boolean actual = FileIsGoneEmptyOrBinaryFilter
 				.fileIsGoneEmptyOrBinary(TestPaths.get(path));
 		assertEquals(expected, actual);
 	}
