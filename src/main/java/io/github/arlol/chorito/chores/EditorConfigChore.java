@@ -1,6 +1,7 @@
 package io.github.arlol.chorito.chores;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import io.github.arlol.chorito.tools.ChoreContext;
@@ -23,6 +24,16 @@ public class EditorConfigChore {
 			[*.sh]
 			end_of_line = lf
 			""";
+	private static String DEFAULT_VSCODE_EDITORCONFIG = """
+
+			[.vscode/**.json]
+			insert_final_newline = false
+			""";
+	private static String DEFAULT_IDEA_EDITORCONFIG = """
+
+			[.idea/**]
+			insert_final_newline = false
+			""";
 
 	private final ChoreContext context;
 
@@ -31,13 +42,35 @@ public class EditorConfigChore {
 	}
 
 	public void doit() {
-		Path path = context.resolve(".editorconfig");
-		if (!FilesSilent.exists(path)) {
-			FilesSilent.writeString(path, DEFAULT_EDITORCONFIG);
+		Path editorConfigPath = context.resolve(".editorconfig");
+		if (!FilesSilent.exists(editorConfigPath)) {
+			FilesSilent.writeString(editorConfigPath, DEFAULT_EDITORCONFIG);
 		}
-		var content = FilesSilent.readAllLines(path);
+		var content = FilesSilent.readAllLines(editorConfigPath);
+		if (!content.contains("[.vscode/**.json]")) {
+			Path vsCodeLocation = Paths.get(".vscode");
+			if (context.files().stream().anyMatch(path -> {
+				if (path.startsWith(vsCodeLocation)) {
+					return path.toString().endsWith(".json");
+				}
+				return false;
+			})) {
+				content.add(DEFAULT_VSCODE_EDITORCONFIG);
+			}
+		}
+		if (!content.contains("[.idea/**]")) {
+			Path vsCodeLocation = Paths.get(".idea");
+			if (context.files().stream().anyMatch(path -> {
+				if (path.startsWith(vsCodeLocation)) {
+					return true;
+				}
+				return false;
+			})) {
+				content.add(DEFAULT_IDEA_EDITORCONFIG);
+			}
+		}
 		content = removeBracketsFromSingleExtensionGroups(content);
-		FilesSilent.write(path, content);
+		FilesSilent.write(editorConfigPath, content);
 	}
 
 	public static List<String> removeBracketsFromSingleExtensionGroups(
