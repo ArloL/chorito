@@ -74,6 +74,14 @@ public class GitHubActionChore {
 						)) {
 							return "          \\";
 						}
+						if (s.contains(
+								" --settings .\\.github\\github-actions-windows-maven-settings.xml"
+						)) {
+							return s.replace(
+									" --settings .\\.github\\github-actions-windows-maven-settings.xml",
+									""
+							);
+						}
 						return s;
 					})
 					.toList();
