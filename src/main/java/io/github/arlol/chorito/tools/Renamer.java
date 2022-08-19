@@ -20,7 +20,7 @@ public abstract class Renamer {
 			Files.move(
 					path,
 					path.resolveSibling(
-							fileName.toString().replace(".yml", ".yaml")
+							fileName.toString().replace(target, replacement)
 					)
 			);
 		} catch (IOException e) {
