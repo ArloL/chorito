@@ -39,6 +39,12 @@ public class DependabotChore {
 			    schedule:
 			      interval: "daily"
 			""";
+	private static String DEFAULT_NPM_DEPENDABOT = """
+			  - package-ecosystem: "npm"
+			    directory: "/"
+			    schedule:
+			      interval: "daily"
+			""";
 
 	private final ChoreContext context;
 
@@ -61,6 +67,9 @@ public class DependabotChore {
 			}
 			if (FilesSilent.exists(context.resolve("Pipfile"))) {
 				content += DEFAULT_PIP_DEPENDABOT;
+			}
+			if (FilesSilent.exists(context.resolve("package.json"))) {
+				content += DEFAULT_NPM_DEPENDABOT;
 			}
 			FilesSilent.writeString(
 					context.resolve(".github/dependabot.yml"),
