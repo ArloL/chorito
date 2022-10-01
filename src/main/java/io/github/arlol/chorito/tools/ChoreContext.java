@@ -21,4 +21,8 @@ public interface ChoreContext {
 
 	public boolean hasGitHubRemote();
 
+	default public ChoreContext refresh() {
+		return this;
+	}
+
 }
