@@ -64,7 +64,7 @@ public class MavenWrapperChore {
 							"-N",
 							"wrapper:wrapper",
 							"-Dmaven=3.8.6"
-					).start().waitFor(2, TimeUnit.MINUTES);
+					).inheritIO().start().waitFor(2, TimeUnit.MINUTES);
 				} catch (InterruptedException | IOException e) {
 					throw new IllegalStateException(e);
 				}
