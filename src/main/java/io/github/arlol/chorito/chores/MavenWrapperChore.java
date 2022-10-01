@@ -5,10 +5,16 @@ import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 
 public class MavenWrapperChore {
+
+	private static Logger LOG = LoggerFactory
+			.getLogger(MavenWrapperChore.class);
 
 	private static String DEFAULT_PROPERTIES = """
 			# Licensed to the Apache Software Foundation (ASF) under one
@@ -38,6 +44,7 @@ public class MavenWrapperChore {
 	}
 
 	public void doit() {
+		LOG.info("Running MavenWrapperChore");
 		Path wrapper = context.resolve("mvnw");
 		if (FilesSilent.exists(wrapper)) {
 			var permissions = FilesSilent.getPosixFilePermissions(wrapper);
@@ -51,6 +58,7 @@ public class MavenWrapperChore {
 			String content = FilesSilent.readString(path);
 			if (!DEFAULT_PROPERTIES.equals(content)) {
 				try {
+					LOG.info("Running ./mvnw wrapper:wrapper");
 					new ProcessBuilder(
 							"./mvnw",
 							"-N",
