@@ -1,6 +1,7 @@
 package io.github.arlol.chorito.tools;
 
 import static io.github.arlol.chorito.filter.FileIsGoneEmptyOrBinaryFilter.fileIsGoneEmptyOrBinary;
+import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -81,6 +82,20 @@ public class GitChoreContext implements ChoreContext {
 	@Override
 	public boolean hasGitHubRemote() {
 		return hasGitHubRemote;
+	}
+
+	@Override
+	public ChoreContext refresh() {
+		return new GitChoreContext(
+				this.root,
+				textFiles.stream()
+						.filter(p -> FilesSilent.exists(p))
+						.collect(toList()),
+				files.stream()
+						.filter(p -> FilesSilent.exists(p))
+						.collect(toList()),
+				this.hasGitHubRemote
+		);
 	}
 
 	@SuppressFBWarnings(
