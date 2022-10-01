@@ -33,7 +33,7 @@ public class Ec4jChore {
 	private final ChoreContext context;
 
 	public Ec4jChore(ChoreContext context) {
-		this.context = context;
+		this.context = context.refresh();
 	}
 
 	public void doit() {
