@@ -41,7 +41,7 @@ public class ProhibitedFilenameChore {
 
 	public void doit() {
 		context.files().stream().forEach(path -> {
-			String filenameNoExtension = path.toString();
+			String filenameNoExtension = path.getFileName().toString();
 			if (filenameNoExtension.contains(".")) {
 				filenameNoExtension = filenameNoExtension
 						.substring(0, filenameNoExtension.lastIndexOf('.'));
