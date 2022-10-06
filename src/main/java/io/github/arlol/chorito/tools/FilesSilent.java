@@ -2,6 +2,7 @@ package io.github.arlol.chorito.tools;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
@@ -9,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public abstract class FilesSilent {
 
@@ -115,6 +117,23 @@ public abstract class FilesSilent {
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	public static Stream<Path> walk(Path start, FileVisitOption... options) {
+		try {
+			return Files.walk(start);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
+	public static Path write(Path path, byte[] bytes, OpenOption... options) {
+		try {
+			return Files.write(path, bytes, options);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+
 	}
 
 }
