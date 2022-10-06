@@ -1,6 +1,7 @@
 package io.github.arlol.chorito.tools;
 
 import java.nio.file.FileSystem;
+import java.nio.file.attribute.PosixFileAttributeView;
 
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -19,7 +20,9 @@ public class FileSystemExtension
 
 	@Override
 	public void beforeEach(ExtensionContext context) throws Exception {
-		this.fileSystem = MemoryFileSystemBuilder.newEmpty().build("name");
+		this.fileSystem = MemoryFileSystemBuilder.newEmpty()
+				.addFileAttributeView(PosixFileAttributeView.class)
+				.build("name");
 	}
 
 	@Override
