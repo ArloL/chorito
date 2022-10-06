@@ -5,6 +5,7 @@ import java.util.List;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.MyPaths;
 
 public class ProhibitedFilenameChore {
 
@@ -41,7 +42,7 @@ public class ProhibitedFilenameChore {
 
 	public void doit() {
 		context.files().stream().forEach(path -> {
-			String filenameNoExtension = path.getFileName().toString();
+			String filenameNoExtension = MyPaths.getFileName(path).toString();
 			if (filenameNoExtension.contains(".")) {
 				filenameNoExtension = filenameNoExtension
 						.substring(0, filenameNoExtension.lastIndexOf('.'));
