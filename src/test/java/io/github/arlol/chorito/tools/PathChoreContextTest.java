@@ -3,9 +3,6 @@ package io.github.arlol.chorito.tools;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import java.nio.file.FileSystem;
-import java.nio.file.Path;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -30,13 +27,14 @@ public class PathChoreContextTest {
 		assertThat(context().files()).hasSize(2);
 	}
 
-	private PathChoreContext context() {
-		FileSystem fileSystem = this.extension.getFileSystem();
-		Path root = fileSystem.getPath("/");
-		FilesSilent
-				.writeString(root.resolve("test.txt"), "this is a text file");
-		FilesSilent.write(root.resolve("test.bin"), new byte[] { 0 });
-		return new PathChoreContext(root);
+	private ChoreContext context() {
+		ChoreContext context = extension.choreContext();
+		FilesSilent.writeString(
+				context.resolve("test.txt"),
+				"this is a text file"
+		);
+		FilesSilent.write(context.resolve("test.bin"), new byte[] { 0 });
+		return extension.choreContext();
 	}
 
 }

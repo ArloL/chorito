@@ -2,7 +2,6 @@ package io.github.arlol.chorito.chores;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.PathChoreContext;
 
 public class RemoveUnnecessaryExecFlagsChoreTest {
 
@@ -58,10 +56,9 @@ public class RemoveUnnecessaryExecFlagsChoreTest {
 	}
 
 	private ChoreContext context() {
-		FileSystem fileSystem = this.extension.getFileSystem();
-		Path root = fileSystem.getPath("/");
+		ChoreContext context = extension.choreContext();
 
-		Path runSh = root.resolve("run.sh");
+		Path runSh = context.resolve("run.sh");
 		FilesSilent.writeString(runSh, "#!/bin/sh\necho Hi");
 		var permissions = FilesSilent.getPosixFilePermissions(runSh);
 		permissions.add(PosixFilePermission.OWNER_EXECUTE);
@@ -69,7 +66,7 @@ public class RemoveUnnecessaryExecFlagsChoreTest {
 		permissions.add(PosixFilePermission.OTHERS_EXECUTE);
 		FilesSilent.setPosixFilePermissions(runSh, permissions);
 
-		Path noScript = root.resolve("no-script.sh");
+		Path noScript = context.resolve("no-script.sh");
 		FilesSilent.writeString(noScript, "Just text");
 		permissions = FilesSilent.getPosixFilePermissions(noScript);
 		permissions.add(PosixFilePermission.OWNER_EXECUTE);
@@ -77,7 +74,7 @@ public class RemoveUnnecessaryExecFlagsChoreTest {
 		permissions.add(PosixFilePermission.OTHERS_EXECUTE);
 		FilesSilent.setPosixFilePermissions(noScript, permissions);
 
-		return new PathChoreContext(root);
+		return extension.choreContext();
 	}
 
 }

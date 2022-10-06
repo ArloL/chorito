@@ -3,7 +3,6 @@ package io.github.arlol.chorito.chores;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.nio.file.FileSystem;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.PathChoreContext;
 
 public class GraalNativeImagePropertiesChoreTest {
 
@@ -20,10 +18,32 @@ public class GraalNativeImagePropertiesChoreTest {
 	final FileSystemExtension extension = new FileSystemExtension();
 
 	@Test
+	public void testWithNothing() {
+		new GraalNativeImagePropertiesChore(extension.choreContext()).doit();
+	}
+
+	@Test
 	public void test() throws Exception {
 		ChoreContext context = context();
+
 		Path nativeImageProperties = context.resolve(
 				"src/main/resources/META-INF/native-image/io.github.arlol/chorito/native-image.properties"
+		);
+		FilesSilent.writeString(
+				nativeImageProperties,
+				"Args = \\\n" + "-H:+ReportExceptionStackTraces \\\n"
+						+ "--no-fallback \\\n"
+						+ "--allow-incomplete-classpath \\\n"
+						+ "--initialize-at-build-time=\\\n"
+						+ "org.eclipse.jgit.lib.ObjectId,\\\n"
+						+ "org.eclipse.jgit.diff.RenameDetector,\\\n"
+						+ "org.eclipse.jgit.diff.DiffEntry,\\\n"
+						+ "org.eclipse.jgit.ignore.internal.Strings,\\\n"
+						+ "org.eclipse.jgit.attributes.AttributesHandler,\\\n"
+						+ "org.eclipse.jgit.diff.RenameDetector,\\\n"
+						+ "org.eclipse.jgit.diff.DiffEntry,\\\n"
+						+ "org.eclipse.jgit.ignore.internal.Strings,\\\n"
+						+ "org.eclipse.jgit.attributes.AttributesHandler\n" + ""
 		);
 
 		String before = FilesSilent.readString(nativeImageProperties);
@@ -51,10 +71,9 @@ public class GraalNativeImagePropertiesChoreTest {
 	}
 
 	private ChoreContext context() {
-		FileSystem fileSystem = this.extension.getFileSystem();
-		Path root = fileSystem.getPath("/");
+		ChoreContext context = extension.choreContext();
 		FilesSilent.writeString(
-				root.resolve(
+				context.resolve(
 						"src/main/resources/META-INF/native-image/io.github.arlol/chorito/native-image.properties"
 				),
 				"Args = \\\n" + "-H:+ReportExceptionStackTraces \\\n"
@@ -71,7 +90,7 @@ public class GraalNativeImagePropertiesChoreTest {
 						+ "org.eclipse.jgit.ignore.internal.Strings,\\\n"
 						+ "org.eclipse.jgit.attributes.AttributesHandler\n" + ""
 		);
-		return new PathChoreContext(root);
+		return context;
 	}
 
 }

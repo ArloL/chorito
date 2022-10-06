@@ -14,8 +14,12 @@ public class FileSystemExtension
 
 	private FileSystem fileSystem;
 
-	public FileSystem getFileSystem() {
+	public FileSystem fileSystem() {
 		return this.fileSystem;
+	}
+
+	public ChoreContext choreContext() {
+		return new PathChoreContext(this.fileSystem.getPath("/"));
 	}
 
 	@Override
