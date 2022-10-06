@@ -12,6 +12,7 @@ import io.github.arlol.chorito.chores.JavaUpdaterChore;
 import io.github.arlol.chorito.chores.MavenWrapperChore;
 import io.github.arlol.chorito.chores.ProhibitedFilenameChore;
 import io.github.arlol.chorito.chores.ReadmeChore;
+import io.github.arlol.chorito.chores.RemoveUnnecessaryExecFlagsChore;
 import io.github.arlol.chorito.chores.ShellScriptNewlineChore;
 import io.github.arlol.chorito.chores.WindowsScriptNewlineChore;
 import io.github.arlol.chorito.tools.ChoreContext;
@@ -44,6 +45,7 @@ public class ChoritoCommand {
 		new DeleteUnnecessaryFilesChore(context).doit();
 		new ProhibitedFilenameChore(context).doit();
 		new GraalNativeImageMavenPluginMigrationChore(context).doit();
+		new RemoveUnnecessaryExecFlagsChore(context).doit();
 	}
 
 }
