@@ -8,7 +8,12 @@ import org.junit.jupiter.api.Test;
 
 import io.github.arlol.chorito.TestPaths;
 
-public class FileIsEmptyOrBinaryFilterTest {
+public class FileIsGoneOrBinaryFilterTest {
+
+	@Test
+	void testGone() throws Exception {
+		test(true, "does-not-exist-openstreetmap.png");
+	}
 
 	@Test
 	void testBinary() throws Exception {
@@ -17,7 +22,7 @@ public class FileIsEmptyOrBinaryFilterTest {
 
 	@Test
 	void testEmpty() throws Exception {
-		test(true, "empty.txt");
+		test(false, "empty.txt");
 	}
 
 	@Test
@@ -26,8 +31,8 @@ public class FileIsEmptyOrBinaryFilterTest {
 	}
 
 	private void test(boolean expected, String path) throws IOException {
-		boolean actual = FileIsGoneEmptyOrBinaryFilter
-				.fileIsGoneEmptyOrBinary(TestPaths.get(path));
+		boolean actual = FileIsGoneOrBinaryFilter
+				.fileIsGoneOrBinary(TestPaths.get(path));
 		assertEquals(expected, actual);
 	}
 

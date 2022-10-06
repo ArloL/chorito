@@ -1,6 +1,5 @@
 package io.github.arlol.chorito.tools;
 
-import static io.github.arlol.chorito.filter.FileIsGoneEmptyOrBinaryFilter.fileIsGoneEmptyOrBinary;
 import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
@@ -21,6 +20,8 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.TreeWalk;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.github.arlol.chorito.filter.FileIsGoneFilter;
+import io.github.arlol.chorito.filter.FileIsGoneOrBinaryFilter;
 
 public class GitChoreContext implements ChoreContext {
 
@@ -119,7 +120,7 @@ public class GitChoreContext implements ChoreContext {
 					treeWalk.enterSubtree();
 				} else {
 					Path path = Paths.get(treeWalk.getPathString());
-					if (!fileIsGoneEmptyOrBinary(path)) {
+					if (!FileIsGoneOrBinaryFilter.fileIsGoneOrBinary(path)) {
 						result.add(path);
 					}
 				}
@@ -151,7 +152,7 @@ public class GitChoreContext implements ChoreContext {
 					treeWalk.enterSubtree();
 				} else {
 					Path path = Paths.get(treeWalk.getPathString());
-					if (!fileIsGoneEmptyOrBinary(path)) {
+					if (!FileIsGoneFilter.fileIsGone(path)) {
 						result.add(path);
 					}
 				}
