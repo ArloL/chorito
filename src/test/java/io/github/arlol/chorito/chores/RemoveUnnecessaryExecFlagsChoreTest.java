@@ -23,6 +23,7 @@ public class RemoveUnnecessaryExecFlagsChoreTest {
 
 		Path runSh = context.resolve("run.sh");
 		Path noScript = context.resolve("no-script.sh");
+		Path binary = context.resolve("test.bin");
 
 		assertThat(FilesSilent.getPosixFilePermissions(runSh))
 				.contains(PosixFilePermission.OWNER_EXECUTE);
@@ -36,6 +37,13 @@ public class RemoveUnnecessaryExecFlagsChoreTest {
 		assertThat(FilesSilent.getPosixFilePermissions(noScript))
 				.contains(PosixFilePermission.GROUP_EXECUTE);
 		assertThat(FilesSilent.getPosixFilePermissions(noScript))
+				.contains(PosixFilePermission.OTHERS_EXECUTE);
+
+		assertThat(FilesSilent.getPosixFilePermissions(binary))
+				.contains(PosixFilePermission.OWNER_EXECUTE);
+		assertThat(FilesSilent.getPosixFilePermissions(binary))
+				.contains(PosixFilePermission.GROUP_EXECUTE);
+		assertThat(FilesSilent.getPosixFilePermissions(binary))
 				.contains(PosixFilePermission.OTHERS_EXECUTE);
 
 		new RemoveUnnecessaryExecFlagsChore(context).doit();
@@ -53,6 +61,13 @@ public class RemoveUnnecessaryExecFlagsChoreTest {
 				.doesNotContain(PosixFilePermission.GROUP_EXECUTE);
 		assertThat(FilesSilent.getPosixFilePermissions(noScript))
 				.doesNotContain(PosixFilePermission.OTHERS_EXECUTE);
+
+		assertThat(FilesSilent.getPosixFilePermissions(binary))
+				.contains(PosixFilePermission.OWNER_EXECUTE);
+		assertThat(FilesSilent.getPosixFilePermissions(binary))
+				.contains(PosixFilePermission.GROUP_EXECUTE);
+		assertThat(FilesSilent.getPosixFilePermissions(binary))
+				.contains(PosixFilePermission.OTHERS_EXECUTE);
 	}
 
 	private ChoreContext context() {
@@ -73,6 +88,14 @@ public class RemoveUnnecessaryExecFlagsChoreTest {
 		permissions.add(PosixFilePermission.GROUP_EXECUTE);
 		permissions.add(PosixFilePermission.OTHERS_EXECUTE);
 		FilesSilent.setPosixFilePermissions(noScript, permissions);
+
+		Path binary = context.resolve("test.bin");
+		FilesSilent.write(binary, new byte[] { (byte) 198 });
+		permissions = FilesSilent.getPosixFilePermissions(binary);
+		permissions.add(PosixFilePermission.OWNER_EXECUTE);
+		permissions.add(PosixFilePermission.GROUP_EXECUTE);
+		permissions.add(PosixFilePermission.OTHERS_EXECUTE);
+		FilesSilent.setPosixFilePermissions(binary, permissions);
 
 		return extension.choreContext();
 	}
