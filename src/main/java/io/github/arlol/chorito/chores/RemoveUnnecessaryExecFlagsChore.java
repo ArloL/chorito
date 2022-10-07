@@ -12,7 +12,7 @@ public class RemoveUnnecessaryExecFlagsChore {
 	private final ChoreContext context;
 
 	public RemoveUnnecessaryExecFlagsChore(ChoreContext context) {
-		this.context = context;
+		this.context = context.refresh();
 	}
 
 	public void doit() {
