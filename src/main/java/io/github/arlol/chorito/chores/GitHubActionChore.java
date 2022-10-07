@@ -71,15 +71,15 @@ public class GitHubActionChore {
 			);
 			updated = updated.replace(
 					"uses: github/codeql-action/init@v2\n",
-					"uses: github/codeql-action/init@v2.11.1\n"
+					"uses: github/codeql-action/init@v2.1.27\n"
 			);
 			updated = updated.replace(
 					"uses: github/codeql-action/autobuild@v2\n",
-					"uses: github/codeql-action/autobuild@v2.11.1\n"
+					"uses: github/codeql-action/autobuild@v2.1.27\n"
 			);
 			updated = updated.replace(
 					"uses: github/codeql-action/analyze@v2\n",
-					"uses: github/codeql-action/analyze@v2.11.1\n"
+					"uses: github/codeql-action/analyze@v2.1.27\n"
 			);
 			updated = updated.replace(
 					"uses: mathieudutour/github-tag-action@v6.0\n",
