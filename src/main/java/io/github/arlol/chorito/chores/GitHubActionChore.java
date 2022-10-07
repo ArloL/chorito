@@ -22,6 +22,7 @@ public class GitHubActionChore {
 		updateChoresWorkflow();
 		updateGraalVmVersion();
 		removeCustomGithubPackagesMavenSettings();
+		useSpecificActionVersions();
 	}
 
 	private void ensureYamlFileExtension() {
@@ -45,6 +46,60 @@ public class GitHubActionChore {
 					ClassPathFiles.readString("/workflows/chores.yaml")
 			);
 		}
+	}
+
+	private void useSpecificActionVersions() {
+		Path workflowsLocation = Paths.get(".github/workflows");
+		context.textFiles().stream().filter(path -> {
+			if (path.startsWith(workflowsLocation)) {
+				return path.toString().endsWith(".yaml");
+			}
+			return false;
+		}).map(context::resolve).forEach(path -> {
+			String updated = FilesSilent.readString(path);
+			updated = updated.replace(
+					"uses: actions/checkout@v3\n",
+					"uses: actions/checkout@v3.1.0\n"
+			);
+			updated = updated.replace(
+					"peter-evans/create-pull-request@v4\n",
+					"peter-evans/create-pull-request@v4.1.3\n"
+			);
+			updated = updated.replace(
+					"uses: actions/setup-java@v3\n",
+					"uses: actions/setup-java@v3.5.1\n"
+			);
+			updated = updated.replace(
+					"uses: github/codeql-action/init@v2\n",
+					"uses: github/codeql-action/init@v2.11.1\n"
+			);
+			updated = updated.replace(
+					"uses: github/codeql-action/autobuild@v2\n",
+					"uses: github/codeql-action/autobuild@v2.11.1\n"
+			);
+			updated = updated.replace(
+					"uses: github/codeql-action/analyze@v2\n",
+					"uses: github/codeql-action/analyze@v2.11.1\n"
+			);
+			updated = updated.replace(
+					"uses: mathieudutour/github-tag-action@v6.0\n",
+					"uses: mathieudutour/github-tag-action@v6.0\n"
+			);
+			updated = updated.replace(
+					"uses: actions/upload-artifact@v3\n",
+					"uses: actions/upload-artifact@v3.1.0\n"
+			);
+			updated = updated.replace(
+					"uses: actions/download-artifact@v3\n",
+					"uses: actions/download-artifact@v3.0.0\n"
+			);
+			updated = updated.replace(
+					"uses: eregon/publish-release@v1\n",
+					"uses: eregon/publish-release@v1.0.4\n"
+			);
+			FilesSilent.writeString(path, updated);
+		});
+
 	}
 
 	private void updateGraalVmVersion() {
