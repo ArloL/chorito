@@ -1,7 +1,6 @@
 package io.github.arlol.chorito.chores;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import io.github.arlol.chorito.tools.ChoreContext;
@@ -48,7 +47,7 @@ public class EditorConfigChore {
 		}
 		var content = FilesSilent.readAllLines(editorConfigPath);
 		if (!content.contains("[.vscode/**.json]")) {
-			Path vsCodeLocation = Paths.get(".vscode");
+			Path vsCodeLocation = context.resolve(".vscode");
 			if (context.textFiles().stream().anyMatch(path -> {
 				if (path.startsWith(vsCodeLocation)) {
 					return path.toString().endsWith(".json");
@@ -59,7 +58,7 @@ public class EditorConfigChore {
 			}
 		}
 		if (!content.contains("[.idea/**]")) {
-			Path vsCodeLocation = Paths.get(".idea");
+			Path vsCodeLocation = context.resolve(".idea");
 			if (context.textFiles().stream().anyMatch(path -> {
 				if (path.startsWith(vsCodeLocation)) {
 					return true;
