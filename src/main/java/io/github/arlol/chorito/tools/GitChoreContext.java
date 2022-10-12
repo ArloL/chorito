@@ -119,7 +119,7 @@ public class GitChoreContext implements ChoreContext {
 				if (treeWalk.isSubtree()) {
 					treeWalk.enterSubtree();
 				} else {
-					Path path = Paths.get(treeWalk.getPathString());
+					Path path = gitDir.resolve(treeWalk.getPathString());
 					if (!FileIsGoneOrBinaryFilter.fileIsGoneOrBinary(path)) {
 						result.add(path);
 					}
@@ -151,7 +151,7 @@ public class GitChoreContext implements ChoreContext {
 				if (treeWalk.isSubtree()) {
 					treeWalk.enterSubtree();
 				} else {
-					Path path = Paths.get(treeWalk.getPathString());
+					Path path = gitDir.resolve(treeWalk.getPathString());
 					if (!FileIsGoneFilter.fileIsGone(path)) {
 						result.add(path);
 					}
