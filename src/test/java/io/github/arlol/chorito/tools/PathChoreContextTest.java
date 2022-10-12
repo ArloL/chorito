@@ -34,7 +34,7 @@ public class PathChoreContextTest {
 				"this is a text file"
 		);
 		FilesSilent.write(context.resolve("test.bin"), new byte[] { 0 });
-		return extension.choreContext();
+		return context.refresh();
 	}
 
 }

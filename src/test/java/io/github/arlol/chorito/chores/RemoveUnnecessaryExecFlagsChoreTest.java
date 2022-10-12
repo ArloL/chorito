@@ -97,7 +97,7 @@ public class RemoveUnnecessaryExecFlagsChoreTest {
 		permissions.add(PosixFilePermission.OTHERS_EXECUTE);
 		FilesSilent.setPosixFilePermissions(binary, permissions);
 
-		return extension.choreContext();
+		return context.refresh();
 	}
 
 }

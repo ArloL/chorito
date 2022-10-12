@@ -48,7 +48,7 @@ public class DeleteUnnecessaryFilesChoreTest {
 				),
 				"this is a text file"
 		);
-		return context;
+		return context.refresh();
 	}
 
 }
