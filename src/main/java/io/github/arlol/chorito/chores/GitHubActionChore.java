@@ -22,6 +22,7 @@ public class GitHubActionChore {
 		updateGraalVmVersion();
 		removeCustomGithubPackagesMavenSettings();
 		useSpecificActionVersions();
+		replaceSetOutput();
 	}
 
 	private void ensureYamlFileExtension() {
@@ -97,6 +98,29 @@ public class GitHubActionChore {
 					"uses: eregon/publish-release@v1.0.4\n"
 			);
 			FilesSilent.writeString(path, updated);
+		});
+
+	}
+
+	private void replaceSetOutput() {
+		Path workflowsLocation = context.resolve(".github/workflows");
+		context.textFiles().stream().filter(path -> {
+			if (path.startsWith(workflowsLocation)) {
+				return path.toString().endsWith(".yaml");
+			}
+			return false;
+		}).map(context::resolve).forEach(path -> {
+			List<String> updated = FilesSilent.readAllLines(path)
+					.stream()
+					.map(s -> {
+						if (s.trim().startsWith("echo \"::set-output name=")) {
+							return s.replace("::set-output name=", "")
+									.replace("::", "=") + " >> $GITHUB_OUTPUT";
+						}
+						return s;
+					})
+					.toList();
+			FilesSilent.write(path, updated);
 		});
 
 	}
