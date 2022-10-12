@@ -62,4 +62,9 @@ public class PathChoreContext implements ChoreContext {
 				.toList();
 	}
 
+	@Override
+	public ChoreContext refresh() {
+		return new PathChoreContext(root);
+	}
+
 }
