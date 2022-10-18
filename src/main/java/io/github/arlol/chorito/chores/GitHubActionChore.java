@@ -23,6 +23,7 @@ public class GitHubActionChore {
 		removeCustomGithubPackagesMavenSettings();
 		useSpecificActionVersions();
 		replaceSetOutput();
+		migrateToGraalSetupAction();
 	}
 
 	private void ensureYamlFileExtension() {
@@ -46,6 +47,64 @@ public class GitHubActionChore {
 					ClassPathFiles.readString("/workflows/chores.yaml")
 			);
 		}
+	}
+
+	private void migrateToGraalSetupAction() {
+		Path workflowsLocation = context.resolve(".github/workflows");
+		context.textFiles().stream().filter(path -> {
+			if (path.startsWith(workflowsLocation)) {
+				return path.toString().endsWith(".yaml");
+			}
+			return false;
+		}).map(context::resolve).forEach(path -> {
+			String updated = FilesSilent.readString(path);
+			updated = updated.replace(
+					"\n" + "    - name: Set up Visual Studio shell\n"
+							+ "      uses: egor-tensin/vs-shell@v2",
+					""
+			);
+			updated = updated.replace(
+					"    - uses: actions/setup-java@v3.5.1\n" + "      with:\n"
+							+ "        java-version: ${{ env.JAVA_VERSION }}\n"
+							+ "        distribution: adopt\n"
+							+ "        cache: 'maven'\n"
+							+ "    - name: Setup Graalvm\n"
+							+ "      uses: DeLaGuardo/setup-graalvm@5.0\n"
+							+ "      with:\n"
+							+ "        graalvm: ${{ env.GRAALVM_VERSION }}\n"
+							+ "        java: java${{ env.JAVA_VERSION }}\n"
+							+ "    - name: Install native-image module\n"
+							+ "      run: gu install native-image",
+					"    - uses: graalvm/setup-graalvm@v1.0.7\n"
+							+ "      with:\n"
+							+ "        version: ${{ env.GRAALVM_VERSION }}\n"
+							+ "        java-version: ${{ env.JAVA_VERSION }}\n"
+							+ "        components: 'native-image'\n"
+							+ "        github-token: ${{ secrets.GITHUB_TOKEN }}\n"
+							+ "        cache: 'maven'"
+			);
+			updated = updated.replace(
+					"    - uses: actions/setup-java@v3.5.1\n" + "      with:\n"
+							+ "        java-version: ${{ env.JAVA_VERSION }}\n"
+							+ "        distribution: adopt\n"
+							+ "        cache: 'maven'\n"
+							+ "    - name: Setup Graalvm\n"
+							+ "      uses: DeLaGuardo/setup-graalvm@5.0\n"
+							+ "      with:\n"
+							+ "        graalvm: ${{ env.GRAALVM_VERSION }}\n"
+							+ "        java: java${{ env.JAVA_VERSION }}\n"
+							+ "    - name: Install native-image module\n"
+							+ "      run: '& \"$env:JAVA_HOME\\bin\\gu\" install native-image'",
+					"    - uses: graalvm/setup-graalvm@v1.0.7\n"
+							+ "      with:\n"
+							+ "        version: ${{ env.GRAALVM_VERSION }}\n"
+							+ "        java-version: ${{ env.JAVA_VERSION }}\n"
+							+ "        components: 'native-image'\n"
+							+ "        github-token: ${{ secrets.GITHUB_TOKEN }}\n"
+							+ "        cache: 'maven'"
+			);
+			FilesSilent.writeString(path, updated);
+		});
 	}
 
 	private void useSpecificActionVersions() {
@@ -99,7 +158,6 @@ public class GitHubActionChore {
 			);
 			FilesSilent.writeString(path, updated);
 		});
-
 	}
 
 	private void replaceSetOutput() {

@@ -15,7 +15,90 @@ import io.github.arlol.chorito.tools.FilesSilent;
 
 public class GitHubActionChoreTest {
 
-	private static final String INPUT = """
+	private static final String INPUT_GRAALSETUP_OUTPUT = """
+			jobs:
+			  linux:
+			    runs-on: ubuntu-latest
+			    needs: version
+			    env:
+			      REVISION: ${{ needs.version.outputs.new_version }}
+			    steps:
+			    - uses: actions/checkout@v3.1.0
+			    - uses: actions/setup-java@v3.5.1
+			      with:
+			        java-version: ${{ env.JAVA_VERSION }}
+			        distribution: adopt
+			        cache: 'maven'
+			    - name: Setup Graalvm
+			      uses: DeLaGuardo/setup-graalvm@5.0
+			      with:
+			        graalvm: ${{ env.GRAALVM_VERSION }}
+			        java: java${{ env.JAVA_VERSION }}
+			    - name: Install native-image module
+			      run: gu install native-image
+			  windows:
+			    runs-on: windows-latest
+			    needs: version
+			    env:
+			      REVISION: ${{ needs.version.outputs.new_version }}
+			    steps:
+			    - uses: actions/checkout@v3.1.0
+			    - uses: actions/setup-java@v3.5.1
+			      with:
+			        java-version: ${{ env.JAVA_VERSION }}
+			        distribution: adopt
+			        cache: 'maven'
+			    - name: Setup Graalvm
+			      uses: DeLaGuardo/setup-graalvm@5.0
+			      with:
+			        graalvm: ${{ env.GRAALVM_VERSION }}
+			        java: java${{ env.JAVA_VERSION }}
+			    - name: Install native-image module
+			      run: '& "$env:JAVA_HOME\\bin\\gu" install native-image'
+			    - name: Remove WindowsImageHeapProviderFeature
+			      run: '& 7z d "$env:JAVA_HOME\\lib\\svm\\builder\\svm.jar" com/oracle/svm/core/windows/WindowsImageHeapProviderFeature.class'
+			    - name: Install upx
+			      run: choco install upx --version=3.96 --no-progress
+			    - name: Set up Visual Studio shell
+			      uses: egor-tensin/vs-shell@v2
+					""";
+	private static final String EXPECTED_GRAALSETUP_OUTPUT = """
+			jobs:
+			  linux:
+			    runs-on: ubuntu-latest
+			    needs: version
+			    env:
+			      REVISION: ${{ needs.version.outputs.new_version }}
+			    steps:
+			    - uses: actions/checkout@v3.1.0
+			    - uses: graalvm/setup-graalvm@v1.0.7
+			      with:
+			        version: ${{ env.GRAALVM_VERSION }}
+			        java-version: ${{ env.JAVA_VERSION }}
+			        components: 'native-image'
+			        github-token: ${{ secrets.GITHUB_TOKEN }}
+			        cache: 'maven'
+			  windows:
+			    runs-on: windows-latest
+			    needs: version
+			    env:
+			      REVISION: ${{ needs.version.outputs.new_version }}
+			    steps:
+			    - uses: actions/checkout@v3.1.0
+			    - uses: graalvm/setup-graalvm@v1.0.7
+			      with:
+			        version: ${{ env.GRAALVM_VERSION }}
+			        java-version: ${{ env.JAVA_VERSION }}
+			        components: 'native-image'
+			        github-token: ${{ secrets.GITHUB_TOKEN }}
+			        cache: 'maven'
+			    - name: Remove WindowsImageHeapProviderFeature
+			      run: '& 7z d "$env:JAVA_HOME\\lib\\svm\\builder\\svm.jar" com/oracle/svm/core/windows/WindowsImageHeapProviderFeature.class'
+			    - name: Install upx
+			      run: choco install upx --version=3.96 --no-progress
+			""";
+
+	private static final String INPUT_STEPS_OUTPUT = """
 			jobs:
 			  version:
 			    runs-on: ubuntu-latest
@@ -49,7 +132,7 @@ public class GitHubActionChoreTest {
 				      -Drevision="${REVISION}" \
 				      verify
 			""";
-	private static final String EXPECTED = """
+	private static final String EXPECTED_STEPS_OUTPUT = """
 			jobs:
 			  version:
 			    runs-on: ubuntu-latest
@@ -93,20 +176,35 @@ public class GitHubActionChoreTest {
 	}
 
 	@Test
-	public void test() throws Exception {
+	public void testGraalSetupMigration() throws Exception {
 		ChoreContext context = context();
-		Path mainWorkflow = context.resolve(".github/workflows/main.yaml");
-		assertTrue(FilesSilent.exists(mainWorkflow));
+		Path graalSetupWorkflow = context
+				.resolve(".github/workflows/graalsetup.yaml");
+		assertTrue(FilesSilent.exists(graalSetupWorkflow));
 		new GitHubActionChore(context).doit();
-		assertThat(Files.readString(mainWorkflow)).isEqualTo(EXPECTED);
+		assertThat(Files.readString(graalSetupWorkflow))
+				.isEqualTo(EXPECTED_GRAALSETUP_OUTPUT);
+	}
+
+	@Test
+	public void testStepsOutput() throws Exception {
+		ChoreContext context = context();
+		Path stepsWorkflow = context.resolve(".github/workflows/steps.yaml");
+		assertTrue(FilesSilent.exists(stepsWorkflow));
+		new GitHubActionChore(context).doit();
+		assertThat(Files.readString(stepsWorkflow))
+				.isEqualTo(EXPECTED_STEPS_OUTPUT);
 	}
 
 	private ChoreContext context() {
 		ChoreContext context = extension.choreContext();
 		FilesSilent.writeString(
-				context.resolve(".github/workflows/main.yaml"),
-				INPUT
-
+				context.resolve(".github/workflows/steps.yaml"),
+				INPUT_STEPS_OUTPUT
+		);
+		FilesSilent.writeString(
+				context.resolve(".github/workflows/graalsetup.yaml"),
+				INPUT_GRAALSETUP_OUTPUT
 		);
 		return context.refresh();
 	}
