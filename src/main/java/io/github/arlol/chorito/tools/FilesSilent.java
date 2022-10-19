@@ -1,5 +1,7 @@
 package io.github.arlol.chorito.tools;
 
+import static java.util.stream.Collectors.joining;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.FileVisitOption;
@@ -11,6 +13,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public abstract class FilesSilent {
 
@@ -64,13 +67,15 @@ public abstract class FilesSilent {
 	public static void write(
 			Path path,
 			Iterable<? extends CharSequence> lines,
+			String lineSeperator,
 			OpenOption... options
 	) {
-		try {
-			Files.write(path, lines, options);
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
+		String string = StreamSupport.stream(lines.spliterator(), false)
+				.collect(joining(lineSeperator));
+		if (!string.isEmpty()) {
+			string += lineSeperator;
 		}
+		writeString(path, string, options);
 	}
 
 	public static List<String> readAllLines(Path path) {

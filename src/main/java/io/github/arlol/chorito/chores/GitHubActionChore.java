@@ -178,7 +178,7 @@ public class GitHubActionChore {
 						return s;
 					})
 					.toList();
-			FilesSilent.write(path, updated);
+			FilesSilent.write(path, updated, "\n");
 		});
 
 	}
@@ -195,7 +195,7 @@ public class GitHubActionChore {
 						return s;
 					})
 					.toList();
-			FilesSilent.write(main, updated);
+			FilesSilent.write(main, updated, "\n");
 		}
 	}
 
@@ -221,7 +221,7 @@ public class GitHubActionChore {
 						return s;
 					})
 					.toList();
-			FilesSilent.write(main, updated);
+			FilesSilent.write(main, updated, "\n");
 		}
 	}
 

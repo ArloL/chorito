@@ -69,7 +69,7 @@ public class EditorConfigChore {
 			}
 		}
 		content = removeBracketsFromSingleExtensionGroups(content);
-		FilesSilent.write(editorConfigPath, content);
+		FilesSilent.write(editorConfigPath, content, "\n");
 	}
 
 	public static List<String> removeBracketsFromSingleExtensionGroups(
