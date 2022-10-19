@@ -2,6 +2,7 @@ package io.github.arlol.chorito.chores;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.UncheckedIOException;
@@ -20,6 +21,11 @@ public class JavaUpdaterChore {
 	}
 
 	public void doit() {
+		updatePomXmlJavaVersionProperty();
+		updateGithubActions();
+	}
+
+	private void updatePomXmlJavaVersionProperty() {
 		Path pomXml = context.resolve("pom.xml");
 		if (FilesSilent.exists(pomXml)) {
 			try {
@@ -38,6 +44,28 @@ public class JavaUpdaterChore {
 				throw new UncheckedIOException(e);
 			}
 		}
+	}
+
+	private void updateGithubActions() {
+		Path workflowsLocation = context.resolve(".github/workflows");
+		context.textFiles().stream().filter(path -> {
+			if (path.startsWith(workflowsLocation)) {
+				return path.toString().endsWith(".yaml");
+			}
+			return false;
+		}).map(context::resolve).forEach(path -> {
+			List<String> updated = FilesSilent.readAllLines(path)
+					.stream()
+					.map(s -> {
+						if (s.trim().startsWith("JAVA_VERSION: 11")) {
+							return s.replace("11", "17");
+						}
+						return s;
+					})
+					.toList();
+			FilesSilent.write(path, updated, "\n");
+		});
+
 	}
 
 }
