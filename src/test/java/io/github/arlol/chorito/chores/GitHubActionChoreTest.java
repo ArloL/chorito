@@ -61,7 +61,7 @@ public class GitHubActionChoreTest {
 			      run: choco install upx --version=3.96 --no-progress
 			    - name: Set up Visual Studio shell
 			      uses: egor-tensin/vs-shell@v2
-					""";
+			""";
 	private static final String EXPECTED_GRAALSETUP_OUTPUT = """
 			jobs:
 			  linux:
