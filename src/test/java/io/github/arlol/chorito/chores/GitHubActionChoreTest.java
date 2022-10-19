@@ -176,37 +176,70 @@ public class GitHubActionChoreTest {
 	}
 
 	@Test
+	public void testEmptyWorkflowFile() throws Exception {
+		ChoreContext context = extension.choreContext();
+		Path workflow = context.resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(workflow, "");
+		assertTrue(FilesSilent.exists(workflow));
+		new GitHubActionChore(context.refresh()).doit();
+		assertThat(Files.readString(workflow)).isEqualTo("");
+	}
+
+	@Test
+	public void testBasicWorkflowFile() throws Exception {
+		ChoreContext context = extension.choreContext();
+		Path workflow = context.resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(
+				workflow,
+				"jobs:\n" + "  linux:\n" + "    runs-on: ubuntu-latest\n"
+						+ "    steps:\n" + "    - run: whoami\n"
+		);
+		assertTrue(FilesSilent.exists(workflow));
+		new GitHubActionChore(context.refresh()).doit();
+		assertThat(Files.readString(workflow)).isEqualTo(
+				"jobs:\n" + "  linux:\n" + "    runs-on: ubuntu-latest\n"
+						+ "    steps:\n" + "    - run: whoami\n"
+		);
+	}
+
+	@Test
+	public void testVsShellWorkflowFile() throws Exception {
+		ChoreContext context = extension.choreContext();
+		Path workflow = context.resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(
+				workflow,
+				"jobs:\n" + "  windows:\n" + "    runs-on: windows-latest\n"
+						+ "    steps:\n"
+						+ "    - name: Set up Visual Studio shell\n"
+						+ "      uses: egor-tensin/vs-shell@v2\n"
+		);
+		assertTrue(FilesSilent.exists(workflow));
+		new GitHubActionChore(context.refresh()).doit();
+		assertThat(Files.readString(workflow)).isEqualTo(
+				"jobs:\n" + "  windows:\n" + "    runs-on: windows-latest\n"
+						+ "    steps:\n"
+		);
+	}
+
+	@Test
 	public void testGraalSetupMigration() throws Exception {
-		ChoreContext context = context();
-		Path graalSetupWorkflow = context
-				.resolve(".github/workflows/graalsetup.yaml");
-		assertTrue(FilesSilent.exists(graalSetupWorkflow));
-		new GitHubActionChore(context).doit();
-		assertThat(Files.readString(graalSetupWorkflow))
+		ChoreContext context = extension.choreContext();
+		Path workflow = context.resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(workflow, INPUT_GRAALSETUP_OUTPUT);
+		assertTrue(FilesSilent.exists(workflow));
+		new GitHubActionChore(context.refresh()).doit();
+		assertThat(Files.readString(workflow))
 				.isEqualTo(EXPECTED_GRAALSETUP_OUTPUT);
 	}
 
 	@Test
 	public void testStepsOutput() throws Exception {
-		ChoreContext context = context();
-		Path stepsWorkflow = context.resolve(".github/workflows/steps.yaml");
-		assertTrue(FilesSilent.exists(stepsWorkflow));
-		new GitHubActionChore(context).doit();
-		assertThat(Files.readString(stepsWorkflow))
-				.isEqualTo(EXPECTED_STEPS_OUTPUT);
-	}
-
-	private ChoreContext context() {
 		ChoreContext context = extension.choreContext();
-		FilesSilent.writeString(
-				context.resolve(".github/workflows/steps.yaml"),
-				INPUT_STEPS_OUTPUT
-		);
-		FilesSilent.writeString(
-				context.resolve(".github/workflows/graalsetup.yaml"),
-				INPUT_GRAALSETUP_OUTPUT
-		);
-		return context.refresh();
+		Path workflow = context.resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(workflow, INPUT_STEPS_OUTPUT);
+		assertTrue(FilesSilent.exists(workflow));
+		new GitHubActionChore(context.refresh()).doit();
+		assertThat(Files.readString(workflow)).isEqualTo(EXPECTED_STEPS_OUTPUT);
 	}
 
 }
