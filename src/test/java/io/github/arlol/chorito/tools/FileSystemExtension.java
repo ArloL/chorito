@@ -1,6 +1,7 @@
 package io.github.arlol.chorito.tools;
 
 import java.nio.file.FileSystem;
+import java.nio.file.Path;
 import java.nio.file.attribute.PosixFileAttributeView;
 
 import org.junit.jupiter.api.extension.AfterEachCallback;
@@ -19,7 +20,8 @@ public class FileSystemExtension
 	}
 
 	public ChoreContext choreContext() {
-		return new PathChoreContext(this.fileSystem.getPath("/"));
+		Path root = this.fileSystem.getRootDirectories().iterator().next();
+		return new PathChoreContext(root);
 	}
 
 	@Override
