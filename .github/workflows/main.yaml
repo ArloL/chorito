@@ -6,7 +6,7 @@ on:
   - cron: '17 4 5 * *'
 env:
   ARTIFACT: chorito
-  GRAALVM_VERSION: 22.2.0
+  GRAALVM_VERSION: 22.3.0
   JAVA_VERSION: 17
 
 jobs:
