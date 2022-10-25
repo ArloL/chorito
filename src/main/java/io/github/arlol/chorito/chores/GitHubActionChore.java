@@ -190,7 +190,7 @@ public class GitHubActionChore {
 					.stream()
 					.map(s -> {
 						if (s.startsWith("  GRAALVM_VERSION: ")) {
-							return "  GRAALVM_VERSION: 22.2.0";
+							return "  GRAALVM_VERSION: 22.3.0";
 						}
 						return s;
 					})
