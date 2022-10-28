@@ -9,6 +9,7 @@ import io.github.arlol.chorito.chores.GitHubActionChore;
 import io.github.arlol.chorito.chores.GitIgnoreChore;
 import io.github.arlol.chorito.chores.GraalNativeImageMavenPluginMigrationChore;
 import io.github.arlol.chorito.chores.GraalNativeImagePropertiesChore;
+import io.github.arlol.chorito.chores.GradleWrapperChore;
 import io.github.arlol.chorito.chores.JavaUpdaterChore;
 import io.github.arlol.chorito.chores.MavenWrapperChore;
 import io.github.arlol.chorito.chores.ProhibitedFilenameChore;
@@ -36,6 +37,7 @@ public class ChoritoCommand {
 		new GitAttributesChore(context).doit();
 		new EditorConfigChore(context).doit();
 		new MavenWrapperChore(context).doit();
+		new GradleWrapperChore(context).doit();
 		new WindowsScriptNewlineChore(context).doit();
 		new ShellScriptNewlineChore(context).doit();
 		new GitHubActionChore(context).doit();
