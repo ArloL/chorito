@@ -6,7 +6,7 @@ on:
     types:
     - chores
   schedule:
-  - cron: '26 15 * * 5'
+  - cron: '1 6 16 * *'
 
 jobs:
   debug:
