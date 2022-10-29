@@ -1,8 +1,5 @@
 package io.github.arlol.chorito.tools;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 public abstract class Renamer {
@@ -15,17 +12,13 @@ public abstract class Renamer {
 			String target,
 			String replacement
 	) {
-		try {
-			Path fileName = MyPaths.getFileName(path);
-			Files.move(
-					path,
-					path.resolveSibling(
-							fileName.toString().replace(target, replacement)
-					)
-			);
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
+		Path fileName = MyPaths.getFileName(path);
+		FilesSilent.move(
+				path,
+				path.resolveSibling(
+						fileName.toString().replace(target, replacement)
+				)
+		);
 	}
 
 }
