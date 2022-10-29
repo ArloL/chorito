@@ -57,7 +57,7 @@ public class RandomCronBuilder {
 	}
 
 	public RandomCronBuilder dayOfMonth() {
-		String dayOfWeek = "" + random.nextInt(1, 28 + 1);
+		String dayOfMonth = "" + random.nextInt(1, 28 + 1);
 		return new RandomCronBuilder(
 				minute,
 				hour,
@@ -68,7 +68,7 @@ public class RandomCronBuilder {
 	}
 
 	public RandomCronBuilder month() {
-		String dayOfWeek = "" + random.nextInt(1, 12 + 1);
+		String month = "" + random.nextInt(1, 12 + 1);
 		return new RandomCronBuilder(
 				minute,
 				hour,
