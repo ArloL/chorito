@@ -306,4 +306,34 @@ public class GitHubActionChoreTest {
 				.isEqualTo("- cron: '1 3 1 * *'\n");
 	}
 
+	@Test
+	public void testMainSchedulDuplicated() throws Exception {
+		ChoreContext context = new PathChoreContext(
+				extension.choreContext().root(),
+				true,
+				new FakeRandomGenerator()
+		);
+		Path workflow = context.resolve(".github/workflows/main.yaml");
+		String input = "- cron: '17 4 5 * *'";
+		FilesSilent.writeString(workflow, input);
+		new GitHubActionChore(context.refresh()).doit();
+		assertThat(Files.readString(workflow))
+				.isEqualTo("- cron: '1 3 1 * *'\n");
+	}
+
+	@Test
+	public void testMainScheduleAlreadyReplaced() throws Exception {
+		ChoreContext context = new PathChoreContext(
+				extension.choreContext().root(),
+				true,
+				new FakeRandomGenerator()
+		);
+		Path workflow = context.resolve(".github/workflows/main.yaml");
+		String input = "- cron: '5 5 5 * *'";
+		FilesSilent.writeString(workflow, input);
+		new GitHubActionChore(context.refresh()).doit();
+		assertThat(Files.readString(workflow))
+				.isEqualTo("- cron: '5 5 5 * *'\n");
+	}
+
 }

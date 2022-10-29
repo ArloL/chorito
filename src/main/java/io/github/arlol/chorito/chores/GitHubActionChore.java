@@ -2,6 +2,7 @@ package io.github.arlol.chorito.chores;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
@@ -30,6 +31,7 @@ public class GitHubActionChore {
 		replaceSetOutput();
 		migrateToGraalSetupAction();
 		updateCodeQlSchedule();
+		updateMainSchedule();
 	}
 
 	private void ensureYamlFileExtension() {
@@ -47,6 +49,7 @@ public class GitHubActionChore {
 	}
 
 	private void updateChoresWorkflow() {
+		String randomDayOfMonth = randomCronBuilder.randomDayOfMonth();
 		if (context.hasGitHubRemote()) {
 			Path choresYaml = context.resolve(".github/workflows/chores.yaml");
 			String currentChores = ClassPathFiles
@@ -54,12 +57,12 @@ public class GitHubActionChore {
 			String cron;
 			if (FilesSilent.exists(choresYaml)) {
 				String content = FilesSilent.readString(choresYaml);
-				cron = readCurrentCron(content);
+				cron = readCurrentCron(content).orElse(randomDayOfMonth);
 				if (cron.equals("26 15 * * 5")) {
-					cron = randomCronBuilder.randomDayOfMonth();
+					cron = randomDayOfMonth;
 				}
 			} else {
-				cron = randomCronBuilder.randomDayOfMonth();
+				cron = randomDayOfMonth;
 			}
 			FilesSilent.writeString(
 					choresYaml,
@@ -69,34 +72,49 @@ public class GitHubActionChore {
 	}
 
 	private void updateCodeQlSchedule() {
+		String randomDayOfMonth = randomCronBuilder.randomDayOfMonth();
 		Path yaml = context.resolve(".github/workflows/codeql-analysis.yaml");
 		if (FilesSilent.exists(yaml)) {
 			String content = FilesSilent.readString(yaml);
-			String currentCron = readCurrentCron(content);
+			String currentCron = readCurrentCron(content)
+					.orElse(randomDayOfMonth);
 			if (!currentCron.endsWith("*")) {
 				FilesSilent.writeString(
 						yaml,
-						content.replace(
-								currentCron,
-								randomCronBuilder.randomDayOfMonth()
-						)
+						content.replace(currentCron, randomDayOfMonth)
 				);
 			}
 		}
 	}
 
-	private String readCurrentCron(String yaml) {
+	private void updateMainSchedule() {
+		String randomDayOfMonth = randomCronBuilder.randomDayOfMonth();
+		Path yaml = context.resolve(".github/workflows/main.yaml");
+		if (FilesSilent.exists(yaml)) {
+			String content = FilesSilent.readString(yaml);
+			readCurrentCron(content).ifPresent(currentCron -> {
+				if (currentCron.equals("17 4 5 * *")) {
+					FilesSilent.writeString(
+							yaml,
+							content.replace(currentCron, randomDayOfMonth)
+					);
+				}
+			});
+		}
+	}
+
+	private Optional<String> readCurrentCron(String yaml) {
 		String startString = "cron: '";
 		int indexOf = yaml.indexOf(startString);
 		if (indexOf == -1) {
-			return randomCronBuilder.randomDayOfMonth();
+			return Optional.empty();
 		}
 		yaml = yaml.substring(indexOf + startString.length());
 		indexOf = yaml.indexOf("'");
 		if (indexOf == -1) {
-			return randomCronBuilder.randomDayOfMonth();
+			return Optional.empty();
 		}
-		return yaml.substring(0, indexOf);
+		return Optional.of(yaml.substring(0, indexOf));
 	}
 
 	private void migrateToGraalSetupAction() {

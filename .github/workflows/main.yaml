@@ -3,7 +3,7 @@ name: Main
 on:
   push:
   schedule:
-  - cron: '17 4 5 * *'
+  - cron: '14 3 2 * *'
 env:
   ARTIFACT: chorito
   GRAALVM_VERSION: 22.2.0
