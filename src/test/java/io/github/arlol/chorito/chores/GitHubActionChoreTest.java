@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.github.arlol.chorito.tools.ChoreContext;
+import io.github.arlol.chorito.tools.FakeRandomGenerator;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.PathChoreContext;
@@ -247,7 +248,8 @@ public class GitHubActionChoreTest {
 	public void testChoresSetSchedule53445() throws Exception {
 		ChoreContext context = new PathChoreContext(
 				extension.choreContext().root(),
-				true
+				true,
+				extension.choreContext().randomGenerator()
 		);
 		Path workflow = context.resolve(".github/workflows/chores.yaml");
 		FilesSilent.writeString(workflow, "- cron: '5 3 4 4 5'");
@@ -269,7 +271,8 @@ public class GitHubActionChoreTest {
 	public void testChoresSetSchedule26155() throws Exception {
 		ChoreContext context = new PathChoreContext(
 				extension.choreContext().root(),
-				true
+				true,
+				extension.choreContext().randomGenerator()
 		);
 		Path workflow = context.resolve(".github/workflows/chores.yaml");
 		FilesSilent.writeString(workflow, "- cron: '26 15 * * 5'");
@@ -285,6 +288,22 @@ public class GitHubActionChoreTest {
 				  schedule:
 				  - cron: '26 15 * * 5'
 				""");
+	}
+
+	@Test
+	public void testCodeQlSetSchedule4203() throws Exception {
+		ChoreContext context = new PathChoreContext(
+				extension.choreContext().root(),
+				true,
+				new FakeRandomGenerator()
+		);
+		Path workflow = context
+				.resolve(".github/workflows/codeql-analysis.yaml");
+		String input = "- cron: '4 20 * * 3'";
+		FilesSilent.writeString(workflow, input);
+		new GitHubActionChore(context.refresh()).doit();
+		assertThat(Files.readString(workflow))
+				.isEqualTo("- cron: '1 3 1 * *'\n");
 	}
 
 }

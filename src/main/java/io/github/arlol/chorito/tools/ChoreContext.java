@@ -2,6 +2,7 @@ package io.github.arlol.chorito.tools;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.random.RandomGenerator;
 
 public interface ChoreContext {
 
@@ -22,5 +23,7 @@ public interface ChoreContext {
 	public boolean hasGitHubRemote();
 
 	public ChoreContext refresh();
+
+	public RandomGenerator randomGenerator();
 
 }

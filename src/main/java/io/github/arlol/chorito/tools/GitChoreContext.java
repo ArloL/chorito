@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.random.RandomGenerator;
 
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.ConfigConstants;
@@ -29,6 +30,8 @@ public class GitChoreContext implements ChoreContext {
 	private final List<Path> textFiles;
 	private final List<Path> files;
 	private final boolean hasGitHubRemote;
+	private final RandomGenerator randomGenerator = RandomGenerator
+			.getDefault();
 
 	public GitChoreContext(String root) {
 		this(Paths.get(root).toAbsolutePath().normalize());
@@ -188,6 +191,11 @@ public class GitChoreContext implements ChoreContext {
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	@Override
+	public RandomGenerator randomGenerator() {
+		return randomGenerator;
 	}
 
 }

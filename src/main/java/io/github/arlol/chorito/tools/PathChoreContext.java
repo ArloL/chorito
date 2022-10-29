@@ -4,6 +4,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import io.github.arlol.chorito.filter.FileIsGoneFilter;
 import io.github.arlol.chorito.filter.FileIsGoneOrBinaryFilter;
@@ -14,29 +16,48 @@ public class PathChoreContext implements ChoreContext {
 	private final List<Path> textFiles;
 	private final List<Path> files;
 	private final boolean hasGitHubRemote;
+	private final RandomGenerator randomGenerator;
 
 	public PathChoreContext(String root) {
 		this(Paths.get(root).toAbsolutePath().normalize());
 	}
 
 	public PathChoreContext(Path root) {
-		this(root, resolveTextFiles(root), resolveFiles(root), false);
+		this(
+				root,
+				resolveTextFiles(root),
+				resolveFiles(root),
+				false,
+				new Random()
+		);
 	}
 
-	public PathChoreContext(Path root, boolean hasGitHubRemote) {
-		this(root, resolveTextFiles(root), resolveFiles(root), hasGitHubRemote);
+	public PathChoreContext(
+			Path root,
+			boolean hasGitHubRemote,
+			RandomGenerator randomGenerator
+	) {
+		this(
+				root,
+				resolveTextFiles(root),
+				resolveFiles(root),
+				hasGitHubRemote,
+				randomGenerator
+		);
 	}
 
 	public PathChoreContext(
 			Path root,
 			List<Path> textFiles,
 			List<Path> files,
-			boolean hasGitHubRemote
+			boolean hasGitHubRemote,
+			RandomGenerator randomGenerator
 	) {
 		this.root = root;
 		this.textFiles = List.copyOf(textFiles);
 		this.files = List.copyOf(files);
 		this.hasGitHubRemote = hasGitHubRemote;
+		this.randomGenerator = randomGenerator;
 	}
 
 	@Override
@@ -75,7 +96,12 @@ public class PathChoreContext implements ChoreContext {
 
 	@Override
 	public ChoreContext refresh() {
-		return new PathChoreContext(root, hasGitHubRemote);
+		return new PathChoreContext(root, hasGitHubRemote, randomGenerator);
+	}
+
+	@Override
+	public RandomGenerator randomGenerator() {
+		return randomGenerator;
 	}
 
 }

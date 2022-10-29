@@ -1,10 +1,10 @@
 package io.github.arlol.chorito.tools;
 
-import java.util.Random;
+import java.util.random.RandomGenerator;
 
 public class RandomCronBuilder {
 
-	private final Random random = new Random();
+	private final RandomGenerator random;
 
 	private final String minute;
 	private final String hour;
@@ -12,21 +12,19 @@ public class RandomCronBuilder {
 	private final String month;
 	private final String dayOfWeek;
 
-	public static String randomDayOfMonth() {
-		return new RandomCronBuilder().minute().hour().dayOfMonth().build();
-	}
-
-	public RandomCronBuilder() {
-		this("*", "*", "*", "*", "*");
+	public RandomCronBuilder(RandomGenerator random) {
+		this(random, "*", "*", "*", "*", "*");
 	}
 
 	public RandomCronBuilder(
+			RandomGenerator random,
 			String minute,
 			String hour,
 			String dayOfMonth,
 			String month,
 			String dayOfWeek
 	) {
+		this.random = random;
 		this.minute = minute;
 		this.hour = hour;
 		this.dayOfMonth = dayOfMonth;
@@ -34,9 +32,14 @@ public class RandomCronBuilder {
 		this.dayOfWeek = dayOfWeek;
 	}
 
+	public String randomDayOfMonth() {
+		return minute().hour().dayOfMonth().build();
+	}
+
 	public RandomCronBuilder minute() {
 		String minute = "" + random.nextInt(1, 55 + 1);
 		return new RandomCronBuilder(
+				random,
 				minute,
 				hour,
 				dayOfMonth,
@@ -48,6 +51,7 @@ public class RandomCronBuilder {
 	public RandomCronBuilder hour() {
 		String hour = "" + random.nextInt(3, 23 + 1);
 		return new RandomCronBuilder(
+				random,
 				minute,
 				hour,
 				dayOfMonth,
@@ -59,6 +63,7 @@ public class RandomCronBuilder {
 	public RandomCronBuilder dayOfMonth() {
 		String dayOfMonth = "" + random.nextInt(1, 28 + 1);
 		return new RandomCronBuilder(
+				random,
 				minute,
 				hour,
 				dayOfMonth,
@@ -70,6 +75,7 @@ public class RandomCronBuilder {
 	public RandomCronBuilder month() {
 		String month = "" + random.nextInt(1, 12 + 1);
 		return new RandomCronBuilder(
+				random,
 				minute,
 				hour,
 				dayOfMonth,
@@ -81,6 +87,7 @@ public class RandomCronBuilder {
 	public RandomCronBuilder dayOfWeek() {
 		String dayOfWeek = "" + random.nextInt(0, 6 + 1);
 		return new RandomCronBuilder(
+				random,
 				minute,
 				hour,
 				dayOfMonth,
