@@ -32,21 +32,27 @@ public class GraalNativeImageMavenPluginMigrationChore {
 				);
 				doc.select(
 						"groupId:containsWholeOwnText(org.graalvm.nativeimage)"
-				).forEach(e -> {
-					Element plugin = e.parent();
-					Element artifactId = plugin.selectFirst("artifactId");
-					if (artifactId.text().equals("native-image-maven-plugin")) {
-						plugin.selectFirst("groupId")
-								.text("org.graalvm.buildtools");
-						artifactId.text("native-maven-plugin");
-						Element version = plugin.selectFirst("version");
-						if (version != null) {
-							version.text("0.9.14");
-						}
-						plugin.select("goal:containsWholeOwnText(native-image)")
-								.forEach(g -> g.text("compile-no-fork"));
-					}
+				).forEach(groupIdElement -> {
+					Element pluginElement = groupIdElement.parent();
+					if (pluginElement != null) {
+						Element artifactId = pluginElement
+								.selectFirst("artifactId");
+						if (artifactId != null && artifactId.text()
+								.equals("native-image-maven-plugin")) {
 
+							groupIdElement.text("org.graalvm.buildtools");
+
+							artifactId.text("native-maven-plugin");
+							Element version = pluginElement
+									.selectFirst("version");
+							if (version != null) {
+								version.text("0.9.14");
+							}
+							pluginElement.select(
+									"goal:containsWholeOwnText(native-image)"
+							).forEach(g -> g.text("compile-no-fork"));
+						}
+					}
 				});
 				FilesSilent.writeString(pomXml, doc.outerHtml());
 			} catch (IOException e) {
