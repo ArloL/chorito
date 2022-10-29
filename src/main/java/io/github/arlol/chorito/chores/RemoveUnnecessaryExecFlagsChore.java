@@ -16,7 +16,7 @@ public class RemoveUnnecessaryExecFlagsChore {
 	}
 
 	public void doit() {
-		context.textFiles().stream().forEach(path -> {
+		context.textFiles().forEach(path -> {
 			var permissions = FilesSilent.getPosixFilePermissions(path);
 			if (permissions.contains(PosixFilePermission.OWNER_EXECUTE)
 					|| permissions.contains(PosixFilePermission.GROUP_EXECUTE)
