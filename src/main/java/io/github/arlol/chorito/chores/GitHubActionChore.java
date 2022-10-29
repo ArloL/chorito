@@ -6,6 +6,7 @@ import java.util.List;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.RandomCronBuilder;
 import io.github.arlol.chorito.tools.Renamer;
 
 public class GitHubActionChore {
@@ -42,11 +43,33 @@ public class GitHubActionChore {
 
 	private void updateChoresWorkflow() {
 		if (context.hasGitHubRemote()) {
+			Path choresYaml = context.resolve(".github/workflows/chores.yaml");
+			String currentChores = ClassPathFiles
+					.readString("/workflows/chores.yaml");
+			String cron = readCurrentCron(choresYaml);
 			FilesSilent.writeString(
-					context.resolve(".github/workflows/chores.yaml"),
-					ClassPathFiles.readString("/workflows/chores.yaml")
+					choresYaml,
+					currentChores.replace("26 15 * * 5", cron)
 			);
 		}
+	}
+
+	private String readCurrentCron(Path choresYaml) {
+		if (!FilesSilent.exists(choresYaml)) {
+			return RandomCronBuilder.randomDayOfMonth();
+		}
+		String yaml = FilesSilent.readString(choresYaml);
+		String startString = "cron: '";
+		int indexOf = yaml.indexOf(startString);
+		if (indexOf == -1) {
+			return RandomCronBuilder.randomDayOfMonth();
+		}
+		yaml = yaml.substring(indexOf + startString.length());
+		indexOf = yaml.indexOf("'");
+		if (indexOf == -1) {
+			return RandomCronBuilder.randomDayOfMonth();
+		}
+		return yaml.substring(0, indexOf);
 	}
 
 	private void migrateToGraalSetupAction() {
@@ -180,7 +203,6 @@ public class GitHubActionChore {
 					.toList();
 			FilesSilent.write(path, updated, "\n");
 		});
-
 	}
 
 	private void updateGraalVmVersion() {

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.PathChoreContext;
 
 public class GitHubActionChoreTest {
 
@@ -240,6 +241,28 @@ public class GitHubActionChoreTest {
 		assertTrue(FilesSilent.exists(workflow));
 		new GitHubActionChore(context.refresh()).doit();
 		assertThat(Files.readString(workflow)).isEqualTo(EXPECTED_STEPS_OUTPUT);
+	}
+
+	@Test
+	public void testChores() throws Exception {
+		ChoreContext context = new PathChoreContext(
+				extension.choreContext().root(),
+				true
+		);
+		Path workflow = context.resolve(".github/workflows/chores.yaml");
+		FilesSilent.writeString(workflow, "- cron: '5 3 4 4 5'");
+		new GitHubActionChore(context.refresh()).doit();
+		assertThat(Files.readString(workflow)).startsWith("""
+				name: Chores
+
+				on:
+				  workflow_dispatch:
+				  repository_dispatch:
+				    types:
+				    - chores
+				  schedule:
+				  - cron: '5 3 4 4 5'
+				""");
 	}
 
 }
