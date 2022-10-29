@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.joining;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.CopyOption;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -138,7 +139,14 @@ public abstract class FilesSilent {
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
+	}
 
+	public static Path move(Path source, Path target, CopyOption... options) {
+		try {
+			return Files.move(source, target, options);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 }
