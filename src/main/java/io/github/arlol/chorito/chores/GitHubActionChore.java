@@ -193,6 +193,10 @@ public class GitHubActionChore {
 					"peter-evans/create-pull-request@v4.1.3\n"
 			);
 			updated = updated.replace(
+					"uses: actions/setup-node@v3\n",
+					"uses: actions/setup-node@v3.5.1\n"
+			);
+			updated = updated.replace(
 					"uses: actions/setup-java@v3\n",
 					"uses: actions/setup-java@v3.5.1\n"
 			);
