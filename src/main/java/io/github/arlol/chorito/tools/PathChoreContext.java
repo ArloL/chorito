@@ -13,19 +13,30 @@ public class PathChoreContext implements ChoreContext {
 	private final Path root;
 	private final List<Path> textFiles;
 	private final List<Path> files;
+	private final boolean hasGitHubRemote;
 
 	public PathChoreContext(String root) {
 		this(Paths.get(root).toAbsolutePath().normalize());
 	}
 
 	public PathChoreContext(Path root) {
-		this(root, resolveTextFiles(root), resolveFiles(root));
+		this(root, resolveTextFiles(root), resolveFiles(root), false);
 	}
 
-	public PathChoreContext(Path root, List<Path> textFiles, List<Path> files) {
+	public PathChoreContext(Path root, boolean hasGitHubRemote) {
+		this(root, resolveTextFiles(root), resolveFiles(root), hasGitHubRemote);
+	}
+
+	public PathChoreContext(
+			Path root,
+			List<Path> textFiles,
+			List<Path> files,
+			boolean hasGitHubRemote
+	) {
 		this.root = root;
 		this.textFiles = List.copyOf(textFiles);
 		this.files = List.copyOf(files);
+		this.hasGitHubRemote = hasGitHubRemote;
 	}
 
 	@Override
@@ -45,7 +56,7 @@ public class PathChoreContext implements ChoreContext {
 
 	@Override
 	public boolean hasGitHubRemote() {
-		return false;
+		return hasGitHubRemote;
 	}
 
 	private static List<Path> resolveFiles(Path path) {
@@ -64,7 +75,7 @@ public class PathChoreContext implements ChoreContext {
 
 	@Override
 	public ChoreContext refresh() {
-		return new PathChoreContext(root);
+		return new PathChoreContext(root, hasGitHubRemote);
 	}
 
 }
