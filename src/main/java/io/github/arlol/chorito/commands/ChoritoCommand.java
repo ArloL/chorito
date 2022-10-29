@@ -2,6 +2,7 @@ package io.github.arlol.chorito.commands;
 
 import io.github.arlol.chorito.chores.DeleteUnnecessaryFilesChore;
 import io.github.arlol.chorito.chores.DependabotChore;
+import io.github.arlol.chorito.chores.DockerfileChore;
 import io.github.arlol.chorito.chores.Ec4jChore;
 import io.github.arlol.chorito.chores.EditorConfigChore;
 import io.github.arlol.chorito.chores.GitAttributesChore;
@@ -38,6 +39,7 @@ public class ChoritoCommand {
 		new EditorConfigChore(context).doit();
 		new MavenWrapperChore(context).doit();
 		new GradleWrapperChore(context).doit();
+		new DockerfileChore(context).doit();
 		new WindowsScriptNewlineChore(context).doit();
 		new ShellScriptNewlineChore(context).doit();
 		new GitHubActionChore(context).doit();
