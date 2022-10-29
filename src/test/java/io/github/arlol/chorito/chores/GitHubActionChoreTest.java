@@ -244,7 +244,7 @@ public class GitHubActionChoreTest {
 	}
 
 	@Test
-	public void testChores() throws Exception {
+	public void testChoresSetSchedule53445() throws Exception {
 		ChoreContext context = new PathChoreContext(
 				extension.choreContext().root(),
 				true
@@ -262,6 +262,28 @@ public class GitHubActionChoreTest {
 				    - chores
 				  schedule:
 				  - cron: '5 3 4 4 5'
+				""");
+	}
+
+	@Test
+	public void testChoresSetSchedule26155() throws Exception {
+		ChoreContext context = new PathChoreContext(
+				extension.choreContext().root(),
+				true
+		);
+		Path workflow = context.resolve(".github/workflows/chores.yaml");
+		FilesSilent.writeString(workflow, "- cron: '26 15 * * 5'");
+		new GitHubActionChore(context.refresh()).doit();
+		assertThat(Files.readString(workflow)).doesNotStartWith("""
+				name: Chores
+
+				on:
+				  workflow_dispatch:
+				  repository_dispatch:
+				    types:
+				    - chores
+				  schedule:
+				  - cron: '26 15 * * 5'
 				""");
 	}
 

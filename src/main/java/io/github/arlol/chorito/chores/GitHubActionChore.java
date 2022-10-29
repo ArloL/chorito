@@ -49,7 +49,7 @@ public class GitHubActionChore {
 			String cron = readCurrentCron(choresYaml);
 			FilesSilent.writeString(
 					choresYaml,
-					currentChores.replace("26 15 * * 5", cron)
+					currentChores.replace("1 6 16 * *", cron)
 			);
 		}
 	}
@@ -69,7 +69,11 @@ public class GitHubActionChore {
 		if (indexOf == -1) {
 			return RandomCronBuilder.randomDayOfMonth();
 		}
-		return yaml.substring(0, indexOf);
+		String currentCron = yaml.substring(0, indexOf);
+		if (currentCron.equals("26 15 * * 5")) {
+			return RandomCronBuilder.randomDayOfMonth();
+		}
+		return currentCron;
 	}
 
 	private void migrateToGraalSetupAction() {
