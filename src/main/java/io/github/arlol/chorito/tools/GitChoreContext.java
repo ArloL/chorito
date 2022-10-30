@@ -74,16 +74,6 @@ public class GitChoreContext implements ChoreContext {
 	}
 
 	@Override
-	public Path resolve(Path path) {
-		return root.resolve(path);
-	}
-
-	@Override
-	public Path resolve(String path) {
-		return root.resolve(path);
-	}
-
-	@Override
 	public boolean hasGitHubRemote() {
 		return hasGitHubRemote;
 	}
