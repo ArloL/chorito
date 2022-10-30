@@ -1,5 +1,6 @@
 package io.github.arlol.chorito.commands;
 
+import io.github.arlol.chorito.chores.CodeQlAnalysisChore;
 import io.github.arlol.chorito.chores.DeleteUnnecessaryFilesChore;
 import io.github.arlol.chorito.chores.DependabotChore;
 import io.github.arlol.chorito.chores.DockerfileChore;
@@ -42,8 +43,9 @@ public class ChoritoCommand {
 		new DockerfileChore(context).doit();
 		new WindowsScriptNewlineChore(context).doit();
 		new ShellScriptNewlineChore(context).doit();
-		new GitHubActionChore(context).doit();
 		new DependabotChore(context).doit();
+		new CodeQlAnalysisChore(context).doit();
+		new GitHubActionChore(context).doit();
 		new GitIgnoreChore(context).doit();
 		new JavaUpdaterChore(context).doit();
 		new GraalNativeImagePropertiesChore(context).doit();
