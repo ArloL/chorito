@@ -18,30 +18,6 @@ import io.github.arlol.chorito.tools.PathChoreContext;
 
 public class LicenseChoreTest {
 
-	private static final String EXPECTED = """
-			MIT License
-
-			Copyright (c) 2018 Arlo O'Keeffe
-
-			Permission is hereby granted, free of charge, to any person obtaining a copy
-			of this software and associated documentation files (the "Software"), to deal
-			in the Software without restriction, including without limitation the rights
-			to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-			copies of the Software, and to permit persons to whom the Software is
-			furnished to do so, subject to the following conditions:
-
-			The above copyright notice and this permission notice shall be included in all
-			copies or substantial portions of the Software.
-
-			THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-			IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-			FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-			AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-			LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-			OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-			SOFTWARE.
-			""";
-
 	@RegisterExtension
 	final FileSystemExtension extension = new FileSystemExtension();
 
@@ -65,7 +41,8 @@ public class LicenseChoreTest {
 
 		Path license = context.resolve("LICENSE");
 		assertTrue(FilesSilent.exists(license));
-		assertThat(FilesSilent.readString(license)).isEqualTo(EXPECTED);
+		assertThat(FilesSilent.readString(license))
+				.isEqualTo(mitLicense("2018"));
 	}
 
 	@Test
@@ -80,11 +57,11 @@ public class LicenseChoreTest {
 		);
 
 		Path license = context.resolve("LICENSE");
-		FilesSilent.writeString(license, EXPECTED);
+		FilesSilent.writeString(license, mitLicense("2018"));
 		new LicenseChore(context.refresh()).doit();
 		assertTrue(FilesSilent.exists(license));
 		assertThat(FilesSilent.readString(license))
-				.isEqualTo(EXPECTED.replace("2018", "2018-2019"));
+				.isEqualTo(mitLicense("2018-2019"));
 	}
 
 	@Test
@@ -99,10 +76,53 @@ public class LicenseChoreTest {
 		);
 
 		Path license = context.resolve("LICENSE");
-		FilesSilent.writeString(license, EXPECTED);
+		FilesSilent.writeString(license, mitLicense("2018"));
 		new LicenseChore(context.refresh()).doit();
 		assertTrue(FilesSilent.exists(license));
-		assertThat(FilesSilent.readString(license)).isEqualTo(EXPECTED);
+		assertThat(FilesSilent.readString(license))
+				.isEqualTo(mitLicense("2018"));
+	}
+
+	@Test
+	public void testDontTouchExistingRange() throws Exception {
+		Instant instant = Instant.parse("2019-08-19T16:02:42.00Z");
+		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
+		ChoreContext context = new PathChoreContext(
+				extension.choreContext().root(),
+				true,
+				extension.choreContext().randomGenerator(),
+				Clock.fixed(instant, zoneId)
+		);
+
+		Path license = context.resolve("LICENSE");
+		FilesSilent.writeString(license, mitLicense("2018-2019"));
+		new LicenseChore(context.refresh()).doit();
+		assertTrue(FilesSilent.exists(license));
+		assertThat(FilesSilent.readString(license))
+				.isEqualTo(mitLicense("2018-2019"));
+	}
+
+	@Test
+	public void testUpdateExistingRange() throws Exception {
+		Instant instant = Instant.parse("2019-08-19T16:02:42.00Z");
+		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
+		ChoreContext context = new PathChoreContext(
+				extension.choreContext().root(),
+				true,
+				extension.choreContext().randomGenerator(),
+				Clock.fixed(instant, zoneId)
+		);
+
+		Path license = context.resolve("LICENSE");
+		FilesSilent.writeString(license, mitLicense("2017-2018"));
+		new LicenseChore(context.refresh()).doit();
+		assertTrue(FilesSilent.exists(license));
+		assertThat(FilesSilent.readString(license))
+				.isEqualTo(mitLicense("2017-2019"));
+	}
+
+	private String mitLicense(String yearRange) {
+		return LicenseChore.MIT_LICENSE.replace("${YEAR}", yearRange);
 	}
 
 }

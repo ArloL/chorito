@@ -9,7 +9,7 @@ import io.github.arlol.chorito.tools.FilesSilent;
 
 public class LicenseChore {
 
-	private static final String MIT_LICENSE = """
+	public static final String MIT_LICENSE = """
 			MIT License
 
 			Copyright (c) ${YEAR} Arlo O'Keeffe
@@ -44,26 +44,39 @@ public class LicenseChore {
 			Path license = context.resolve("LICENSE");
 			final String currentYear = ""
 					+ Year.now(context.clock()).getValue();
-			String newYear = currentYear;
+			String newRange = currentYear;
 			if (FilesSilent.exists(license)) {
-				newYear = readYearFromFile(FilesSilent.readString(license))
-						.map(existingYear -> {
-							if (existingYear.equals(currentYear)) {
-								return currentYear;
+				String licenseContent = FilesSilent.readString(license);
+				newRange = readYearRangeFromFile(licenseContent)
+						.map(existingRange -> {
+							String startYear;
+							String endYear;
+							if (existingRange.contains("-")) {
+								String[] split = existingRange.split("-");
+								startYear = split[0];
+								endYear = split[1];
 							} else {
-								return existingYear + "-" + currentYear;
+								startYear = existingRange;
+								endYear = existingRange;
 							}
+							if (!endYear.equals(currentYear)) {
+								endYear = currentYear;
+							}
+							if (startYear.equals(endYear)) {
+								return startYear;
+							}
+							return startYear + "-" + endYear;
 						})
 						.orElse(currentYear);
 			}
 			FilesSilent.writeString(
 					license,
-					MIT_LICENSE.replace("${YEAR}", newYear)
+					MIT_LICENSE.replace("${YEAR}", newRange)
 			);
 		}
 	}
 
-	private Optional<String> readYearFromFile(String license) {
+	private Optional<String> readYearRangeFromFile(String license) {
 		String startString = "(c) ";
 		int indexOf = license.indexOf(startString);
 		if (indexOf == -1) {
