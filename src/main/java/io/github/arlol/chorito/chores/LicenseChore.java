@@ -47,7 +47,13 @@ public class LicenseChore {
 			String newYear = currentYear;
 			if (FilesSilent.exists(license)) {
 				newYear = readYearFromFile(FilesSilent.readString(license))
-						.map(existingYear -> existingYear + "-" + currentYear)
+						.map(existingYear -> {
+							if (existingYear.equals(currentYear)) {
+								return currentYear;
+							} else {
+								return existingYear + "-" + currentYear;
+							}
+						})
 						.orElse(currentYear);
 			}
 			FilesSilent.writeString(
