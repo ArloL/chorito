@@ -13,6 +13,7 @@ import io.github.arlol.chorito.chores.GraalNativeImageMavenPluginMigrationChore;
 import io.github.arlol.chorito.chores.GraalNativeImagePropertiesChore;
 import io.github.arlol.chorito.chores.GradleWrapperChore;
 import io.github.arlol.chorito.chores.JavaUpdaterChore;
+import io.github.arlol.chorito.chores.LicenseChore;
 import io.github.arlol.chorito.chores.MavenWrapperChore;
 import io.github.arlol.chorito.chores.ProhibitedFilenameChore;
 import io.github.arlol.chorito.chores.ReadmeChore;
@@ -38,6 +39,7 @@ public class ChoritoCommand {
 		new ReadmeChore(context).doit();
 		new GitAttributesChore(context).doit();
 		new EditorConfigChore(context).doit();
+		new LicenseChore(context).doit();
 		new MavenWrapperChore(context).doit();
 		new GradleWrapperChore(context).doit();
 		new DockerfileChore(context).doit();
