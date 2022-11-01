@@ -51,7 +51,7 @@ public class LicenseChoreTest {
 	}
 
 	@Test
-	public void test() throws Exception {
+	public void testCreate() throws Exception {
 		Instant instant = Instant.parse("2018-08-19T16:02:42.00Z");
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
 		ChoreContext context = new PathChoreContext(
@@ -66,6 +66,25 @@ public class LicenseChoreTest {
 		Path license = context.resolve("LICENSE");
 		assertTrue(FilesSilent.exists(license));
 		assertThat(FilesSilent.readString(license)).isEqualTo(EXPECTED);
+	}
+
+	@Test
+	public void testUpdate() throws Exception {
+		Instant instant = Instant.parse("2019-08-19T16:02:42.00Z");
+		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
+		ChoreContext context = new PathChoreContext(
+				extension.choreContext().root(),
+				true,
+				extension.choreContext().randomGenerator(),
+				Clock.fixed(instant, zoneId)
+		);
+
+		Path license = context.resolve("LICENSE");
+		FilesSilent.writeString(license, EXPECTED);
+		new LicenseChore(context.refresh()).doit();
+		assertTrue(FilesSilent.exists(license));
+		assertThat(FilesSilent.readString(license))
+				.isEqualTo(EXPECTED.replace("2018", "2018-2019"));
 	}
 
 }

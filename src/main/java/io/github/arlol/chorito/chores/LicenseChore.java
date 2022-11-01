@@ -2,6 +2,7 @@ package io.github.arlol.chorito.chores;
 
 import java.nio.file.Path;
 import java.time.Year;
+import java.util.Optional;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
@@ -41,14 +42,33 @@ public class LicenseChore {
 	public void doit() {
 		if (context.hasGitHubRemote()) {
 			Path license = context.resolve("LICENSE");
-			if (!FilesSilent.exists(license)) {
-				String currentYear = "" + Year.now(context.clock()).getValue();
-				FilesSilent.writeString(
-						license,
-						MIT_LICENSE.replace("${YEAR}", currentYear)
-				);
+			final String currentYear = ""
+					+ Year.now(context.clock()).getValue();
+			String newYear = currentYear;
+			if (FilesSilent.exists(license)) {
+				newYear = readYearFromFile(FilesSilent.readString(license))
+						.map(existingYear -> existingYear + "-" + currentYear)
+						.orElse(currentYear);
 			}
+			FilesSilent.writeString(
+					license,
+					MIT_LICENSE.replace("${YEAR}", newYear)
+			);
 		}
+	}
+
+	private Optional<String> readYearFromFile(String license) {
+		String startString = "(c) ";
+		int indexOf = license.indexOf(startString);
+		if (indexOf == -1) {
+			return Optional.empty();
+		}
+		license = license.substring(indexOf + startString.length());
+		indexOf = license.indexOf(" ");
+		if (indexOf == -1) {
+			return Optional.empty();
+		}
+		return Optional.of(license.substring(0, indexOf));
 	}
 
 }
