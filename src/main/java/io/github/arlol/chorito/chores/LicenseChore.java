@@ -44,35 +44,39 @@ public class LicenseChore {
 			Path license = context.resolve("LICENSE");
 			final String currentYear = ""
 					+ Year.now(context.clock()).getValue();
-			String newRange = currentYear;
+			String newLicenseContent = MIT_LICENSE
+					.replace("${YEAR}", currentYear);
 			if (FilesSilent.exists(license)) {
-				String licenseContent = FilesSilent.readString(license);
-				newRange = readYearRangeFromFile(licenseContent)
-						.map(existingRange -> {
-							String startYear;
-							String endYear;
-							if (existingRange.contains("-")) {
-								String[] split = existingRange.split("-");
-								startYear = split[0];
-								endYear = split[1];
-							} else {
-								startYear = existingRange;
-								endYear = existingRange;
-							}
-							if (!endYear.equals(currentYear)) {
-								endYear = currentYear;
-							}
-							if (startYear.equals(endYear)) {
-								return startYear;
-							}
-							return startYear + "-" + endYear;
-						})
-						.orElse(currentYear);
+				String currentLicenseContent = FilesSilent.readString(license);
+				Optional<String> currentRange = readYearRangeFromFile(
+						currentLicenseContent
+				);
+				if (currentRange.isPresent()) {
+					String newRange;
+					String existingRange = currentRange.get();
+					String startYear;
+					String endYear;
+					if (existingRange.contains("-")) {
+						String[] split = existingRange.split("-");
+						startYear = split[0];
+						endYear = split[1];
+					} else {
+						startYear = existingRange;
+						endYear = existingRange;
+					}
+					if (!endYear.equals(currentYear)) {
+						endYear = currentYear;
+					}
+					if (startYear.equals(endYear)) {
+						newRange = startYear;
+					} else {
+						newRange = startYear + "-" + endYear;
+					}
+					newLicenseContent = currentLicenseContent
+							.replace(existingRange, newRange);
+				}
 			}
-			FilesSilent.writeString(
-					license,
-					MIT_LICENSE.replace("${YEAR}", newRange)
-			);
+			FilesSilent.writeString(license, newLicenseContent);
 		}
 	}
 

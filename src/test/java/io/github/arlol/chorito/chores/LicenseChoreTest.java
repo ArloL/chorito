@@ -121,8 +121,35 @@ public class LicenseChoreTest {
 				.isEqualTo(mitLicense("2017-2019"));
 	}
 
+	@Test
+	public void testMultipleAuthors() throws Exception {
+		Instant instant = Instant.parse("2019-08-19T16:02:42.00Z");
+		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
+		ChoreContext context = new PathChoreContext(
+				extension.choreContext().root(),
+				true,
+				extension.choreContext().randomGenerator(),
+				Clock.fixed(instant, zoneId)
+		);
+
+		Path license = context.resolve("LICENSE");
+		FilesSilent.writeString(
+				license,
+				mitLicense("2017-2018", "2012 Ryan Bates")
+		);
+		new LicenseChore(context.refresh()).doit();
+		assertTrue(FilesSilent.exists(license));
+		assertThat(FilesSilent.readString(license))
+				.isEqualTo(mitLicense("2017-2019", "2012 Ryan Bates"));
+	}
+
 	private String mitLicense(String yearRange) {
 		return LicenseChore.MIT_LICENSE.replace("${YEAR}", yearRange);
+	}
+
+	private String mitLicense(String yearRange, String author) {
+		return LicenseChore.MIT_LICENSE.replace("${YEAR}", yearRange)
+				.replace("Keeffe\n", "Keeffe\nCopyright (c) " + author + "\n");
 	}
 
 }
