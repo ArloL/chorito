@@ -1,6 +1,7 @@
 package io.github.arlol.chorito.tools;
 
 import java.nio.file.Path;
+import java.time.Clock;
 import java.util.List;
 import java.util.random.RandomGenerator;
 
@@ -25,5 +26,9 @@ public interface ChoreContext {
 	public ChoreContext refresh();
 
 	public RandomGenerator randomGenerator();
+
+	public default Clock clock() {
+		return Clock.systemDefaultZone();
+	}
 
 }

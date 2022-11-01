@@ -3,6 +3,7 @@ package io.github.arlol.chorito.tools;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Clock;
 import java.util.List;
 import java.util.Random;
 import java.util.random.RandomGenerator;
@@ -17,6 +18,7 @@ public class PathChoreContext implements ChoreContext {
 	private final List<Path> files;
 	private final boolean hasGitHubRemote;
 	private final RandomGenerator randomGenerator;
+	private Clock clock;
 
 	public PathChoreContext(String root) {
 		this(Paths.get(root).toAbsolutePath().normalize());
@@ -28,7 +30,8 @@ public class PathChoreContext implements ChoreContext {
 				resolveTextFiles(root),
 				resolveFiles(root),
 				false,
-				new Random()
+				new Random(),
+				Clock.systemDefaultZone()
 		);
 	}
 
@@ -42,7 +45,24 @@ public class PathChoreContext implements ChoreContext {
 				resolveTextFiles(root),
 				resolveFiles(root),
 				hasGitHubRemote,
-				randomGenerator
+				randomGenerator,
+				Clock.systemDefaultZone()
+		);
+	}
+
+	public PathChoreContext(
+			Path root,
+			boolean hasGitHubRemote,
+			RandomGenerator randomGenerator,
+			Clock clock
+	) {
+		this(
+				root,
+				resolveTextFiles(root),
+				resolveFiles(root),
+				hasGitHubRemote,
+				randomGenerator,
+				clock
 		);
 	}
 
@@ -51,13 +71,15 @@ public class PathChoreContext implements ChoreContext {
 			List<Path> textFiles,
 			List<Path> files,
 			boolean hasGitHubRemote,
-			RandomGenerator randomGenerator
+			RandomGenerator randomGenerator,
+			Clock clock
 	) {
 		this.root = root;
 		this.textFiles = List.copyOf(textFiles);
 		this.files = List.copyOf(files);
 		this.hasGitHubRemote = hasGitHubRemote;
 		this.randomGenerator = randomGenerator;
+		this.clock = clock;
 	}
 
 	@Override
@@ -96,12 +118,22 @@ public class PathChoreContext implements ChoreContext {
 
 	@Override
 	public ChoreContext refresh() {
-		return new PathChoreContext(root, hasGitHubRemote, randomGenerator);
+		return new PathChoreContext(
+				root,
+				hasGitHubRemote,
+				randomGenerator,
+				clock
+		);
 	}
 
 	@Override
 	public RandomGenerator randomGenerator() {
 		return randomGenerator;
+	}
+
+	@Override
+	public Clock clock() {
+		return clock;
 	}
 
 }
