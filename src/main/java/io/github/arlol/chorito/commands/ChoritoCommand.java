@@ -20,6 +20,7 @@ import io.github.arlol.chorito.chores.ReadmeChore;
 import io.github.arlol.chorito.chores.RemoveUnnecessaryExecFlagsChore;
 import io.github.arlol.chorito.chores.ShellScriptNewlineChore;
 import io.github.arlol.chorito.chores.WindowsScriptNewlineChore;
+import io.github.arlol.chorito.chores.XmlPreambleChore;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.GitChoreContext;
 
@@ -40,6 +41,7 @@ public class ChoritoCommand {
 		new GitAttributesChore(context).doit();
 		new EditorConfigChore(context).doit();
 		new LicenseChore(context).doit();
+		new XmlPreambleChore(context).doit();
 		new MavenWrapperChore(context).doit();
 		new GradleWrapperChore(context).doit();
 		new DockerfileChore(context).doit();
