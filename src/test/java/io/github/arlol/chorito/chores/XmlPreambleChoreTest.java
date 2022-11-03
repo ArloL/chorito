@@ -36,7 +36,7 @@ public class XmlPreambleChoreTest {
 	}
 
 	@Test
-	public void testUpdate() throws Exception {
+	public void testUpdateCrossdomainXml() throws Exception {
 		ChoreContext context = extension.choreContext();
 
 		Path xml = context.resolve("crossdomain.xml");
@@ -65,6 +65,54 @@ public class XmlPreambleChoreTest {
 
 		assertThat(FilesSilent.readString(xml)).startsWith(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE"
+		);
+	}
+
+	@Test
+	public void testUpdateMavenSettingsXml() throws Exception {
+		ChoreContext context = extension.choreContext();
+
+		Path xml = context.resolve("settings.xml");
+		FilesSilent.writeString(
+				xml,
+				"""
+						<?xml version="1.0" encoding="utf-8"?>
+						<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+							xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+							xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+						                              https://maven.apache.org/xsd/settings-1.0.0.xsd">
+							<localRepository />
+						</settings>
+						"""
+		);
+
+		new XmlPreambleChore(context.refresh()).doit();
+
+		assertThat(FilesSilent.readString(xml)).startsWith(
+				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<settings"
+		);
+	}
+
+	@Test
+	public void testUpdateInkscapePreferencesXml() throws Exception {
+		ChoreContext context = extension.choreContext();
+
+		Path xml = context.resolve("preferences.xml");
+		FilesSilent.writeString(
+				xml,
+				"""
+						<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+						<inkscape
+						   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+						   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+						   version="1">
+						"""
+		);
+
+		new XmlPreambleChore(context.refresh()).doit();
+
+		assertThat(FilesSilent.readString(xml)).startsWith(
+				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<inkscape"
 		);
 	}
 
