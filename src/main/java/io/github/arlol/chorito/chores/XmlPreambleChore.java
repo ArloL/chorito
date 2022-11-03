@@ -19,8 +19,13 @@ public class XmlPreambleChore {
 				.filter(path -> path.toString().endsWith(".xml"))
 				.forEach(path -> {
 					String content = FilesSilent.readString(path);
+					if (content.startsWith("<?xml ")) {
+						int endOfPreamble = content.indexOf("?>\n")
+								+ "?>\n".length();
+						content = content.substring(endOfPreamble);
+					}
 					if (!content.startsWith(XML_PREAMBLE)) {
-						content = XML_PREAMBLE + content;
+						content = XML_PREAMBLE + "\n" + content;
 						FilesSilent.writeString(path, content);
 					}
 				});

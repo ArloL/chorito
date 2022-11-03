@@ -26,12 +26,46 @@ public class XmlPreambleChoreTest {
 		ChoreContext context = extension.choreContext();
 
 		Path pomXml = context.resolve("pom.xml");
-		FilesSilent.writeString(pomXml, "");
+		FilesSilent.writeString(pomXml, "<project />");
 
 		new XmlPreambleChore(context.refresh()).doit();
 
-		assertThat(FilesSilent.readString(pomXml))
-				.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+		assertThat(FilesSilent.readString(pomXml)).startsWith(
+				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project />"
+		);
+	}
+
+	@Test
+	public void testUpdate() throws Exception {
+		ChoreContext context = extension.choreContext();
+
+		Path xml = context.resolve("crossdomain.xml");
+		FilesSilent.writeString(
+				xml,
+				"""
+						<?xml version="1.0"?>
+						<!DOCTYPE cross-domain-policy SYSTEM "http://www.adobe.com/xml/dtds/cross-domain-policy.dtd">
+						<cross-domain-policy>
+						    <!-- Read this: www.adobe.com/devnet/articles/crossdomain_policy_file_spec.html -->
+
+						    <!-- Most restrictive policy: -->
+						    <site-control permitted-cross-domain-policies="none"/>
+
+						    <!-- Least restrictive policy: -->
+						    <!--
+						    <site-control permitted-cross-domain-policies="all"/>
+						    <allow-access-from domain="*" to-ports="*" secure="false"/>
+						    <allow-http-request-headers-from domain="*" headers="*" secure="false"/>
+						    -->
+						</cross-domain-policy>
+						"""
+		);
+
+		new XmlPreambleChore(context.refresh()).doit();
+
+		assertThat(FilesSilent.readString(xml)).startsWith(
+				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE"
+		);
 	}
 
 }
