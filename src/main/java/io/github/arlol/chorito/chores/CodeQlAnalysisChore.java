@@ -13,9 +13,11 @@ public class CodeQlAnalysisChore {
 
 			on:
 			  push:
-			    branches: main
+			    branches:
+			    - main
 			  pull_request:
-			    branches: main
+			    branches:
+			    - main
 			  schedule:
 			  - cron: ''
 			env:

@@ -22,9 +22,11 @@ public class CodeQlAnalysisChoreTest {
 
 			on:
 			  push:
-			    branches: main
+			    branches:
+			    - main
 			  pull_request:
-			    branches: main
+			    branches:
+			    - main
 			  schedule:
 			  - cron: '1 3 1 * *'
 			env:
