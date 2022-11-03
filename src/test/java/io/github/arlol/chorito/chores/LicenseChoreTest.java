@@ -1,6 +1,7 @@
 package io.github.arlol.chorito.chores;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
@@ -43,6 +44,27 @@ public class LicenseChoreTest {
 		assertTrue(FilesSilent.exists(license));
 		assertThat(FilesSilent.readString(license))
 				.isEqualTo(mitLicense("2018"));
+	}
+
+	@Test
+	public void testUpdateLicenseMd() throws Exception {
+		Instant instant = Instant.parse("2019-08-19T16:02:42.00Z");
+		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
+		ChoreContext context = new PathChoreContext(
+				extension.choreContext().root(),
+				true,
+				extension.choreContext().randomGenerator(),
+				Clock.fixed(instant, zoneId)
+		);
+
+		Path licenseMd = context.resolve("LICENSE.md");
+		Path license = context.resolve("LICENSE");
+		FilesSilent.writeString(licenseMd, mitLicense("2018"));
+		new LicenseChore(context.refresh()).doit();
+		assertFalse(FilesSilent.exists(licenseMd));
+		assertTrue(FilesSilent.exists(license));
+		assertThat(FilesSilent.readString(license))
+				.isEqualTo(mitLicense("2018-2019"));
 	}
 
 	@Test

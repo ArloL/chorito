@@ -40,8 +40,12 @@ public class LicenseChore {
 	}
 
 	public void doit() {
+		Path licenseMd = context.resolve("LICENSE.md");
+		Path license = context.resolve("LICENSE");
+		if (FilesSilent.exists(licenseMd)) {
+			FilesSilent.move(licenseMd, license);
+		}
 		if (context.hasGitHubRemote()) {
-			Path license = context.resolve("LICENSE");
 			final String currentYear = ""
 					+ Year.now(context.clock()).getValue();
 			String newLicenseContent = MIT_LICENSE
