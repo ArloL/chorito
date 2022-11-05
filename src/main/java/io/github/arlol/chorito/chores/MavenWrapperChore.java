@@ -46,8 +46,11 @@ public class MavenWrapperChore {
 	public void doit() {
 		LOG.info("Running MavenWrapperChore");
 		Path pom = context.resolve("pom.xml");
+		if (!FilesSilent.exists(pom)) {
+			return;
+		}
 		Path wrapper = context.resolve("mvnw");
-		if (FilesSilent.exists(pom) && !FilesSilent.exists(wrapper)) {
+		if (!FilesSilent.exists(wrapper)) {
 			try {
 				LOG.info("Running mvn wrapper:wrapper");
 				new ProcessBuilder(
