@@ -45,14 +45,26 @@ public class MavenWrapperChore {
 
 	public void doit() {
 		LOG.info("Running MavenWrapperChore");
+		Path pom = context.resolve("pom.xml");
 		Path wrapper = context.resolve("mvnw");
-		if (FilesSilent.exists(wrapper)) {
-			var permissions = FilesSilent.getPosixFilePermissions(wrapper);
-			permissions.add(PosixFilePermission.OWNER_EXECUTE);
-			permissions.add(PosixFilePermission.GROUP_EXECUTE);
-			permissions.add(PosixFilePermission.OTHERS_EXECUTE);
-			FilesSilent.setPosixFilePermissions(wrapper, permissions);
+		if (FilesSilent.exists(pom) && !FilesSilent.exists(wrapper)) {
+			try {
+				LOG.info("Running mvn wrapper:wrapper");
+				new ProcessBuilder(
+						"mvn",
+						"-N",
+						"wrapper:wrapper",
+						"-Dmaven=3.8.6"
+				).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
+			} catch (InterruptedException | IOException e) {
+				throw new IllegalStateException(e);
+			}
 		}
+		var permissions = FilesSilent.getPosixFilePermissions(wrapper);
+		permissions.add(PosixFilePermission.OWNER_EXECUTE);
+		permissions.add(PosixFilePermission.GROUP_EXECUTE);
+		permissions.add(PosixFilePermission.OTHERS_EXECUTE);
+		FilesSilent.setPosixFilePermissions(wrapper, permissions);
 		Path path = context.resolve(".mvn/wrapper/maven-wrapper.properties");
 		if (FilesSilent.exists(path)) {
 			String content = FilesSilent.readString(path);
