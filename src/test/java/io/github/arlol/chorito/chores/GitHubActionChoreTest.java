@@ -17,6 +17,24 @@ import io.github.arlol.chorito.tools.PathChoreContext;
 
 public class GitHubActionChoreTest {
 
+	private static final String INPUT_ADOPT = """
+			jobs:
+			  linux:
+			    runs-on: ubuntu-latest
+			    steps:
+			    - uses: actions/setup-java@v3.5.1
+			      with:
+			        distribution: adopt
+			""";
+	private static final String EXPECTED_ADOPT = """
+			jobs:
+			  linux:
+			    runs-on: ubuntu-latest
+			    steps:
+			    - uses: actions/setup-java@v3.5.1
+			      with:
+			        distribution: temurin
+			""";
 	private static final String INPUT_GRAALSETUP_OUTPUT = """
 			jobs:
 			  linux:
@@ -232,6 +250,16 @@ public class GitHubActionChoreTest {
 		new GitHubActionChore(context.refresh()).doit();
 		assertThat(Files.readString(workflow))
 				.isEqualTo(EXPECTED_GRAALSETUP_OUTPUT);
+	}
+
+	@Test
+	public void testAdoptTemurinMigration() throws Exception {
+		ChoreContext context = extension.choreContext();
+		Path workflow = context.resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(workflow, INPUT_ADOPT);
+		assertTrue(FilesSilent.exists(workflow));
+		new GitHubActionChore(context.refresh()).doit();
+		assertThat(Files.readString(workflow)).isEqualTo(EXPECTED_ADOPT);
 	}
 
 	@Test

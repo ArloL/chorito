@@ -30,6 +30,7 @@ public class GitHubActionChore {
 		useSpecificActionVersions();
 		replaceSetOutput();
 		migrateToGraalSetupAction();
+		migrateJavaDistributionFromAdoptToTemurin();
 		updateCodeQlSchedule();
 		updateMainSchedule();
 	}
@@ -115,6 +116,27 @@ public class GitHubActionChore {
 			return Optional.empty();
 		}
 		return Optional.of(yaml.substring(0, indexOf));
+	}
+
+	private void migrateJavaDistributionFromAdoptToTemurin() {
+		Path workflowsLocation = context.resolve(".github/workflows");
+		context.textFiles().stream().filter(path -> {
+			if (path.startsWith(workflowsLocation)) {
+				return path.toString().endsWith(".yaml");
+			}
+			return false;
+		}).map(context::resolve).forEach(path -> {
+			String updated = FilesSilent.readString(path);
+			updated = updated
+					.replace("distribution: adopt", "distribution: temurin");
+			updated = updated
+					.replace("distribution: 'adopt'", "distribution: temurin");
+			updated = updated.replace(
+					"distribution: \"adopt\"",
+					"distribution: temurin"
+			);
+			FilesSilent.writeString(path, updated);
+		});
 	}
 
 	private void migrateToGraalSetupAction() {
