@@ -31,8 +31,8 @@ public interface ChoreContext {
 		return Clock.systemDefaultZone();
 	}
 
-	public default SilentProcessBuilder newProcessBuilder(String... command) {
-		return SilentProcessBuilder.create(command);
+	public default ProcessBuilderSilent newProcessBuilder(String... command) {
+		return ProcessBuilderSilent.create(command);
 	}
 
 }

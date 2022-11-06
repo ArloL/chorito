@@ -18,7 +18,7 @@ public class PathChoreContext implements ChoreContext {
 		private final boolean hasGitHubRemote;
 		private final RandomGenerator randomGenerator;
 		private final Clock clock;
-		private final Function<String[], SilentProcessBuilder> processBuilderFactory;
+		private final Function<String[], ProcessBuilderSilent> processBuilderFactory;
 
 		public Builder() {
 			this(
@@ -26,7 +26,7 @@ public class PathChoreContext implements ChoreContext {
 					false,
 					new Random(),
 					Clock.systemDefaultZone(),
-					(command) -> SilentProcessBuilder.create(command)
+					(command) -> ProcessBuilderSilent.create(command)
 			);
 		}
 
@@ -35,7 +35,7 @@ public class PathChoreContext implements ChoreContext {
 				boolean hasGitHubRemote,
 				RandomGenerator randomGenerator,
 				Clock clock,
-				Function<String[], SilentProcessBuilder> processBuilderFactory
+				Function<String[], ProcessBuilderSilent> processBuilderFactory
 		) {
 			super();
 			this.root = root;
@@ -86,7 +86,7 @@ public class PathChoreContext implements ChoreContext {
 		}
 
 		public Builder processBuilderFactory(
-				Function<String[], SilentProcessBuilder> processBuilderFactory
+				Function<String[], ProcessBuilderSilent> processBuilderFactory
 		) {
 			return new Builder(
 					root,
@@ -119,14 +119,14 @@ public class PathChoreContext implements ChoreContext {
 	private final boolean hasGitHubRemote;
 	private final RandomGenerator randomGenerator;
 	private final Clock clock;
-	private final Function<String[], SilentProcessBuilder> processBuilderFactory;
+	private final Function<String[], ProcessBuilderSilent> processBuilderFactory;
 
 	public PathChoreContext(
 			Path root,
 			boolean hasGitHubRemote,
 			RandomGenerator randomGenerator,
 			Clock clock,
-			Function<String[], SilentProcessBuilder> processBuilderFactory
+			Function<String[], ProcessBuilderSilent> processBuilderFactory
 	) {
 		this.root = root;
 		this.textFiles = resolveTextFiles(root);
@@ -197,7 +197,7 @@ public class PathChoreContext implements ChoreContext {
 	}
 
 	@Override
-	public SilentProcessBuilder newProcessBuilder(String... command) {
+	public ProcessBuilderSilent newProcessBuilder(String... command) {
 		return processBuilderFactory.apply(command);
 	}
 

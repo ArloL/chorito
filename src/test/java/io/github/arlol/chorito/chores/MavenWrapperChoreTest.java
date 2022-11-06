@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.github.arlol.chorito.tools.FakeSilentProcessBuilder;
+import io.github.arlol.chorito.tools.FakeProcessBuilderSilent;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
 
@@ -23,7 +23,7 @@ public class MavenWrapperChoreTest {
 	void testNada() throws Exception {
 		var context = extension.choreContext()
 				.toBuilder()
-				.processBuilderFactory(FakeSilentProcessBuilder.factory())
+				.processBuilderFactory(FakeProcessBuilderSilent.factory())
 				.build();
 		new MavenWrapperChore(context).doit();
 	}
@@ -33,7 +33,7 @@ public class MavenWrapperChoreTest {
 		var context = extension.choreContext()
 				.toBuilder()
 				.processBuilderFactory(
-						FakeSilentProcessBuilder.factory(this::fakeMavenWrapper)
+						FakeProcessBuilderSilent.factory(this::fakeMavenWrapper)
 				)
 				.build();
 		Path pom = context.resolve("pom.xml");

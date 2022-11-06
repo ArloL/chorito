@@ -9,14 +9,14 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FakeSilentProcessBuilder extends SilentProcessBuilder {
+public class FakeProcessBuilderSilent extends ProcessBuilderSilent {
 
 	private static Logger LOG = LoggerFactory
-			.getLogger(FakeSilentProcessBuilder.class);
+			.getLogger(FakeProcessBuilderSilent.class);
 
-	public static class FakeSilentProcess extends SilentProcess {
+	public static class FakeProcessSilent extends ProcessSilent {
 
-		public FakeSilentProcess() {
+		public FakeProcessSilent() {
 			super(null);
 		}
 
@@ -26,31 +26,31 @@ public class FakeSilentProcessBuilder extends SilentProcessBuilder {
 
 	}
 
-	public static Function<String[], SilentProcessBuilder> factory(
+	public static Function<String[], ProcessBuilderSilent> factory(
 			Runnable... runnables
 	) {
-		return (command) -> new FakeSilentProcessBuilder(command, runnables);
+		return (command) -> new FakeProcessBuilderSilent(command, runnables);
 	}
 
 	private final String command;
 	private final Runnable[] runnables;
 
-	public FakeSilentProcessBuilder(String[] command, Runnable... runnables) {
+	public FakeProcessBuilderSilent(String[] command, Runnable... runnables) {
 		super(null);
 		this.runnables = runnables;
 		this.command = Arrays.stream(command).collect(joining(" "));
 	}
 
 	@Override
-	public SilentProcessBuilder inheritIO() {
+	public ProcessBuilderSilent inheritIO() {
 		return this;
 	}
 
 	@Override
-	public SilentProcess start() {
+	public ProcessSilent start() {
 		LOG.info("Would have called {}", command);
 		Arrays.stream(runnables).forEach(Runnable::run);
-		return new FakeSilentProcess();
+		return new FakeProcessSilent();
 	}
 
 }

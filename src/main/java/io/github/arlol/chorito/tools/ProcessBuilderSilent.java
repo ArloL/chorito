@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.concurrent.TimeUnit;
 
-public class SilentProcessBuilder {
+public class ProcessBuilderSilent {
 
-	public static class SilentProcess {
+	public static class ProcessSilent {
 
 		private final Process process;
 
-		public SilentProcess(Process process) {
+		public ProcessSilent(Process process) {
 			this.process = process;
 		}
 
@@ -28,17 +28,17 @@ public class SilentProcessBuilder {
 
 	}
 
-	public static SilentProcessBuilder create(String... command) {
+	public static ProcessBuilderSilent create(String... command) {
 		return create(new ProcessBuilder(command));
 	}
 
-	public static SilentProcessBuilder create(ProcessBuilder processBuilder) {
-		return new SilentProcessBuilder(processBuilder);
+	public static ProcessBuilderSilent create(ProcessBuilder processBuilder) {
+		return new ProcessBuilderSilent(processBuilder);
 	}
 
 	private final ProcessBuilder processBuilder;
 
-	protected SilentProcessBuilder(ProcessBuilder processBuilder) {
+	protected ProcessBuilderSilent(ProcessBuilder processBuilder) {
 		this.processBuilder = processBuilder;
 	}
 
@@ -46,14 +46,14 @@ public class SilentProcessBuilder {
 		return processBuilder;
 	}
 
-	public SilentProcessBuilder inheritIO() {
+	public ProcessBuilderSilent inheritIO() {
 		processBuilder.inheritIO();
 		return this;
 	}
 
-	public SilentProcess start() {
+	public ProcessSilent start() {
 		try {
-			return new SilentProcess(processBuilder.start());
+			return new ProcessSilent(processBuilder.start());
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
