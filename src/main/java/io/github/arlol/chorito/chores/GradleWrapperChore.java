@@ -1,6 +1,5 @@
 package io.github.arlol.chorito.chores;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.concurrent.TimeUnit;
@@ -44,29 +43,25 @@ public class GradleWrapperChore {
 		if (FilesSilent.exists(path)) {
 			String content = FilesSilent.readString(path);
 			if (!DEFAULT_PROPERTIES.equals(content)) {
-				try {
-					LOG.info("Running ./gradlew wrapper");
-					new ProcessBuilder(
-							"./gradlew",
-							"wrapper",
-							"--gradle-version",
-							"7.5.1",
-							"--distribution-type",
-							"all",
-							"--no-daemon"
-					).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
-					new ProcessBuilder(
-							"./gradlew",
-							"wrapper",
-							"--gradle-version",
-							"7.5.1",
-							"--distribution-type",
-							"all",
-							"--no-daemon"
-					).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
-				} catch (InterruptedException | IOException e) {
-					throw new IllegalStateException(e);
-				}
+				LOG.info("Running ./gradlew wrapper");
+				context.newProcessBuilder(
+						"./gradlew",
+						"wrapper",
+						"--gradle-version",
+						"7.5.1",
+						"--distribution-type",
+						"all",
+						"--no-daemon"
+				).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
+				context.newProcessBuilder(
+						"./gradlew",
+						"wrapper",
+						"--gradle-version",
+						"7.5.1",
+						"--distribution-type",
+						"all",
+						"--no-daemon"
+				).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
 			}
 		}
 	}

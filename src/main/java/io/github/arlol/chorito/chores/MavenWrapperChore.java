@@ -1,6 +1,5 @@
 package io.github.arlol.chorito.chores;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.concurrent.TimeUnit;
@@ -51,17 +50,13 @@ public class MavenWrapperChore {
 		}
 		Path wrapper = context.resolve("mvnw");
 		if (!FilesSilent.exists(wrapper)) {
-			try {
-				LOG.info("Running mvn wrapper:wrapper");
-				new ProcessBuilder(
-						"mvn",
-						"-N",
-						"wrapper:wrapper",
-						"-Dmaven=3.8.6"
-				).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
-			} catch (InterruptedException | IOException e) {
-				throw new IllegalStateException(e);
-			}
+			LOG.info("Running mvn wrapper:wrapper");
+			context.newProcessBuilder(
+					"mvn",
+					"-N",
+					"wrapper:wrapper",
+					"-Dmaven=3.8.6"
+			).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
 		}
 		var permissions = FilesSilent.getPosixFilePermissions(wrapper);
 		permissions.add(PosixFilePermission.OWNER_EXECUTE);
@@ -72,17 +67,13 @@ public class MavenWrapperChore {
 		if (FilesSilent.exists(path)) {
 			String content = FilesSilent.readString(path);
 			if (!DEFAULT_PROPERTIES.equals(content)) {
-				try {
-					LOG.info("Running ./mvnw wrapper:wrapper");
-					new ProcessBuilder(
-							"./mvnw",
-							"-N",
-							"wrapper:wrapper",
-							"-Dmaven=3.8.6"
-					).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
-				} catch (InterruptedException | IOException e) {
-					throw new IllegalStateException(e);
-				}
+				LOG.info("Running ./mvnw wrapper:wrapper");
+				context.newProcessBuilder(
+						"./mvnw",
+						"-N",
+						"wrapper:wrapper",
+						"-Dmaven=3.8.6"
+				).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
 			}
 		}
 	}
