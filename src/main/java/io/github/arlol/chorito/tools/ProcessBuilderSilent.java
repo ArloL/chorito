@@ -3,6 +3,7 @@ package io.github.arlol.chorito.tools;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 public class ProcessBuilderSilent {
 
@@ -26,6 +27,10 @@ public class ProcessBuilderSilent {
 			}
 		}
 
+	}
+
+	public static Function<String[], ProcessBuilderSilent> factory() {
+		return (command) -> ProcessBuilderSilent.create(command);
 	}
 
 	public static ProcessBuilderSilent create(String... command) {

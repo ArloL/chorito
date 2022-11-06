@@ -8,7 +8,9 @@ public class GitChoreContextTest {
 
 	@Test
 	void testHasGitHubRemote() throws Exception {
-		boolean hasGitHubRemote = new GitChoreContext(".").hasGitHubRemote();
+		boolean hasGitHubRemote = GitChoreContext.newBuilder(".")
+				.build()
+				.hasGitHubRemote();
 		assertTrue(hasGitHubRemote);
 	}
 

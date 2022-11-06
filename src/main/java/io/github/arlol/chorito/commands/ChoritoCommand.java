@@ -31,7 +31,7 @@ public class ChoritoCommand {
 	}
 
 	public ChoritoCommand(String root) {
-		this.context = new GitChoreContext(root);
+		this.context = GitChoreContext.newBuilder(root).build();
 	}
 
 	public void execute() {
