@@ -15,7 +15,7 @@ public class RenamerTest {
 	@Test
 	void testName() throws Exception {
 		Path before = extension.choreContext().resolve("hey-replaceme-jude");
-		FilesSilent.writeString(before, "");
+		FilesSilent.touch(before);
 
 		Renamer.replaceInFilename(before, "-replaceme", "");
 

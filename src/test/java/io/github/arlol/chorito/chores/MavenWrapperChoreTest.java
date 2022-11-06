@@ -37,22 +37,18 @@ public class MavenWrapperChoreTest {
 				)
 				.build();
 		Path pom = context.resolve("pom.xml");
-		FilesSilent.writeString(pom, "");
+		FilesSilent.touch(pom);
 
 		new MavenWrapperChore(context).doit();
 	}
 
 	private void fakeMavenWrapper() {
 		var context = extension.choreContext();
-		FilesSilent.writeString(context.resolve("mvnw"), "");
-		FilesSilent.writeString(context.resolve("mvnw.cmd"), "");
-		FilesSilent.writeString(
-				context.resolve(".mvn/wrapper/maven-wrapper.jar"),
-				""
-		);
-		FilesSilent.writeString(
-				context.resolve(".mvn/wrapper/maven-wrapper.properties"),
-				""
+		FilesSilent.touch(context.resolve("mvnw"));
+		FilesSilent.touch(context.resolve("mvnw.cmd"));
+		FilesSilent.touch(context.resolve(".mvn/wrapper/maven-wrapper.jar"));
+		FilesSilent.touch(
+				context.resolve(".mvn/wrapper/maven-wrapper.properties")
 		);
 	}
 

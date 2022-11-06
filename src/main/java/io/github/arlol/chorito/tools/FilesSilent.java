@@ -149,4 +149,8 @@ public abstract class FilesSilent {
 		}
 	}
 
+	public static void touch(Path path, OpenOption... options) {
+		writeString(path, "");
+	}
+
 }

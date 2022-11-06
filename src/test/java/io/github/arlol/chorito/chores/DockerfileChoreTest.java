@@ -33,7 +33,7 @@ public class DockerfileChoreTest {
 		ChoreContext context = extension.choreContext();
 
 		Path wronglyNamedFile = context.resolve(name);
-		FilesSilent.writeString(wronglyNamedFile, "");
+		FilesSilent.touch(wronglyNamedFile);
 
 		new DockerfileChore(context.refresh()).doit();
 

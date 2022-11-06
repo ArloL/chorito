@@ -97,7 +97,7 @@ public class CodeQlAnalysisChoreTest {
 				.hasGitHubRemote(true)
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
-		Files.writeString(context.resolve("pom.xml"), "");
+		FilesSilent.touch(context.resolve("pom.xml"));
 		new CodeQlAnalysisChore(context.refresh()).doit();
 		Path workflow = context
 				.resolve(".github/workflows/codeql-analysis.yaml");

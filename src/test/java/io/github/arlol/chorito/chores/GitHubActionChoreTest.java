@@ -198,7 +198,7 @@ public class GitHubActionChoreTest {
 	public void testEmptyWorkflowFile() throws Exception {
 		ChoreContext context = extension.choreContext();
 		Path workflow = context.resolve(".github/workflows/main.yaml");
-		FilesSilent.writeString(workflow, "");
+		FilesSilent.touch(workflow);
 		assertTrue(FilesSilent.exists(workflow));
 		new GitHubActionChore(context.refresh()).doit();
 		assertThat(Files.readString(workflow)).isEqualTo("");
