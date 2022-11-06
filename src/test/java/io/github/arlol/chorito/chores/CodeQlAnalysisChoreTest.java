@@ -13,7 +13,6 @@ import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FakeRandomGenerator;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.PathChoreContext;
 
 public class CodeQlAnalysisChoreTest {
 
@@ -93,11 +92,11 @@ public class CodeQlAnalysisChoreTest {
 
 	@Test
 	public void testJava() throws Exception {
-		ChoreContext context = new PathChoreContext(
-				extension.choreContext().root(),
-				true,
-				new FakeRandomGenerator()
-		);
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.hasGitHubRemote(true)
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
 		Files.writeString(context.resolve("pom.xml"), "");
 		new CodeQlAnalysisChore(context.refresh()).doit();
 		Path workflow = context

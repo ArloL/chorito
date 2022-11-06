@@ -21,7 +21,7 @@ public class FileSystemExtension
 
 	public PathChoreContext choreContext() {
 		Path root = this.fileSystem.getRootDirectories().iterator().next();
-		return new PathChoreContext(root);
+		return PathChoreContext.newBuilder().root(root).build();
 	}
 
 	@Override

@@ -15,7 +15,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.PathChoreContext;
 
 public class LicenseChoreTest {
 
@@ -31,12 +30,11 @@ public class LicenseChoreTest {
 	public void testCreate() throws Exception {
 		Instant instant = Instant.parse("2018-08-19T16:02:42.00Z");
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
-		ChoreContext context = new PathChoreContext(
-				extension.choreContext().root(),
-				true,
-				extension.choreContext().randomGenerator(),
-				Clock.fixed(instant, zoneId)
-		);
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.hasGitHubRemote(true)
+				.clock(Clock.fixed(instant, zoneId))
+				.build();
 
 		new LicenseChore(context.refresh()).doit();
 
@@ -50,12 +48,11 @@ public class LicenseChoreTest {
 	public void testUpdateLicenseMd() throws Exception {
 		Instant instant = Instant.parse("2019-08-19T16:02:42.00Z");
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
-		ChoreContext context = new PathChoreContext(
-				extension.choreContext().root(),
-				true,
-				extension.choreContext().randomGenerator(),
-				Clock.fixed(instant, zoneId)
-		);
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.hasGitHubRemote(true)
+				.clock(Clock.fixed(instant, zoneId))
+				.build();
 
 		Path licenseMd = context.resolve("LICENSE.md");
 		Path license = context.resolve("LICENSE");
@@ -71,12 +68,11 @@ public class LicenseChoreTest {
 	public void testUpdate() throws Exception {
 		Instant instant = Instant.parse("2019-08-19T16:02:42.00Z");
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
-		ChoreContext context = new PathChoreContext(
-				extension.choreContext().root(),
-				true,
-				extension.choreContext().randomGenerator(),
-				Clock.fixed(instant, zoneId)
-		);
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.hasGitHubRemote(true)
+				.clock(Clock.fixed(instant, zoneId))
+				.build();
 
 		Path license = context.resolve("LICENSE");
 		FilesSilent.writeString(license, mitLicense("2018"));
@@ -90,12 +86,11 @@ public class LicenseChoreTest {
 	public void testUpdateSameYear() throws Exception {
 		Instant instant = Instant.parse("2018-08-19T16:02:42.00Z");
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
-		ChoreContext context = new PathChoreContext(
-				extension.choreContext().root(),
-				true,
-				extension.choreContext().randomGenerator(),
-				Clock.fixed(instant, zoneId)
-		);
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.hasGitHubRemote(true)
+				.clock(Clock.fixed(instant, zoneId))
+				.build();
 
 		Path license = context.resolve("LICENSE");
 		FilesSilent.writeString(license, mitLicense("2018"));
@@ -109,12 +104,11 @@ public class LicenseChoreTest {
 	public void testDontTouchExistingRange() throws Exception {
 		Instant instant = Instant.parse("2019-08-19T16:02:42.00Z");
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
-		ChoreContext context = new PathChoreContext(
-				extension.choreContext().root(),
-				true,
-				extension.choreContext().randomGenerator(),
-				Clock.fixed(instant, zoneId)
-		);
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.hasGitHubRemote(true)
+				.clock(Clock.fixed(instant, zoneId))
+				.build();
 
 		Path license = context.resolve("LICENSE");
 		FilesSilent.writeString(license, mitLicense("2018-2019"));
@@ -128,12 +122,11 @@ public class LicenseChoreTest {
 	public void testUpdateExistingRange() throws Exception {
 		Instant instant = Instant.parse("2019-08-19T16:02:42.00Z");
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
-		ChoreContext context = new PathChoreContext(
-				extension.choreContext().root(),
-				true,
-				extension.choreContext().randomGenerator(),
-				Clock.fixed(instant, zoneId)
-		);
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.hasGitHubRemote(true)
+				.clock(Clock.fixed(instant, zoneId))
+				.build();
 
 		Path license = context.resolve("LICENSE");
 		FilesSilent.writeString(license, mitLicense("2017-2018"));
@@ -147,12 +140,11 @@ public class LicenseChoreTest {
 	public void testMultipleAuthors() throws Exception {
 		Instant instant = Instant.parse("2019-08-19T16:02:42.00Z");
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
-		ChoreContext context = new PathChoreContext(
-				extension.choreContext().root(),
-				true,
-				extension.choreContext().randomGenerator(),
-				Clock.fixed(instant, zoneId)
-		);
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.hasGitHubRemote(true)
+				.clock(Clock.fixed(instant, zoneId))
+				.build();
 
 		Path license = context.resolve("LICENSE");
 		FilesSilent.writeString(
