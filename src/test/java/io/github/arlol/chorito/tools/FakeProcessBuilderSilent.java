@@ -42,12 +42,12 @@ public class FakeProcessBuilderSilent extends ProcessBuilderSilent {
 	}
 
 	@Override
-	public ProcessBuilderSilent inheritIO() {
+	public FakeProcessBuilderSilent inheritIO() {
 		return this;
 	}
 
 	@Override
-	public ProcessSilent start() {
+	public FakeProcessSilent start() {
 		LOG.info("Would have called {}", command);
 		Arrays.stream(runnables).forEach(Runnable::run);
 		return new FakeProcessSilent();
