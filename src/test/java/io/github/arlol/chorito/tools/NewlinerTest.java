@@ -2,7 +2,6 @@ package io.github.arlol.chorito.tools;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
@@ -28,12 +27,12 @@ public class NewlinerTest {
 	) throws Exception {
 		Path tempFile = TestPaths.tempFile();
 		try {
-			Files.writeString(tempFile, input);
+			FilesSilent.writeString(tempFile, input);
 			Newliner.makeAllNewlines(tempFile, newline);
-			String actual = Files.readString(tempFile);
+			String actual = FilesSilent.readString(tempFile);
 			assertEquals(expected, actual);
 		} finally {
-			Files.deleteIfExists(tempFile);
+			FilesSilent.deleteIfExists(tempFile);
 		}
 	}
 
@@ -54,12 +53,12 @@ public class NewlinerTest {
 	) throws Exception {
 		Path tempFile = TestPaths.tempFile();
 		try {
-			Files.writeString(tempFile, input);
+			FilesSilent.writeString(tempFile, input);
 			Newliner.ensureNewlineAtEof(tempFile, newline);
-			String actual = Files.readString(tempFile);
+			String actual = FilesSilent.readString(tempFile);
 			assertEquals(expected, actual);
 		} finally {
-			Files.deleteIfExists(tempFile);
+			FilesSilent.deleteIfExists(tempFile);
 		}
 	}
 

@@ -1,7 +1,8 @@
 package io.github.arlol.chorito.filter;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
+
+import io.github.arlol.chorito.tools.FilesSilent;
 
 public abstract class FileIsGoneFilter {
 
@@ -9,7 +10,7 @@ public abstract class FileIsGoneFilter {
 	}
 
 	public static boolean fileIsGone(Path path) {
-		return !Files.exists(path);
+		return !FilesSilent.exists(path);
 	}
 
 }

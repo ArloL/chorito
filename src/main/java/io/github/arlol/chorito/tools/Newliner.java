@@ -1,8 +1,5 @@
 package io.github.arlol.chorito.tools;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class Newliner {
@@ -27,14 +24,10 @@ public class Newliner {
 	 * assumption: text file and UTF-8 encoded
 	 */
 	public static void makeAllNewlines(Path path, String newline) {
-		try {
-			String content = Files.readString(path);
-			content = content
-					.replaceAll(OPTIONAL_CARRIAGE_RETURN_LINE_FEED, newline);
-			Files.writeString(path, content);
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
+		String content = FilesSilent.readString(path);
+		content = content
+				.replaceAll(OPTIONAL_CARRIAGE_RETURN_LINE_FEED, newline);
+		FilesSilent.writeString(path, content);
 	}
 
 	public static void ensureSystemNewlineAtEof(Path path) {
@@ -53,20 +46,16 @@ public class Newliner {
 	 * assumption: text file and UTF-8 encoded
 	 */
 	public static void ensureNewlineAtEof(Path path, String newline) {
-		try {
-			String content = Files.readString(path);
-			if (!content.endsWith(LINE_FEED)) {
-				if (content.contains(CARRIAGE_RETURN_LINE_FEED)) {
-					content = content + CARRIAGE_RETURN_LINE_FEED;
-				} else if (content.contains(LINE_FEED)) {
-					content = content + LINE_FEED;
-				} else {
-					content = content + newline;
-				}
-				Files.writeString(path, content);
+		String content = FilesSilent.readString(path);
+		if (!content.endsWith(LINE_FEED)) {
+			if (content.contains(CARRIAGE_RETURN_LINE_FEED)) {
+				content = content + CARRIAGE_RETURN_LINE_FEED;
+			} else if (content.contains(LINE_FEED)) {
+				content = content + LINE_FEED;
+			} else {
+				content = content + newline;
 			}
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
+			FilesSilent.writeString(path, content);
 		}
 	}
 

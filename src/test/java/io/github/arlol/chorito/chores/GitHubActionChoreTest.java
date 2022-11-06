@@ -3,7 +3,6 @@ package io.github.arlol.chorito.chores;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
@@ -201,7 +200,7 @@ public class GitHubActionChoreTest {
 		FilesSilent.touch(workflow);
 		assertTrue(FilesSilent.exists(workflow));
 		new GitHubActionChore(context.refresh()).doit();
-		assertThat(Files.readString(workflow)).isEqualTo("");
+		assertThat(FilesSilent.readString(workflow)).isEqualTo("");
 	}
 
 	@Test
@@ -215,7 +214,7 @@ public class GitHubActionChoreTest {
 		);
 		assertTrue(FilesSilent.exists(workflow));
 		new GitHubActionChore(context.refresh()).doit();
-		assertThat(Files.readString(workflow)).isEqualTo(
+		assertThat(FilesSilent.readString(workflow)).isEqualTo(
 				"jobs:\n" + "  linux:\n" + "    runs-on: ubuntu-latest\n"
 						+ "    steps:\n" + "    - run: whoami\n"
 		);
@@ -234,7 +233,7 @@ public class GitHubActionChoreTest {
 		);
 		assertTrue(FilesSilent.exists(workflow));
 		new GitHubActionChore(context.refresh()).doit();
-		assertThat(Files.readString(workflow)).isEqualTo(
+		assertThat(FilesSilent.readString(workflow)).isEqualTo(
 				"jobs:\n" + "  windows:\n" + "    runs-on: windows-latest\n"
 						+ "    steps:\n"
 		);
@@ -247,7 +246,7 @@ public class GitHubActionChoreTest {
 		FilesSilent.writeString(workflow, INPUT_GRAALSETUP_OUTPUT);
 		assertTrue(FilesSilent.exists(workflow));
 		new GitHubActionChore(context.refresh()).doit();
-		assertThat(Files.readString(workflow))
+		assertThat(FilesSilent.readString(workflow))
 				.isEqualTo(EXPECTED_GRAALSETUP_OUTPUT);
 	}
 
@@ -258,7 +257,7 @@ public class GitHubActionChoreTest {
 		FilesSilent.writeString(workflow, INPUT_ADOPT);
 		assertTrue(FilesSilent.exists(workflow));
 		new GitHubActionChore(context.refresh()).doit();
-		assertThat(Files.readString(workflow)).isEqualTo(EXPECTED_ADOPT);
+		assertThat(FilesSilent.readString(workflow)).isEqualTo(EXPECTED_ADOPT);
 	}
 
 	@Test
@@ -268,7 +267,8 @@ public class GitHubActionChoreTest {
 		FilesSilent.writeString(workflow, INPUT_STEPS_OUTPUT);
 		assertTrue(FilesSilent.exists(workflow));
 		new GitHubActionChore(context.refresh()).doit();
-		assertThat(Files.readString(workflow)).isEqualTo(EXPECTED_STEPS_OUTPUT);
+		assertThat(FilesSilent.readString(workflow))
+				.isEqualTo(EXPECTED_STEPS_OUTPUT);
 	}
 
 	@Test
@@ -280,7 +280,7 @@ public class GitHubActionChoreTest {
 		Path workflow = context.resolve(".github/workflows/chores.yaml");
 		FilesSilent.writeString(workflow, "- cron: '5 3 4 4 5'");
 		new GitHubActionChore(context.refresh()).doit();
-		assertThat(Files.readString(workflow)).startsWith("""
+		assertThat(FilesSilent.readString(workflow)).startsWith("""
 				name: Chores
 
 				on:
@@ -302,7 +302,7 @@ public class GitHubActionChoreTest {
 		Path workflow = context.resolve(".github/workflows/chores.yaml");
 		FilesSilent.writeString(workflow, "- cron: '26 15 * * 5'");
 		new GitHubActionChore(context.refresh()).doit();
-		assertThat(Files.readString(workflow)).doesNotStartWith("""
+		assertThat(FilesSilent.readString(workflow)).doesNotStartWith("""
 				name: Chores
 
 				on:
@@ -327,7 +327,7 @@ public class GitHubActionChoreTest {
 		String input = "- cron: '4 20 * * 3'";
 		FilesSilent.writeString(workflow, input);
 		new GitHubActionChore(context.refresh()).doit();
-		assertThat(Files.readString(workflow))
+		assertThat(FilesSilent.readString(workflow))
 				.isEqualTo("- cron: '1 3 1 * *'\n");
 	}
 
@@ -342,7 +342,7 @@ public class GitHubActionChoreTest {
 		String input = "- cron: '17 4 5 * *'";
 		FilesSilent.writeString(workflow, input);
 		new GitHubActionChore(context.refresh()).doit();
-		assertThat(Files.readString(workflow))
+		assertThat(FilesSilent.readString(workflow))
 				.isEqualTo("- cron: '1 3 1 * *'\n");
 	}
 
@@ -357,7 +357,7 @@ public class GitHubActionChoreTest {
 		String input = "- cron: '5 5 5 * *'";
 		FilesSilent.writeString(workflow, input);
 		new GitHubActionChore(context.refresh()).doit();
-		assertThat(Files.readString(workflow))
+		assertThat(FilesSilent.readString(workflow))
 				.isEqualTo("- cron: '5 5 5 * *'\n");
 	}
 

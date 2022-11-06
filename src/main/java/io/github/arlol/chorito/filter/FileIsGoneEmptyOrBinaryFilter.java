@@ -3,8 +3,9 @@ package io.github.arlol.chorito.filter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
+
+import io.github.arlol.chorito.tools.FilesSilent;
 
 public abstract class FileIsGoneEmptyOrBinaryFilter {
 
@@ -12,10 +13,10 @@ public abstract class FileIsGoneEmptyOrBinaryFilter {
 	}
 
 	public static boolean fileIsGoneEmptyOrBinary(Path path) {
-		if (!Files.exists(path)) {
+		if (!FilesSilent.exists(path)) {
 			return true;
 		}
-		try (InputStream inputStream = Files.newInputStream(path)) {
+		try (InputStream inputStream = FilesSilent.newInputStream(path)) {
 			// this matches git's own binary detection algorithm
 			byte[] bytes = inputStream.readNBytes(8000);
 			// file is empty

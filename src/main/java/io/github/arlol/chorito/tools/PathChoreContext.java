@@ -1,6 +1,5 @@
 package io.github.arlol.chorito.tools;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.util.List;
@@ -170,14 +169,14 @@ public class PathChoreContext implements ChoreContext {
 
 	private static List<Path> resolveFiles(Path path) {
 		return FilesSilent.walk(path)
-				.filter(Files::isRegularFile)
+				.filter(FilesSilent::isRegularFile)
 				.filter(p -> !FileIsGoneFilter.fileIsGone(p))
 				.toList();
 	}
 
 	private static List<Path> resolveTextFiles(Path path) {
 		return FilesSilent.walk(path)
-				.filter(Files::isRegularFile)
+				.filter(FilesSilent::isRegularFile)
 				.filter(p -> !FileIsGoneOrBinaryFilter.fileIsGoneOrBinary(p))
 				.toList();
 	}

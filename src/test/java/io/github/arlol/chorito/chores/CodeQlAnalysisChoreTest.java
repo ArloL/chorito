@@ -3,7 +3,6 @@ package io.github.arlol.chorito.chores;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
@@ -102,7 +101,7 @@ public class CodeQlAnalysisChoreTest {
 		Path workflow = context
 				.resolve(".github/workflows/codeql-analysis.yaml");
 		assertTrue(FilesSilent.exists(workflow));
-		assertThat(Files.readString(workflow)).isEqualTo(EXPECTED_JAVA);
+		assertThat(FilesSilent.readString(workflow)).isEqualTo(EXPECTED_JAVA);
 	}
 
 }

@@ -3,6 +3,7 @@ package io.github.arlol.chorito.tools;
 import static java.util.stream.Collectors.joining;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.CopyOption;
 import java.nio.file.FileVisitOption;
@@ -151,6 +152,18 @@ public abstract class FilesSilent {
 
 	public static void touch(Path path, OpenOption... options) {
 		writeString(path, "");
+	}
+
+	public static InputStream newInputStream(Path path, OpenOption... options) {
+		try {
+			return Files.newInputStream(path, options);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
+	public static boolean isRegularFile(Path path, LinkOption... options) {
+		return Files.isRegularFile(path, options);
 	}
 
 }
