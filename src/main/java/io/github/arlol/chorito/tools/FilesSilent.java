@@ -192,4 +192,12 @@ public abstract class FilesSilent {
 		}
 	}
 
+	public static byte[] readAllBytes(Path path) {
+		try {
+			return Files.readAllBytes(path);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
 }

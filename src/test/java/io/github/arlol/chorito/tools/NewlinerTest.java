@@ -7,8 +7,6 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.github.arlol.chorito.TestPaths;
-
 public class NewlinerTest {
 
 	@RegisterExtension
@@ -29,7 +27,8 @@ public class NewlinerTest {
 			String expected,
 			String newline
 	) throws Exception {
-		Path tempFile = TestPaths.tempFile(extension.root());
+		Path tempFile = FilesSilent
+				.createTempFile(extension.root(), null, null);
 		try {
 			FilesSilent.writeString(tempFile, input);
 			Newliner.makeAllNewlines(tempFile, newline);
@@ -55,7 +54,8 @@ public class NewlinerTest {
 			String expected,
 			String newline
 	) throws Exception {
-		Path tempFile = TestPaths.tempFile(extension.root());
+		Path tempFile = FilesSilent
+				.createTempFile(extension.root(), null, null);
 		try {
 			FilesSilent.writeString(tempFile, input);
 			Newliner.ensureNewlineAtEof(tempFile, newline);
