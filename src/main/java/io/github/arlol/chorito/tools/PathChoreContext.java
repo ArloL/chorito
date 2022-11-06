@@ -154,12 +154,12 @@ public class PathChoreContext implements ChoreContext {
 
 	@Override
 	public List<Path> textFiles() {
-		return textFiles;
+		return List.copyOf(textFiles);
 	}
 
 	@Override
 	public List<Path> files() {
-		return files;
+		return List.copyOf(files);
 	}
 
 	@Override
