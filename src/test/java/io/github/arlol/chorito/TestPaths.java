@@ -1,9 +1,10 @@
 package io.github.arlol.chorito;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import io.github.arlol.chorito.tools.FilesSilent;
 
 public class TestPaths {
 
@@ -11,11 +12,9 @@ public class TestPaths {
 		return Paths.get("./src/test/resources").resolve(path);
 	}
 
-	public static Path tempFile() throws IOException {
-		Path tempDirectory = Files
-				.createTempDirectory(Paths.get("target"), null);
-		tempDirectory.toFile().deleteOnExit();
-		return Files.createTempFile(tempDirectory, null, null);
+	public static Path tempFile(Path root) {
+		Path tempDirectory = FilesSilent.createTempDirectory(root, null);
+		return FilesSilent.createTempFile(tempDirectory, null, null);
 	}
 
 }

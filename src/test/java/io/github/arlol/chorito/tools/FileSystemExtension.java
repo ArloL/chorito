@@ -19,9 +19,12 @@ public class FileSystemExtension
 		return this.fileSystem;
 	}
 
+	public Path root() {
+		return this.fileSystem.getRootDirectories().iterator().next();
+	}
+
 	public PathChoreContext choreContext() {
-		Path root = this.fileSystem.getRootDirectories().iterator().next();
-		return PathChoreContext.newBuilder().root(root).build();
+		return PathChoreContext.newBuilder().root(root()).build();
 	}
 
 	@Override

@@ -5,10 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.github.arlol.chorito.TestPaths;
 
 public class NewlinerTest {
+
+	@RegisterExtension
+	final FileSystemExtension extension = new FileSystemExtension();
 
 	@Test
 	void testMakeAllNewlinesLf() throws Exception {
@@ -25,7 +29,7 @@ public class NewlinerTest {
 			String expected,
 			String newline
 	) throws Exception {
-		Path tempFile = TestPaths.tempFile();
+		Path tempFile = TestPaths.tempFile(extension.root());
 		try {
 			FilesSilent.writeString(tempFile, input);
 			Newliner.makeAllNewlines(tempFile, newline);
@@ -51,7 +55,7 @@ public class NewlinerTest {
 			String expected,
 			String newline
 	) throws Exception {
-		Path tempFile = TestPaths.tempFile();
+		Path tempFile = TestPaths.tempFile(extension.root());
 		try {
 			FilesSilent.writeString(tempFile, input);
 			Newliner.ensureNewlineAtEof(tempFile, newline);

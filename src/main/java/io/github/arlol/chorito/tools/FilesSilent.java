@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.List;
 import java.util.Set;
@@ -164,6 +165,31 @@ public abstract class FilesSilent {
 
 	public static boolean isRegularFile(Path path, LinkOption... options) {
 		return Files.isRegularFile(path, options);
+	}
+
+	public static Path createTempDirectory(
+			Path dir,
+			String prefix,
+			FileAttribute<?>... attrs
+	) {
+		try {
+			return Files.createTempDirectory(dir, prefix, attrs);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
+	public static Path createTempFile(
+			Path dir,
+			String prefix,
+			String suffix,
+			FileAttribute<?>... attrs
+	) {
+		try {
+			return Files.createTempFile(dir, prefix, suffix, attrs);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 }
