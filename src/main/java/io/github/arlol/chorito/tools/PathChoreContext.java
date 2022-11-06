@@ -20,9 +20,9 @@ public class PathChoreContext implements ChoreContext {
 		private final Clock clock;
 		private final Function<String[], ProcessBuilderSilent> processBuilderFactory;
 
-		public Builder() {
+		public Builder(Path root) {
 			this(
-					null,
+					root,
 					false,
 					new Random(),
 					Clock.systemDefaultZone(),
@@ -109,8 +109,8 @@ public class PathChoreContext implements ChoreContext {
 
 	}
 
-	public static Builder newBuilder() {
-		return new Builder();
+	public static Builder newBuilder(Path root) {
+		return new Builder(root);
 	}
 
 	private final Path root;
@@ -138,8 +138,7 @@ public class PathChoreContext implements ChoreContext {
 	}
 
 	public Builder toBuilder() {
-		return new Builder().root(root)
-				.hasGitHubRemote(hasGitHubRemote)
+		return new Builder(root).hasGitHubRemote(hasGitHubRemote)
 				.randomGenerator(randomGenerator)
 				.clock(clock)
 				.randomGenerator(randomGenerator)

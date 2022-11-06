@@ -24,7 +24,7 @@ public class FileSystemExtension
 	}
 
 	public PathChoreContext choreContext() {
-		return PathChoreContext.newBuilder().root(root()).build();
+		return PathChoreContext.newBuilder(root()).build();
 	}
 
 	@Override
