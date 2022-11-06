@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
 
@@ -23,12 +22,10 @@ public class XmlPreambleChoreTest {
 
 	@Test
 	public void test() throws Exception {
-		ChoreContext context = extension.choreContext();
-
-		Path pomXml = context.resolve("pom.xml");
+		Path pomXml = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(pomXml, "<project />");
 
-		new XmlPreambleChore(context.refresh()).doit();
+		new XmlPreambleChore(extension.choreContext()).doit();
 
 		assertThat(FilesSilent.readString(pomXml)).startsWith(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project />"
@@ -37,9 +34,7 @@ public class XmlPreambleChoreTest {
 
 	@Test
 	public void testUpdateCrossdomainXml() throws Exception {
-		ChoreContext context = extension.choreContext();
-
-		Path xml = context.resolve("crossdomain.xml");
+		Path xml = extension.root().resolve("crossdomain.xml");
 		FilesSilent.writeString(
 				xml,
 				"""
@@ -61,7 +56,7 @@ public class XmlPreambleChoreTest {
 						"""
 		);
 
-		new XmlPreambleChore(context.refresh()).doit();
+		new XmlPreambleChore(extension.choreContext()).doit();
 
 		assertThat(FilesSilent.readString(xml)).startsWith(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE"
@@ -70,9 +65,7 @@ public class XmlPreambleChoreTest {
 
 	@Test
 	public void testUpdateMavenSettingsXml() throws Exception {
-		ChoreContext context = extension.choreContext();
-
-		Path xml = context.resolve("settings.xml");
+		Path xml = extension.root().resolve("settings.xml");
 		FilesSilent.writeString(
 				xml,
 				"""
@@ -86,7 +79,7 @@ public class XmlPreambleChoreTest {
 						"""
 		);
 
-		new XmlPreambleChore(context.refresh()).doit();
+		new XmlPreambleChore(extension.choreContext()).doit();
 
 		assertThat(FilesSilent.readString(xml)).startsWith(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<settings"
@@ -95,9 +88,7 @@ public class XmlPreambleChoreTest {
 
 	@Test
 	public void testUpdateInkscapePreferencesXml() throws Exception {
-		ChoreContext context = extension.choreContext();
-
-		Path xml = context.resolve("preferences.xml");
+		Path xml = extension.root().resolve("preferences.xml");
 		FilesSilent.writeString(
 				xml,
 				"""
@@ -109,7 +100,7 @@ public class XmlPreambleChoreTest {
 						"""
 		);
 
-		new XmlPreambleChore(context.refresh()).doit();
+		new XmlPreambleChore(extension.choreContext()).doit();
 
 		assertThat(FilesSilent.readString(xml)).startsWith(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<inkscape"

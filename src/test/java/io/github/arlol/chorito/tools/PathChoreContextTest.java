@@ -28,13 +28,13 @@ public class PathChoreContextTest {
 	}
 
 	private ChoreContext context() {
-		ChoreContext context = extension.choreContext();
 		FilesSilent.writeString(
-				context.resolve("test.txt"),
+				extension.root().resolve("test.txt"),
 				"this is a text file"
 		);
-		FilesSilent.write(context.resolve("test.bin"), new byte[] { 0 });
-		return context.refresh();
+		FilesSilent
+				.write(extension.root().resolve("test.bin"), new byte[] { 0 });
+		return extension.choreContext();
 	}
 
 }

@@ -1,7 +1,6 @@
 package io.github.arlol.chorito.chores;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 
@@ -195,25 +194,26 @@ public class GitHubActionChoreTest {
 
 	@Test
 	public void testEmptyWorkflowFile() throws Exception {
-		ChoreContext context = extension.choreContext();
-		Path workflow = context.resolve(".github/workflows/main.yaml");
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.touch(workflow);
-		assertTrue(FilesSilent.exists(workflow));
-		new GitHubActionChore(context.refresh()).doit();
+
+		new GitHubActionChore(extension.choreContext()).doit();
+
 		assertThat(FilesSilent.readString(workflow)).isEqualTo("");
 	}
 
 	@Test
 	public void testBasicWorkflowFile() throws Exception {
-		ChoreContext context = extension.choreContext();
-		Path workflow = context.resolve(".github/workflows/main.yaml");
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+
 		FilesSilent.writeString(
 				workflow,
 				"jobs:\n" + "  linux:\n" + "    runs-on: ubuntu-latest\n"
 						+ "    steps:\n" + "    - run: whoami\n"
 		);
-		assertTrue(FilesSilent.exists(workflow));
-		new GitHubActionChore(context.refresh()).doit();
+
+		new GitHubActionChore(extension.choreContext()).doit();
+
 		assertThat(FilesSilent.readString(workflow)).isEqualTo(
 				"jobs:\n" + "  linux:\n" + "    runs-on: ubuntu-latest\n"
 						+ "    steps:\n" + "    - run: whoami\n"
@@ -222,8 +222,7 @@ public class GitHubActionChoreTest {
 
 	@Test
 	public void testVsShellWorkflowFile() throws Exception {
-		ChoreContext context = extension.choreContext();
-		Path workflow = context.resolve(".github/workflows/main.yaml");
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(
 				workflow,
 				"jobs:\n" + "  windows:\n" + "    runs-on: windows-latest\n"
@@ -231,8 +230,9 @@ public class GitHubActionChoreTest {
 						+ "    - name: Set up Visual Studio shell\n"
 						+ "      uses: egor-tensin/vs-shell@v2\n"
 		);
-		assertTrue(FilesSilent.exists(workflow));
-		new GitHubActionChore(context.refresh()).doit();
+
+		new GitHubActionChore(extension.choreContext()).doit();
+
 		assertThat(FilesSilent.readString(workflow)).isEqualTo(
 				"jobs:\n" + "  windows:\n" + "    runs-on: windows-latest\n"
 						+ "    steps:\n"
@@ -241,45 +241,49 @@ public class GitHubActionChoreTest {
 
 	@Test
 	public void testGraalSetupMigration() throws Exception {
-		ChoreContext context = extension.choreContext();
-		Path workflow = context.resolve(".github/workflows/main.yaml");
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(workflow, INPUT_GRAALSETUP_OUTPUT);
-		assertTrue(FilesSilent.exists(workflow));
-		new GitHubActionChore(context.refresh()).doit();
+
+		new GitHubActionChore(extension.choreContext()).doit();
+
 		assertThat(FilesSilent.readString(workflow))
 				.isEqualTo(EXPECTED_GRAALSETUP_OUTPUT);
 	}
 
 	@Test
 	public void testAdoptTemurinMigration() throws Exception {
-		ChoreContext context = extension.choreContext();
-		Path workflow = context.resolve(".github/workflows/main.yaml");
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(workflow, INPUT_ADOPT);
-		assertTrue(FilesSilent.exists(workflow));
-		new GitHubActionChore(context.refresh()).doit();
+
+		new GitHubActionChore(extension.choreContext()).doit();
+
 		assertThat(FilesSilent.readString(workflow)).isEqualTo(EXPECTED_ADOPT);
 	}
 
 	@Test
 	public void testStepsOutput() throws Exception {
-		ChoreContext context = extension.choreContext();
-		Path workflow = context.resolve(".github/workflows/main.yaml");
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(workflow, INPUT_STEPS_OUTPUT);
-		assertTrue(FilesSilent.exists(workflow));
-		new GitHubActionChore(context.refresh()).doit();
+
+		new GitHubActionChore(extension.choreContext()).doit();
+
 		assertThat(FilesSilent.readString(workflow))
 				.isEqualTo(EXPECTED_STEPS_OUTPUT);
 	}
 
 	@Test
 	public void testChoresSetSchedule53445() throws Exception {
+		Path workflow = extension.root()
+				.resolve(".github/workflows/chores.yaml");
+		FilesSilent.writeString(workflow, "- cron: '5 3 4 4 5'");
+
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.hasGitHubRemote(true)
 				.build();
-		Path workflow = context.resolve(".github/workflows/chores.yaml");
-		FilesSilent.writeString(workflow, "- cron: '5 3 4 4 5'");
-		new GitHubActionChore(context.refresh()).doit();
+
+		new GitHubActionChore(context).doit();
+
 		assertThat(FilesSilent.readString(workflow)).startsWith("""
 				name: Chores
 
@@ -295,13 +299,17 @@ public class GitHubActionChoreTest {
 
 	@Test
 	public void testChoresSetSchedule26155() throws Exception {
+		Path workflow = extension.root()
+				.resolve(".github/workflows/chores.yaml");
+		FilesSilent.writeString(workflow, "- cron: '26 15 * * 5'");
+
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.hasGitHubRemote(true)
 				.build();
-		Path workflow = context.resolve(".github/workflows/chores.yaml");
-		FilesSilent.writeString(workflow, "- cron: '26 15 * * 5'");
-		new GitHubActionChore(context.refresh()).doit();
+
+		new GitHubActionChore(context).doit();
+
 		assertThat(FilesSilent.readString(workflow)).doesNotStartWith("""
 				name: Chores
 
@@ -317,46 +325,55 @@ public class GitHubActionChoreTest {
 
 	@Test
 	public void testCodeQlSetSchedule4203() throws Exception {
+		Path workflow = extension.root()
+				.resolve(".github/workflows/codeql-analysis.yaml");
+		String input = "- cron: '4 20 * * 3'";
+		FilesSilent.writeString(workflow, input);
+
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.hasGitHubRemote(true)
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
-		Path workflow = context
-				.resolve(".github/workflows/codeql-analysis.yaml");
-		String input = "- cron: '4 20 * * 3'";
-		FilesSilent.writeString(workflow, input);
-		new GitHubActionChore(context.refresh()).doit();
+
+		new GitHubActionChore(context).doit();
+
 		assertThat(FilesSilent.readString(workflow))
 				.isEqualTo("- cron: '1 3 1 * *'\n");
 	}
 
 	@Test
 	public void testMainSchedulDuplicated() throws Exception {
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		String input = "- cron: '17 4 5 * *'";
+		FilesSilent.writeString(workflow, input);
+
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.hasGitHubRemote(true)
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
-		Path workflow = context.resolve(".github/workflows/main.yaml");
-		String input = "- cron: '17 4 5 * *'";
-		FilesSilent.writeString(workflow, input);
-		new GitHubActionChore(context.refresh()).doit();
+
+		new GitHubActionChore(context).doit();
+
 		assertThat(FilesSilent.readString(workflow))
 				.isEqualTo("- cron: '1 3 1 * *'\n");
 	}
 
 	@Test
 	public void testMainScheduleAlreadyReplaced() throws Exception {
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		String input = "- cron: '5 5 5 * *'";
+		FilesSilent.writeString(workflow, input);
+
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.hasGitHubRemote(true)
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
-		Path workflow = context.resolve(".github/workflows/main.yaml");
-		String input = "- cron: '5 5 5 * *'";
-		FilesSilent.writeString(workflow, input);
-		new GitHubActionChore(context.refresh()).doit();
+
+		new GitHubActionChore(context).doit();
+
 		assertThat(FilesSilent.readString(workflow))
 				.isEqualTo("- cron: '5 5 5 * *'\n");
 	}

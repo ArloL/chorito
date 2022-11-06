@@ -36,9 +36,9 @@ public class LicenseChoreTest {
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
-		new LicenseChore(context.refresh()).doit();
+		new LicenseChore(context).doit();
 
-		Path license = context.resolve("LICENSE");
+		Path license = extension.root().resolve("LICENSE");
 		assertTrue(FilesSilent.exists(license));
 		assertThat(FilesSilent.readString(license))
 				.isEqualTo(mitLicense("2018"));
@@ -46,6 +46,10 @@ public class LicenseChoreTest {
 
 	@Test
 	public void testUpdateLicenseMd() throws Exception {
+		Path licenseMd = extension.root().resolve("LICENSE.md");
+		Path license = extension.root().resolve("LICENSE");
+		FilesSilent.writeString(licenseMd, mitLicense("2018"));
+
 		Instant instant = Instant.parse("2019-08-19T16:02:42.00Z");
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
 		ChoreContext context = extension.choreContext()
@@ -54,10 +58,8 @@ public class LicenseChoreTest {
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
-		Path licenseMd = context.resolve("LICENSE.md");
-		Path license = context.resolve("LICENSE");
-		FilesSilent.writeString(licenseMd, mitLicense("2018"));
-		new LicenseChore(context.refresh()).doit();
+		new LicenseChore(context).doit();
+
 		assertFalse(FilesSilent.exists(licenseMd));
 		assertTrue(FilesSilent.exists(license));
 		assertThat(FilesSilent.readString(license))
@@ -66,6 +68,9 @@ public class LicenseChoreTest {
 
 	@Test
 	public void testUpdate() throws Exception {
+		Path license = extension.root().resolve("LICENSE");
+		FilesSilent.writeString(license, mitLicense("2018"));
+
 		Instant instant = Instant.parse("2019-08-19T16:02:42.00Z");
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
 		ChoreContext context = extension.choreContext()
@@ -74,9 +79,8 @@ public class LicenseChoreTest {
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
-		Path license = context.resolve("LICENSE");
-		FilesSilent.writeString(license, mitLicense("2018"));
-		new LicenseChore(context.refresh()).doit();
+		new LicenseChore(context).doit();
+
 		assertTrue(FilesSilent.exists(license));
 		assertThat(FilesSilent.readString(license))
 				.isEqualTo(mitLicense("2018-2019"));
@@ -84,6 +88,9 @@ public class LicenseChoreTest {
 
 	@Test
 	public void testUpdateSameYear() throws Exception {
+		Path license = extension.root().resolve("LICENSE");
+		FilesSilent.writeString(license, mitLicense("2018"));
+
 		Instant instant = Instant.parse("2018-08-19T16:02:42.00Z");
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
 		ChoreContext context = extension.choreContext()
@@ -92,9 +99,8 @@ public class LicenseChoreTest {
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
-		Path license = context.resolve("LICENSE");
-		FilesSilent.writeString(license, mitLicense("2018"));
-		new LicenseChore(context.refresh()).doit();
+		new LicenseChore(context).doit();
+
 		assertTrue(FilesSilent.exists(license));
 		assertThat(FilesSilent.readString(license))
 				.isEqualTo(mitLicense("2018"));
@@ -102,6 +108,9 @@ public class LicenseChoreTest {
 
 	@Test
 	public void testDontTouchExistingRange() throws Exception {
+		Path license = extension.root().resolve("LICENSE");
+		FilesSilent.writeString(license, mitLicense("2018-2019"));
+
 		Instant instant = Instant.parse("2019-08-19T16:02:42.00Z");
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
 		ChoreContext context = extension.choreContext()
@@ -110,9 +119,8 @@ public class LicenseChoreTest {
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
-		Path license = context.resolve("LICENSE");
-		FilesSilent.writeString(license, mitLicense("2018-2019"));
-		new LicenseChore(context.refresh()).doit();
+		new LicenseChore(context).doit();
+
 		assertTrue(FilesSilent.exists(license));
 		assertThat(FilesSilent.readString(license))
 				.isEqualTo(mitLicense("2018-2019"));
@@ -120,6 +128,9 @@ public class LicenseChoreTest {
 
 	@Test
 	public void testUpdateExistingRange() throws Exception {
+		Path license = extension.root().resolve("LICENSE");
+		FilesSilent.writeString(license, mitLicense("2017-2018"));
+
 		Instant instant = Instant.parse("2019-08-19T16:02:42.00Z");
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
 		ChoreContext context = extension.choreContext()
@@ -128,9 +139,8 @@ public class LicenseChoreTest {
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
-		Path license = context.resolve("LICENSE");
-		FilesSilent.writeString(license, mitLicense("2017-2018"));
-		new LicenseChore(context.refresh()).doit();
+		new LicenseChore(context).doit();
+
 		assertTrue(FilesSilent.exists(license));
 		assertThat(FilesSilent.readString(license))
 				.isEqualTo(mitLicense("2017-2019"));
@@ -138,6 +148,12 @@ public class LicenseChoreTest {
 
 	@Test
 	public void testMultipleAuthors() throws Exception {
+		Path license = extension.root().resolve("LICENSE");
+		FilesSilent.writeString(
+				license,
+				mitLicense("2017-2018", "2012 Ryan Bates")
+		);
+
 		Instant instant = Instant.parse("2019-08-19T16:02:42.00Z");
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
 		ChoreContext context = extension.choreContext()
@@ -146,12 +162,8 @@ public class LicenseChoreTest {
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
-		Path license = context.resolve("LICENSE");
-		FilesSilent.writeString(
-				license,
-				mitLicense("2017-2018", "2012 Ryan Bates")
-		);
-		new LicenseChore(context.refresh()).doit();
+		new LicenseChore(context).doit();
+
 		assertTrue(FilesSilent.exists(license));
 		assertThat(FilesSilent.readString(license))
 				.isEqualTo(mitLicense("2017-2019", "2012 Ryan Bates"));

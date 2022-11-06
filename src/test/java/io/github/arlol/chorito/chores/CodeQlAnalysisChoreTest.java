@@ -91,13 +91,16 @@ public class CodeQlAnalysisChoreTest {
 
 	@Test
 	public void testJava() throws Exception {
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
+
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.hasGitHubRemote(true)
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
-		FilesSilent.touch(context.resolve("pom.xml"));
-		new CodeQlAnalysisChore(context.refresh()).doit();
+
+		new CodeQlAnalysisChore(context).doit();
+
 		Path workflow = context
 				.resolve(".github/workflows/codeql-analysis.yaml");
 		assertTrue(FilesSilent.exists(workflow));

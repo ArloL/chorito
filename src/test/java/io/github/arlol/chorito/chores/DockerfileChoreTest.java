@@ -10,7 +10,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
 
@@ -30,15 +29,13 @@ public class DockerfileChoreTest {
 					"DOCKERfile", "dockerfilE" }
 	)
 	public void test(String name) throws Exception {
-		ChoreContext context = extension.choreContext();
-
-		Path wronglyNamedFile = context.resolve(name);
+		Path wronglyNamedFile = extension.root().resolve(name);
 		FilesSilent.touch(wronglyNamedFile);
 
-		new DockerfileChore(context.refresh()).doit();
+		new DockerfileChore(extension.choreContext()).doit();
 
 		assertFalse(FilesSilent.exists(wronglyNamedFile));
-		assertTrue(FilesSilent.exists(context.resolve("Dockerfile")));
+		assertTrue(FilesSilent.exists(extension.root().resolve("Dockerfile")));
 	}
 
 }
