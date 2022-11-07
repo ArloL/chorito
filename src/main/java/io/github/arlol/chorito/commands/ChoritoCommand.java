@@ -9,10 +9,12 @@ import io.github.arlol.chorito.chores.EditorConfigChore;
 import io.github.arlol.chorito.chores.GitAttributesChore;
 import io.github.arlol.chorito.chores.GitHubActionChore;
 import io.github.arlol.chorito.chores.GitIgnoreChore;
+import io.github.arlol.chorito.chores.GitMasterBranchChore;
 import io.github.arlol.chorito.chores.GraalNativeImageMavenPluginMigrationChore;
 import io.github.arlol.chorito.chores.GraalNativeImagePropertiesChore;
 import io.github.arlol.chorito.chores.GradleWrapperChore;
 import io.github.arlol.chorito.chores.JavaUpdaterChore;
+import io.github.arlol.chorito.chores.JitpackChore;
 import io.github.arlol.chorito.chores.LicenseChore;
 import io.github.arlol.chorito.chores.MavenWrapperChore;
 import io.github.arlol.chorito.chores.ProhibitedFilenameChore;
@@ -35,6 +37,7 @@ public class ChoritoCommand {
 	}
 
 	public void execute() {
+		new GitMasterBranchChore(context).doit();
 		new ReadmeChore(context).doit();
 		new GitAttributesChore(context).doit();
 		new EditorConfigChore(context).doit();
@@ -48,6 +51,7 @@ public class ChoritoCommand {
 		new GitHubActionChore(context).doit();
 		new GitIgnoreChore(context).doit();
 		new JavaUpdaterChore(context).doit();
+		new JitpackChore(context).doit();
 		new GraalNativeImagePropertiesChore(context).doit();
 		new Ec4jChore(context).doit();
 		new DeleteUnnecessaryFilesChore(context).doit();
