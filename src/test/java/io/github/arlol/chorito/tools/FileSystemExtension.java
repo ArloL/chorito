@@ -31,7 +31,7 @@ public class FileSystemExtension
 	public void beforeEach(ExtensionContext context) throws Exception {
 		this.fileSystem = MemoryFileSystemBuilder.newEmpty()
 				.addFileAttributeView(PosixFileAttributeView.class)
-				.build("name");
+				.build();
 	}
 
 	@Override
