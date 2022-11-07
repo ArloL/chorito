@@ -200,4 +200,12 @@ public abstract class FilesSilent {
 		}
 	}
 
+	public static Path createDirectories(Path dir, FileAttribute<?>... attrs) {
+		try {
+			return Files.createDirectories(dir, attrs);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
 }
