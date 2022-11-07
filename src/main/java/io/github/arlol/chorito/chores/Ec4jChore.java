@@ -70,6 +70,9 @@ public class Ec4jChore {
 					);
 					final List<Linter> filteredLinters = linterRegistry
 							.filter(file);
+					if (filteredLinters.isEmpty()) {
+						continue;
+					}
 					ViolationHandler.ReturnState state = ViolationHandler.ReturnState.RECHECK;
 					while (state != ViolationHandler.ReturnState.FINISHED) {
 						for (Linter linter : filteredLinters) {
