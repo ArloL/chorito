@@ -21,6 +21,7 @@ public class JavaUpdaterChore {
 	public void doit() {
 		updatePomXmlJavaVersionProperty();
 		updateGithubActions();
+		updateJitpackYml();
 	}
 
 	private void updatePomXmlJavaVersionProperty() {
@@ -55,7 +56,22 @@ public class JavaUpdaterChore {
 					.toList();
 			FilesSilent.write(path, updated, "\n");
 		});
+	}
 
+	private void updateJitpackYml() {
+		Path jitpack = context.resolve("jitpack.yml");
+		if (FilesSilent.exists(jitpack)) {
+			List<String> updated = FilesSilent.readAllLines(jitpack)
+					.stream()
+					.map(s -> {
+						if (s.trim().startsWith("- openjdk")) {
+							return s.replace("11", "17");
+						}
+						return s;
+					})
+					.toList();
+			FilesSilent.write(jitpack, updated, "\n");
+		}
 	}
 
 }
