@@ -20,7 +20,9 @@ public class FileSystemExtension
 	}
 
 	public Path root() {
-		return this.fileSystem.getRootDirectories().iterator().next();
+		Path root = this.fileSystem.getPath("/app");
+		FilesSilent.createDirectories(root);
+		return root;
 	}
 
 	public ChoreContext choreContext() {
