@@ -14,6 +14,7 @@ import org.ec4j.core.Resource.Resources;
 import org.ec4j.core.ResourceProperties;
 import org.ec4j.core.ResourcePropertiesService;
 import org.ec4j.core.model.PropertyType;
+import org.ec4j.lint.api.CustomLinterRegistryBuilder;
 import org.ec4j.lint.api.FormattingHandler;
 import org.ec4j.lint.api.Linter;
 import org.ec4j.lint.api.LinterRegistry;
@@ -38,7 +39,7 @@ public class Ec4jChore {
 
 	public void doit() {
 		try {
-			LinterRegistry linterRegistry = buildLinterRegistry();
+			LinterRegistry linterRegistry = buildLinterRegistry(context.root());
 			ViolationHandler handler = new FormattingHandler(
 					false,
 					".bak",
@@ -99,11 +100,11 @@ public class Ec4jChore {
 		}
 	}
 
-	private LinterRegistry buildLinterRegistry() {
-		final LinterRegistry.Builder linterRegistryBuilder = LinterRegistry
-				.builder();
-		linterRegistryBuilder.scan(getClass().getClassLoader());
-		return linterRegistryBuilder.log(EC4J_LOGGER).build();
+	private LinterRegistry buildLinterRegistry(Path currentDir) {
+		return new CustomLinterRegistryBuilder(currentDir)
+				.scan(getClass().getClassLoader())
+				.log(EC4J_LOGGER)
+				.build();
 	}
 
 }
