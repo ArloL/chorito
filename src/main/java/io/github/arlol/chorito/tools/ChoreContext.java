@@ -1,5 +1,7 @@
 package io.github.arlol.chorito.tools;
 
+import static java.util.Collections.emptyList;
+
 import java.nio.file.Path;
 import java.time.Clock;
 import java.util.List;
@@ -19,8 +21,8 @@ public class ChoreContext {
 	public static class Builder {
 
 		private Path root;
-		private List<Path> textFiles;
-		private List<Path> files;
+		private List<Path> textFiles = emptyList();
+		private List<Path> files = emptyList();
 		private boolean hasGitHubRemote = false;
 		private RandomGenerator randomGenerator = new Random();
 		private Clock clock = Clock.systemDefaultZone();
