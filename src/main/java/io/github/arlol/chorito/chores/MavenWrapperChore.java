@@ -58,6 +58,10 @@ public class MavenWrapperChore {
 					"-Dmaven=3.8.6"
 			).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
 		}
+		if (!FilesSilent
+				.exists(context.resolve("./mvn/wrapper/maven-wrapper.jar"))) {
+			throw new IllegalStateException("No maven-wrapper.jar");
+		}
 		var permissions = FilesSilent.getPosixFilePermissions(wrapper);
 		permissions.add(PosixFilePermission.OWNER_EXECUTE);
 		permissions.add(PosixFilePermission.GROUP_EXECUTE);
