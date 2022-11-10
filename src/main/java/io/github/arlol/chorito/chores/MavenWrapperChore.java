@@ -59,7 +59,7 @@ public class MavenWrapperChore {
 			).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
 		}
 		if (!FilesSilent
-				.exists(context.resolve("./mvn/wrapper/maven-wrapper.jar"))) {
+				.exists(context.resolve(".mvn/wrapper/maven-wrapper.jar"))) {
 			throw new IllegalStateException("No maven-wrapper.jar");
 		}
 		var permissions = FilesSilent.getPosixFilePermissions(wrapper);
