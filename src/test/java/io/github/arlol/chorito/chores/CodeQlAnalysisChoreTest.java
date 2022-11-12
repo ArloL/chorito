@@ -63,22 +63,6 @@ public class CodeQlAnalysisChoreTest {
 			    runs-on: ubuntu-latest
 			    steps:
 			    - name: Checkout repository
-			      uses: actions/checkout@v3.1.0
-			    - uses: actions/setup-java@v3.6.0
-			      with:
-			        java-version: ${{ env.JAVA_VERSION }}
-			        distribution: adopt
-			        cache: 'maven'
-			    - name: Initialize CodeQL
-			      uses: github/codeql-action/init@v2.1.29
-			      with:
-			        languages: java
-			    - name: Autobuild
-			      uses: github/codeql-action/autobuild@v2.1.29
-			    - name: Perform CodeQL Analysis
-			      uses: github/codeql-action/analyze@v2.1.29
-			    - name: Make sure build did not change anything
-			      run: git diff --exit-code
 			""";
 
 	@RegisterExtension
@@ -104,7 +88,7 @@ public class CodeQlAnalysisChoreTest {
 		Path workflow = context
 				.resolve(".github/workflows/codeql-analysis.yaml");
 		assertTrue(FilesSilent.exists(workflow));
-		assertThat(FilesSilent.readString(workflow)).isEqualTo(EXPECTED_JAVA);
+		assertThat(FilesSilent.readString(workflow)).startsWith(EXPECTED_JAVA);
 	}
 
 }
