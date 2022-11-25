@@ -39,7 +39,7 @@ public class PathChoreContextTest {
 	}
 
 	@BeforeEach
-	private void setup() {
+	public void setup() {
 		FilesSilent.writeString(
 				extension.root().resolve("test.txt"),
 				"this is a text file"
