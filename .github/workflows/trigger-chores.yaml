@@ -59,13 +59,8 @@ jobs:
         - sprinteins/drupal-client
     steps:
     - name: Trigger chores on ${{ matrix.repo }}
-      run: |
-        curl \
-          --silent \
-          --show-error \
-          --fail \
-          --request POST \
-          --header "Accept: application/vnd.github.everest-preview+json" \
-          --header "Authorization: token ${{ secrets.PAT }}" \
-          --data '{"event_type": "chores"}' \
-          https://api.github.com/repos/${{ matrix.repo }}/dispatches
+      uses: peter-evans/repository-dispatch@v2.1.0
+      with:
+        token: ${{ secrets.PAT }}
+        repository: ${{ matrix.repo }}
+        event-type: chores
