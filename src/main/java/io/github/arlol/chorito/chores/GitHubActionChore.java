@@ -33,6 +33,7 @@ public class GitHubActionChore {
 		migrateJavaDistributionFromAdoptToTemurin();
 		updateCodeQlSchedule();
 		updateMainSchedule();
+		removeSetupJava370();
 	}
 
 	private void ensureYamlFileExtension() {
@@ -249,6 +250,23 @@ public class GitHubActionChore {
 			updated = updated.replace(
 					"uses: eregon/publish-release@v1\n",
 					"uses: eregon/publish-release@v1.0.4\n"
+			);
+			FilesSilent.writeString(path, updated);
+		});
+	}
+
+	private void removeSetupJava370() {
+		Path workflowsLocation = context.resolve(".github/workflows");
+		context.textFiles().stream().filter(path -> {
+			if (path.startsWith(workflowsLocation)) {
+				return path.toString().endsWith(".yaml");
+			}
+			return false;
+		}).map(context::resolve).forEach(path -> {
+			String updated = FilesSilent.readString(path);
+			updated = updated.replace(
+					"uses: actions/setup-java@v3.7.0\n",
+					"uses: actions/setup-java@v3.6.0\n"
 			);
 			FilesSilent.writeString(path, updated);
 		});
