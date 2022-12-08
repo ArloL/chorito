@@ -45,6 +45,12 @@ public class DependabotChore {
 			    schedule:
 			      interval: "daily"
 			""";
+	private static String DEFAULT_GRADLE_DEPENDABOT = """
+			  - package-ecosystem: "gradle"
+			    directory: "/"
+			    schedule:
+			      interval: "daily"
+			""";
 
 	private final ChoreContext context;
 
@@ -70,6 +76,9 @@ public class DependabotChore {
 			}
 			if (FilesSilent.exists(context.resolve("package.json"))) {
 				content += DEFAULT_NPM_DEPENDABOT;
+			}
+			if (FilesSilent.exists(context.resolve("build.gradle"))) {
+				content += DEFAULT_GRADLE_DEPENDABOT;
 			}
 			FilesSilent.writeString(
 					context.resolve(".github/dependabot.yml"),
