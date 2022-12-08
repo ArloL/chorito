@@ -46,6 +46,7 @@ public class LicenseChore {
 			FilesSilent.move(licenseMd, license);
 		}
 		if (context.hasGitHubRemote()) {
+			checkPom();
 			final String currentYear = ""
 					+ Year.now(context.clock()).getValue();
 			String newLicenseContent = MIT_LICENSE
@@ -81,6 +82,16 @@ public class LicenseChore {
 				}
 			}
 			FilesSilent.writeString(license, newLicenseContent);
+		}
+	}
+
+	private void checkPom() {
+		Path pomXml = context.resolve("pom.xml");
+		if (!FilesSilent.exists(pomXml)) {
+			return;
+		}
+		if (!FilesSilent.readString(pomXml).contains("licenses")) {
+			throw new IllegalStateException("Add license to pom");
 		}
 	}
 
