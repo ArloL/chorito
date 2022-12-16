@@ -64,8 +64,11 @@ public class JavaUpdaterChore {
 			List<String> updated = FilesSilent.readAllLines(jitpack)
 					.stream()
 					.map(s -> {
-						if (s.trim().startsWith("- openjdk")) {
-							return s.replace("11", "17");
+						if (s.trim().equals("- openjdk8")) {
+							return s.replace("openjdk8", "openjdk17");
+						}
+						if (s.trim().equals("- openjdk11")) {
+							return s.replace("openjdk11", "openjdk17");
 						}
 						return s;
 					})

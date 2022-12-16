@@ -43,7 +43,17 @@ public class JavaUpdaterChoreTest {
 	}
 
 	@Test
-	public void testJitpack() throws Exception {
+	public void testJitpackJdk8() throws Exception {
+		Path jitpack = extension.root().resolve("jitpack.yml");
+		FilesSilent.writeString(jitpack, "- openjdk8");
+
+		new JavaUpdaterChore(extension.choreContext()).doit();
+
+		assertThat(FilesSilent.readString(jitpack)).isEqualTo("- openjdk17\n");
+	}
+
+	@Test
+	public void testJitpackJdk11() throws Exception {
 		Path jitpack = extension.root().resolve("jitpack.yml");
 		FilesSilent.writeString(jitpack, "- openjdk11");
 
