@@ -18,6 +18,7 @@ import io.github.arlol.chorito.chores.JitpackChore;
 import io.github.arlol.chorito.chores.LicenseChore;
 import io.github.arlol.chorito.chores.MavenWrapperChore;
 import io.github.arlol.chorito.chores.PomParentRelativePathChore;
+import io.github.arlol.chorito.chores.PomPropertiesChore;
 import io.github.arlol.chorito.chores.PomScmChore;
 import io.github.arlol.chorito.chores.ProhibitedFilenameChore;
 import io.github.arlol.chorito.chores.ReadmeChore;
@@ -45,6 +46,7 @@ public class ChoritoCommand {
 		new EditorConfigChore(context).doit();
 		new PomParentRelativePathChore(context).doit();
 		new PomScmChore(context).doit();
+		new PomPropertiesChore(context).doit();
 		new LicenseChore(context).doit();
 		new XmlPreambleChore(context).doit();
 		new MavenWrapperChore(context).doit();
