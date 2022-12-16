@@ -15,10 +15,10 @@
 	<version>${revision}</version>
 
 	<scm>
-		<connection>scm:git:https://github.com/ArloL/chorito.git</connection>
-		<developerConnection>scm:git:https://github.com/ArloL/chorito.git</developerConnection>
+		<connection>scm:git:https://github.com/ArloL/chorito</connection>
+		<developerConnection>scm:git:https://github.com/ArloL/chorito</developerConnection>
 		<tag>${sha1}</tag>
-		<url>https://github.com/ArloL/chorito/</url>
+		<url>https://github.com/ArloL/chorito</url>
 	</scm>
 
 	<licenses>
