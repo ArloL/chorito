@@ -29,6 +29,24 @@ public class EditorConfigChoreTest {
 			[*.sh]
 			end_of_line = lf
 			""";
+	private static String POM_EDITORCONFIG = """
+			# https://editorconfig.org
+
+			root = true
+
+			[*]
+			end_of_line = lf
+			insert_final_newline = true
+
+			[*.{bat,cmd,ps1}]
+			end_of_line = crlf
+
+			[*.sh]
+			end_of_line = lf
+
+			[pom.xml]
+			indent_style = tab
+			""";
 
 	@RegisterExtension
 	final FileSystemExtension extension = new FileSystemExtension();
@@ -47,6 +65,34 @@ public class EditorConfigChoreTest {
 		assertTrue(FilesSilent.exists(editorConfig));
 		assertThat(FilesSilent.readString(editorConfig))
 				.isEqualTo(DEFAULT_EDITORCONFIG);
+	}
+
+	@Test
+	public void testTrimMultipleLineEndings() throws Exception {
+		Path editorConfig = extension.root().resolve(".editorconfig");
+		FilesSilent
+				.writeString(editorConfig, DEFAULT_EDITORCONFIG + "\n\n\n\n");
+		Path pom = extension.root().resolve("pom.xml");
+		FilesSilent.writeString(pom, "");
+
+		new EditorConfigChore(extension.choreContext()).doit();
+
+		assertTrue(FilesSilent.exists(editorConfig));
+		assertThat(FilesSilent.readString(editorConfig))
+				.isEqualTo(POM_EDITORCONFIG);
+	}
+
+	@Test
+	public void testPom() throws Exception {
+		Path editorConfig = extension.root().resolve(".editorconfig");
+		Path pom = extension.root().resolve("pom.xml");
+		FilesSilent.writeString(pom, "");
+
+		new EditorConfigChore(extension.choreContext()).doit();
+
+		assertTrue(FilesSilent.exists(editorConfig));
+		assertThat(FilesSilent.readString(editorConfig))
+				.isEqualTo(POM_EDITORCONFIG);
 	}
 
 	@Test

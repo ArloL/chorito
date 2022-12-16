@@ -35,6 +35,11 @@ public class EditorConfigChore {
 			[.idea/**]
 			insert_final_newline = false
 			""";
+	private static String DEFAULT_POM_XML = """
+
+			[pom.xml]
+			indent_style = tab
+			""";
 
 	private final ChoreContext context;
 
@@ -47,7 +52,7 @@ public class EditorConfigChore {
 		if (!FilesSilent.exists(editorConfigPath)) {
 			FilesSilent.writeString(editorConfigPath, DEFAULT_EDITORCONFIG);
 		}
-		var content = FilesSilent.readString(editorConfigPath);
+		var content = FilesSilent.readString(editorConfigPath).trim() + "\n";
 		if (!content.contains("[.vscode/**.json]")) {
 			Path vsCodeLocation = context.resolve(".vscode");
 			if (context.textFiles().stream().anyMatch(path -> {
@@ -68,6 +73,12 @@ public class EditorConfigChore {
 				return false;
 			})) {
 				content += DEFAULT_IDEA_EDITORCONFIG;
+			}
+		}
+		if (!content.contains("[pom.xml]")) {
+			Path pom = context.resolve("pom.xml");
+			if (FilesSilent.exists(pom)) {
+				content += DEFAULT_POM_XML;
 			}
 		}
 		content = removeBracketsFromSingleExtensionGroups(content);
