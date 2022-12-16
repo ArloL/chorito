@@ -23,6 +23,7 @@ public class ChoreContext {
 		private Path root;
 		private List<Path> textFiles = emptyList();
 		private List<Path> files = emptyList();
+		private List<String> remotes = emptyList();
 		private boolean hasGitHubRemote = false;
 		private RandomGenerator randomGenerator = new Random();
 		private Clock clock = Clock.systemDefaultZone();
@@ -39,6 +40,7 @@ public class ChoreContext {
 			this.root = choreContext.root();
 			this.textFiles = choreContext.textFiles();
 			this.files = choreContext.files();
+			this.remotes = choreContext.remotes();
 			this.hasGitHubRemote = choreContext.hasGitHubRemote();
 			this.randomGenerator = choreContext.randomGenerator();
 			this.clock = choreContext.clock();
@@ -56,6 +58,10 @@ public class ChoreContext {
 
 		public List<Path> files() {
 			return List.copyOf(files);
+		}
+
+		public List<String> remotes() {
+			return List.copyOf(remotes);
 		}
 
 		public boolean hasGitHubRemote() {
@@ -89,6 +95,11 @@ public class ChoreContext {
 			return this;
 		}
 
+		public Builder remotes(List<String> remotes) {
+			this.remotes = List.copyOf(remotes);
+			return this;
+		}
+
 		public Builder hasGitHubRemote(boolean hasGitHubRemote) {
 			this.hasGitHubRemote = hasGitHubRemote;
 			return this;
@@ -116,6 +127,7 @@ public class ChoreContext {
 					root,
 					textFiles,
 					files,
+					remotes,
 					hasGitHubRemote,
 					randomGenerator,
 					clock,
@@ -129,6 +141,7 @@ public class ChoreContext {
 	private final Path root;
 	private final List<Path> textFiles;
 	private final List<Path> files;
+	private final List<String> remotes;
 	private final boolean hasGitHubRemote;
 	private final RandomGenerator randomGenerator;
 	private final Clock clock;
@@ -139,6 +152,7 @@ public class ChoreContext {
 			Path root,
 			List<Path> textFiles,
 			List<Path> files,
+			List<String> remotes,
 			boolean hasGitHubRemote,
 			RandomGenerator randomGenerator,
 			Clock clock,
@@ -148,6 +162,7 @@ public class ChoreContext {
 		this.root = root;
 		this.textFiles = List.copyOf(textFiles);
 		this.files = List.copyOf(files);
+		this.remotes = List.copyOf(remotes);
 		this.hasGitHubRemote = hasGitHubRemote;
 		this.randomGenerator = randomGenerator;
 		this.clock = clock;
@@ -169,6 +184,10 @@ public class ChoreContext {
 
 	public List<Path> files() {
 		return List.copyOf(files);
+	}
+
+	public List<String> remotes() {
+		return List.copyOf(remotes);
 	}
 
 	public boolean hasGitHubRemote() {
