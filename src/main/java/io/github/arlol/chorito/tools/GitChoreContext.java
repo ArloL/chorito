@@ -32,6 +32,7 @@ public class GitChoreContext {
 		Path root = builder.root();
 		List<Path> textFiles = new ArrayList<>();
 		List<Path> files = new ArrayList<>();
+		List<String> remotes = new ArrayList<>();
 		boolean hasGitHubRemote = false;
 
 		try (Repository repository = new FileRepositoryBuilder()
@@ -49,6 +50,7 @@ public class GitChoreContext {
 						remoteName,
 						"url"
 				);
+				remotes.add(remoteUrl);
 				if (remoteUrl.startsWith("https://github.com")) {
 					hasGitHubRemote = true;
 				}
@@ -77,6 +79,7 @@ public class GitChoreContext {
 
 		return builder.textFiles(textFiles)
 				.files(files)
+				.remotes(remotes)
 				.hasGitHubRemote(hasGitHubRemote);
 	}
 
