@@ -26,9 +26,9 @@ public class PomScmChoreTest {
 	private static String EXPECTED = """
 			<project>
 			<scm>
-			<connection>scm:git:https://github.com/ArloL/chorito.git</connection>
-			<developerConnection>scm:git:https://github.com/ArloL/chorito.git</developerConnection>
-			<url>https://github.com/ArloL/chorito/</url>
+			<connection>scm:git:https://github.com/ArloL/chorito</connection>
+			<developerConnection>scm:git:https://github.com/ArloL/chorito</developerConnection>
+			<url>https://github.com/ArloL/chorito</url>
 			</scm>
 			</project>
 			""";

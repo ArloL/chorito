@@ -22,7 +22,7 @@ public class PomScmChore {
 		Path pom = context.resolve("pom.xml");
 		if (context.hasGitHubRemote() && context.remotes().size() == 1
 				&& FilesSilent.exists(pom)) {
-			String remote = context.remotes().get(0);
+			String remote = context.remotes().get(0).replace(".git", "");
 
 			Document doc = JsoupSilent
 					.parse(pom, "UTF-8", "", Parser.xmlParser());
@@ -39,7 +39,7 @@ public class PomScmChore {
 				}
 				Element url = scm.selectFirst("url");
 				if (url != null) {
-					url.text(remote.replace(".git", "/"));
+					url.text(remote);
 				}
 			}
 			FilesSilent.writeString(pom, doc.outerHtml());
