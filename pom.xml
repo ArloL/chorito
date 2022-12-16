@@ -33,7 +33,7 @@
 		<sha1>HEAD</sha1>
 		<revision>0.0.1-SNAPSHOT</revision>
 		<platform>unknown</platform>
-		<mainClass>io.github.arlol.chorito.Main</mainClass>
+		<start-class>io.github.arlol.chorito.Main</start-class>
 		<ec4j.version>0.2.1</ec4j.version>
 	</properties>
 
@@ -262,25 +262,14 @@
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>3.1.0</version>
 				<configuration>
-					<mainClass>${mainClass}</mainClass>
+					<mainClass>${start-class}</mainClass>
 					<executable>${env.JAVA_HOME}/bin/java</executable>
 					<arguments>
 						<argument>-agentlib:native-image-agent=config-merge-dir=./src/main/resources/META-INF/native-image</argument>
 						<argument>-classpath</argument>
 						<classpath />
-						<argument>${mainClass}</argument>
+						<argument>${start-class}</argument>
 					</arguments>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifest>
-							<mainClass>${mainClass}</mainClass>
-						</manifest>
-					</archive>
 				</configuration>
 			</plugin>
 		</plugins>
