@@ -1,7 +1,9 @@
 package io.github.arlol.chorito.chores;
 
+import static java.util.stream.Collectors.joining;
+
 import java.nio.file.Path;
-import java.util.List;
+import java.util.Arrays;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
@@ -45,7 +47,7 @@ public class EditorConfigChore {
 		if (!FilesSilent.exists(editorConfigPath)) {
 			FilesSilent.writeString(editorConfigPath, DEFAULT_EDITORCONFIG);
 		}
-		var content = FilesSilent.readAllLines(editorConfigPath);
+		var content = FilesSilent.readString(editorConfigPath);
 		if (!content.contains("[.vscode/**.json]")) {
 			Path vsCodeLocation = context.resolve(".vscode");
 			if (context.textFiles().stream().anyMatch(path -> {
@@ -54,7 +56,7 @@ public class EditorConfigChore {
 				}
 				return false;
 			})) {
-				content.add(DEFAULT_VSCODE_EDITORCONFIG);
+				content += DEFAULT_VSCODE_EDITORCONFIG;
 			}
 		}
 		if (!content.contains("[.idea/**]")) {
@@ -65,18 +67,18 @@ public class EditorConfigChore {
 				}
 				return false;
 			})) {
-				content.add(DEFAULT_IDEA_EDITORCONFIG);
+				content += DEFAULT_IDEA_EDITORCONFIG;
 			}
 		}
 		content = removeBracketsFromSingleExtensionGroups(content);
-		FilesSilent.write(editorConfigPath, content, "\n");
+		FilesSilent.writeString(editorConfigPath, content);
 	}
 
-	public static List<String> removeBracketsFromSingleExtensionGroups(
-			List<String> content
+	public static String removeBracketsFromSingleExtensionGroups(
+			String content
 	) {
 		// make sure single file name matches are without brackets
-		return content.stream().map(string -> {
+		return Arrays.stream(content.split("\r?\n")).map(string -> {
 			if (string.startsWith("[*.{") && !string.contains(",")) {
 				String suffix = string.substring(
 						string.indexOf("{") + 1,
@@ -85,7 +87,7 @@ public class EditorConfigChore {
 				return "[*." + suffix + "]";
 			}
 			return string;
-		}).toList();
+		}).collect(joining("\n", "", "\n"));
 	}
 
 }
