@@ -36,7 +36,7 @@ public class GitMasterBranchChore {
 		}
 		try (Repository repository = builder.build()) {
 			if (repository.getBranch().equalsIgnoreCase("master")) {
-				throw new IllegalStateException("Rename master to main branch");
+				System.out.println("You should rename master to main branch");
 			}
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
