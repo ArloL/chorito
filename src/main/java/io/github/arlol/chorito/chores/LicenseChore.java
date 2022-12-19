@@ -91,7 +91,7 @@ public class LicenseChore {
 			return;
 		}
 		if (!FilesSilent.readString(pomXml).contains("licenses")) {
-			throw new IllegalStateException("Add license to pom");
+			System.out.println("Add license to pom");
 		}
 	}
 
