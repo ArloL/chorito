@@ -104,6 +104,7 @@ jobs:
           echo "$secondOutput"
           exit 1
         fi
+        "./target/${ARTIFACT}-macos-${REVISION}"
     - name: Move artifacts
       run: |
         mkdir target/artifacts
@@ -160,6 +161,7 @@ jobs:
           echo "$secondOutput"
           exit 1
         fi
+        "./target/${ARTIFACT}-linux-${REVISION}"
     - name: Move artifacts
       run: |
         mkdir target/artifacts
@@ -211,6 +213,7 @@ jobs:
           echo $secondOutput
           exit 1
         }
+        & "./target/${{ env.ARTIFACT }}-windows-$env:REVISION.exe"
     - name: Move artifacts
       run: |
         mkdir target/artifacts
