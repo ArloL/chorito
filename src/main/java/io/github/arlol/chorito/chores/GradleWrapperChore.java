@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.github.arlol.chorito.tools.ChoreContext;
-import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.ExecutableFlagger;
+import io.github.arlol.chorito.tools.FilesSilent;
 
 public class GradleWrapperChore {
 
@@ -18,7 +18,8 @@ public class GradleWrapperChore {
 	private static String DEFAULT_PROPERTIES = """
 			distributionBase=GRADLE_USER_HOME
 			distributionPath=wrapper/dists
-			distributionUrl=https\\://services.gradle.org/distributions/gradle-7.5.1-all.zip
+			distributionUrl=https\\://services.gradle.org/distributions/gradle-8.0.2-all.zip
+			networkTimeout=10000
 			zipStoreBase=GRADLE_USER_HOME
 			zipStorePath=wrapper/dists
 			""";
@@ -44,7 +45,7 @@ public class GradleWrapperChore {
 						"./gradlew",
 						"wrapper",
 						"--gradle-version",
-						"7.5.1",
+						"8.0.2",
 						"--distribution-type",
 						"all",
 						"--no-daemon"
@@ -53,7 +54,7 @@ public class GradleWrapperChore {
 						"./gradlew",
 						"wrapper",
 						"--gradle-version",
-						"7.5.1",
+						"8.0.2",
 						"--distribution-type",
 						"all",
 						"--no-daemon"
