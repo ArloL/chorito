@@ -2,10 +2,10 @@ package io.github.arlol.chorito.chores;
 
 import java.io.UncheckedIOException;
 import java.nio.charset.MalformedInputException;
-import java.nio.file.attribute.PosixFilePermission;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.ExecutableFlagger;
 
 public class RemoveUnnecessaryExecFlagsChore {
 
@@ -17,18 +17,11 @@ public class RemoveUnnecessaryExecFlagsChore {
 
 	public void doit() {
 		context.textFiles().forEach(path -> {
-			var permissions = FilesSilent.getPosixFilePermissions(path);
-			if (permissions.contains(PosixFilePermission.OWNER_EXECUTE)
-					|| permissions.contains(PosixFilePermission.GROUP_EXECUTE)
-					|| permissions
-							.contains(PosixFilePermission.OTHERS_EXECUTE)) {
+			if (ExecutableFlagger.isExecutable(path)) {
 				try {
 					String readString = FilesSilent.readString(path);
 					if (!readString.startsWith("#!")) {
-						permissions.remove(PosixFilePermission.OWNER_EXECUTE);
-						permissions.remove(PosixFilePermission.GROUP_EXECUTE);
-						permissions.remove(PosixFilePermission.OTHERS_EXECUTE);
-						FilesSilent.setPosixFilePermissions(path, permissions);
+						ExecutableFlagger.makeNotExecutableIfPossible(path);
 					}
 				} catch (UncheckedIOException e) {
 					if (!(e.getCause() instanceof MalformedInputException)) {

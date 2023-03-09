@@ -1,7 +1,6 @@
 package io.github.arlol.chorito.chores;
 
 import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermission;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -9,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.ExecutableFlagger;
 
 public class GradleWrapperChore {
 
@@ -33,11 +33,7 @@ public class GradleWrapperChore {
 		LOG.info("Running GradleWrapperChore");
 		Path wrapper = context.resolve("gradlew");
 		if (FilesSilent.exists(wrapper)) {
-			var permissions = FilesSilent.getPosixFilePermissions(wrapper);
-			permissions.add(PosixFilePermission.OWNER_EXECUTE);
-			permissions.add(PosixFilePermission.GROUP_EXECUTE);
-			permissions.add(PosixFilePermission.OTHERS_EXECUTE);
-			FilesSilent.setPosixFilePermissions(wrapper, permissions);
+			ExecutableFlagger.makeExecutableIfPossible(wrapper);
 		}
 		Path path = context.resolve("gradle/wrapper/gradle-wrapper.properties");
 		if (FilesSilent.exists(path)) {
