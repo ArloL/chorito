@@ -2,6 +2,7 @@ package io.github.arlol.chorito.commands;
 
 import io.github.arlol.chorito.chores.CodeQlAnalysisChore;
 import io.github.arlol.chorito.chores.DeleteUnnecessaryFilesChore;
+import io.github.arlol.chorito.chores.DeleteUnwantedFilesChore;
 import io.github.arlol.chorito.chores.DependabotChore;
 import io.github.arlol.chorito.chores.DockerfileChore;
 import io.github.arlol.chorito.chores.Ec4jChore;
@@ -61,6 +62,7 @@ public class ChoritoCommand {
 		new GraalNativeImagePropertiesChore(context).doit();
 		new Ec4jChore(context).doit();
 		new DeleteUnnecessaryFilesChore(context).doit();
+		new DeleteUnwantedFilesChore(context).doit();
 		new ProhibitedFilenameChore(context).doit();
 		new GraalNativeImageMavenPluginMigrationChore(context).doit();
 		new RemoveUnnecessaryExecFlagsChore(context).doit();
