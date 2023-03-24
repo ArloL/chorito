@@ -58,7 +58,7 @@ public class LicenseChore {
 				);
 				if (currentRange.isPresent()) {
 					String newRange;
-					String existingRange = currentRange.get();
+					String existingRange = currentRange.orElseThrow();
 					String startYear;
 					String endYear;
 					if (existingRange.contains("-")) {
