@@ -131,8 +131,8 @@ jobs:
         cache: 'maven'
     - name: Install upx
       run: |
-        wget -q https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz
-        tar xf upx-3.96-amd64_linux.tar.xz
+        wget -q https://github.com/upx/upx/releases/download/v4.0.2/upx-4.0.2-amd64_linux.tar.xz
+        tar xf upx-4.0.2-amd64_linux.tar.xz
     - name: Build with Maven
       run: |
         set -o xtrace
@@ -145,7 +145,7 @@ jobs:
       run: |
         expectedOutput="${ARTIFACT} version \"${REVISION}\""
         firstOutput=$("./target/${ARTIFACT}-linux-${REVISION}" --version)
-        ./upx-3.96-amd64_linux/upx "target/${ARTIFACT}-linux-${REVISION}"
+        ./upx-4.0.2-amd64_linux/upx "target/${ARTIFACT}-linux-${REVISION}"
         secondOutput=$("./target/${ARTIFACT}-linux-${REVISION}" --version)
         if [ "$firstOutput" != "$expectedOutput" ]; then
           echo "The first output is wrong. Expected:"
@@ -189,7 +189,7 @@ jobs:
     - name: Remove WindowsImageHeapProviderFeature
       run: '& 7z d "$env:JAVA_HOME\lib\svm\builder\svm.jar" com/oracle/svm/core/windows/WindowsImageHeapProviderFeature.class' 
     - name: Install upx
-      run: choco install upx --version=3.96 --no-progress
+      run: choco install upx --version=4.0.2 --no-progress
     - name: Build with Maven
       run: |
         .\mvnw --batch-mode -Dsha1="$env:GITHUB_SHA" -Drevision="$env:REVISION" verify
