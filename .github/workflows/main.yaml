@@ -197,7 +197,7 @@ jobs:
       run: |
         $expectedOutput = "${{ env.ARTIFACT }} version `"$env:REVISION`"`r`n"
         $firstOutput = & "./target/${{ env.ARTIFACT }}-windows-$env:REVISION.exe" --% "--version" | Out-String
-        upx "target/${{ env.ARTIFACT }}-windows-$env:REVISION.exe"
+        #upx "target/${{ env.ARTIFACT }}-windows-$env:REVISION.exe"
         $secondOutput = & "./target/${{ env.ARTIFACT }}-windows-$env:REVISION.exe" --% "--version" | Out-String
         if ($firstOutput -ne $expectedOutput) {
           echo "The first output is wrong. Expected:"
