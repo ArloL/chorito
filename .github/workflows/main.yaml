@@ -6,7 +6,6 @@ on:
   - cron: '14 3 2 * *'
 env:
   ARTIFACT: chorito
-  GRAALVM_VERSION: 22.2.0
   JAVA_VERSION: 17
 
 jobs:
@@ -67,11 +66,10 @@ jobs:
       REVISION: ${{ needs.version.outputs.new_version }}
     steps:
     - uses: actions/checkout@v4.1.0
-    - uses: graalvm/setup-graalvm@v1.1.4
+    - uses: graalvm/setup-graalvm@v1.1.4.2
       with:
-        version: ${{ env.GRAALVM_VERSION }}
         java-version: ${{ env.JAVA_VERSION }}
-        components: 'native-image'
+        distribution: graalvm
         github-token: ${{ secrets.GITHUB_TOKEN }}
         cache: 'maven'
     - name: Install upx
@@ -122,11 +120,10 @@ jobs:
       REVISION: ${{ needs.version.outputs.new_version }}
     steps:
     - uses: actions/checkout@v4.1.0
-    - uses: graalvm/setup-graalvm@v1.1.4
+    - uses: graalvm/setup-graalvm@v1.1.4.2
       with:
-        version: ${{ env.GRAALVM_VERSION }}
         java-version: ${{ env.JAVA_VERSION }}
-        components: 'native-image'
+        distribution: graalvm
         github-token: ${{ secrets.GITHUB_TOKEN }}
         cache: 'maven'
     - name: Install upx
@@ -179,15 +176,14 @@ jobs:
       REVISION: ${{ needs.version.outputs.new_version }}
     steps:
     - uses: actions/checkout@v4.1.0
-    - uses: graalvm/setup-graalvm@v1.1.4
+    - uses: graalvm/setup-graalvm@v1.1.4.2
       with:
-        version: ${{ env.GRAALVM_VERSION }}
         java-version: ${{ env.JAVA_VERSION }}
-        components: 'native-image'
+        distribution: graalvm
         github-token: ${{ secrets.GITHUB_TOKEN }}
         cache: 'maven'
     - name: Remove WindowsImageHeapProviderFeature
-      run: '& 7z d "$env:JAVA_HOME\lib\svm\builder\svm.jar" com/oracle/svm/core/windows/WindowsImageHeapProviderFeature.class' 
+      run: '& 7z d "$env:JAVA_HOME\lib\svm\builder\svm.jar" com/oracle/svm/core/windows/WindowsImageHeapProviderFeature.class'
     - name: Install upx
       run: choco install upx --version=3.96 --no-progress
     - name: Build with Maven
