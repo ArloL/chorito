@@ -53,7 +53,6 @@ jobs:
         - ArloL/gitfx
         - ArloL/mvnx
         - ArloL/newlinechecker
-        - ArloL/spring-security-drupal-password-encoder
         - ArloL/wait-for-ports
         - ArloL/website-janitor
         - sprinteins/drupal-client
