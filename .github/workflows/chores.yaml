@@ -12,7 +12,7 @@ concurrency: chores
 
 permissions:
   actions: write
-  pull-request: write
+  pull-requests: write
 
 jobs:
   debug:
