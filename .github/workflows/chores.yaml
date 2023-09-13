@@ -10,11 +10,6 @@ on:
 
 concurrency: chores
 
-permissions:
-  actions: write
-  contents: write
-  pull-requests: write
-
 jobs:
   debug:
     runs-on: ubuntu-latest
