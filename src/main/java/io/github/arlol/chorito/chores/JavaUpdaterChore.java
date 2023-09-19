@@ -28,7 +28,11 @@ public class JavaUpdaterChore implements Chore {
 			doc.getElementsByTag("java.version")
 					.stream()
 					.filter(e -> e.text().equals("11"))
-					.forEach(e -> e.text("17"));
+					.forEach(e -> e.text("21"));
+			doc.getElementsByTag("java.version")
+					.stream()
+					.filter(e -> e.text().equals("17"))
+					.forEach(e -> e.text("21"));
 			FilesSilent.writeString(pomXml, doc.outerHtml());
 		}
 	}
@@ -45,7 +49,10 @@ public class JavaUpdaterChore implements Chore {
 					.stream()
 					.map(s -> {
 						if (s.trim().startsWith("JAVA_VERSION: 11")) {
-							return s.replace("11", "17");
+							return s.replace("11", "21");
+						}
+						if (s.trim().startsWith("JAVA_VERSION: 17")) {
+							return s.replace("17", "21");
 						}
 						return s;
 					})
@@ -61,10 +68,13 @@ public class JavaUpdaterChore implements Chore {
 					.stream()
 					.map(s -> {
 						if (s.trim().equals("- openjdk8")) {
-							return s.replace("openjdk8", "openjdk17");
+							return s.replace("openjdk8", "openjdk21");
 						}
 						if (s.trim().equals("- openjdk11")) {
-							return s.replace("openjdk11", "openjdk17");
+							return s.replace("openjdk11", "openjdk21");
+						}
+						if (s.trim().equals("- openjdk17")) {
+							return s.replace("openjdk17", "openjdk21");
 						}
 						return s;
 					})
