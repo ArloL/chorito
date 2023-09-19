@@ -9,7 +9,7 @@ public class JitpackChore {
 
 	private static final String JAVA_JITPACK = """
 			jdk:
-			- openjdk17
+			- openjdk21
 			install:
 			- ./mvnw --batch-mode install -DskipTests -Dsha1="${GIT_COMMIT}" -Drevision="${VERSION}"
 			""";
