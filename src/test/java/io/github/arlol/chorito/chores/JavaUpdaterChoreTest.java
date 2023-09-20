@@ -28,7 +28,7 @@ public class JavaUpdaterChoreTest {
 		new JavaUpdaterChore(extension.choreContext()).doit();
 
 		assertThat(FilesSilent.readString(pom))
-				.isEqualTo("<java.version>21</java.version>");
+				.isEqualTo("<java.version>17</java.version>");
 	}
 
 	@Test
@@ -39,7 +39,7 @@ public class JavaUpdaterChoreTest {
 		new JavaUpdaterChore(extension.choreContext()).doit();
 
 		assertThat(FilesSilent.readString(workflow))
-				.isEqualTo("  JAVA_VERSION: 21\n");
+				.isEqualTo("  JAVA_VERSION: 17\n");
 	}
 
 	@Test
@@ -49,7 +49,7 @@ public class JavaUpdaterChoreTest {
 
 		new JavaUpdaterChore(extension.choreContext()).doit();
 
-		assertThat(FilesSilent.readString(jitpack)).isEqualTo("- openjdk21\n");
+		assertThat(FilesSilent.readString(jitpack)).isEqualTo("- openjdk17\n");
 	}
 
 	@Test
@@ -59,7 +59,7 @@ public class JavaUpdaterChoreTest {
 
 		new JavaUpdaterChore(extension.choreContext()).doit();
 
-		assertThat(FilesSilent.readString(jitpack)).isEqualTo("- openjdk21\n");
+		assertThat(FilesSilent.readString(jitpack)).isEqualTo("- openjdk17\n");
 	}
 
 }
