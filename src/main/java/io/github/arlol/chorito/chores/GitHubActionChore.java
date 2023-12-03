@@ -34,7 +34,34 @@ public class GitHubActionChore {
 		updateCodeQlSchedule();
 		updateMainSchedule();
 		removeSetupJava370();
+		migrateActionsCreateRelease();
 		migrateActionsUploadReleaseAsset();
+	}
+
+	private void migrateActionsCreateRelease() {
+		Path workflowsLocation = context.resolve(".github/workflows");
+		context.textFiles().stream().filter(path -> {
+			if (path.startsWith(workflowsLocation)) {
+				return path.toString().endsWith(".yaml");
+			}
+			return false;
+		}).map(context::resolve).forEach(path -> {
+			String updated = FilesSilent.readString(path);
+			String target = """
+					uses: actions/create-release@v1.1.4
+					      env:
+					        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+					      with:
+					        tag_name: v${{ needs.version.outputs.new_version }}
+					        release_name: Release ${{ needs.version.outputs.new_version }}""";
+			String replacement = """
+					uses: ncipollo/release-action@v1.13.0
+					      with:
+					        tag: v${{ needs.version.outputs.new_version }}
+					        name: Release ${{ needs.version.outputs.new_version }}""";
+			updated = updated.replace(target, replacement);
+			FilesSilent.writeString(path, updated);
+		});
 	}
 
 	private void migrateActionsUploadReleaseAsset() {
