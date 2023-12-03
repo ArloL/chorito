@@ -34,6 +34,28 @@ public class GitHubActionChore {
 		updateCodeQlSchedule();
 		updateMainSchedule();
 		removeSetupJava370();
+		migrateActionsUploadReleaseAsset();
+	}
+
+	private void migrateActionsUploadReleaseAsset() {
+		Path workflowsLocation = context.resolve(".github/workflows");
+		context.textFiles().stream().filter(path -> {
+			if (path.startsWith(workflowsLocation)) {
+				return path.toString().endsWith(".yaml");
+			}
+			return false;
+		}).map(context::resolve).forEach(path -> {
+			String updated = FilesSilent.readString(path);
+			String target = """
+					uses: actions/upload-release-asset@v1.0.2
+					      env:
+					        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}""";
+			updated = updated.replace(
+					target,
+					"uses: shogo82148/actions-upload-release-asset@v1.7.2"
+			);
+			FilesSilent.writeString(path, updated);
+		});
 	}
 
 	private void ensureYamlFileExtension() {
