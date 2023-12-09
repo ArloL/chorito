@@ -351,6 +351,9 @@ public class GitHubActionChore implements Chore {
 			List<String> updated = FilesSilent.readAllLines(main)
 					.stream()
 					.map(s -> {
+						if (s.startsWith("  GRAALVM_VERSION: 22.1.0")) {
+							return s;
+						}
 						if (s.startsWith("  GRAALVM_VERSION: ")) {
 							return "  GRAALVM_VERSION: 22.2.0";
 						}
