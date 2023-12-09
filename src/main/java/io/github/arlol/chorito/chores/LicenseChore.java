@@ -7,7 +7,7 @@ import java.util.Optional;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 
-public class LicenseChore {
+public class LicenseChore implements Chore {
 
 	public static final String MIT_LICENSE = """
 			MIT License
@@ -33,20 +33,15 @@ public class LicenseChore {
 			SOFTWARE.
 			""";
 
-	private final ChoreContext context;
-
-	public LicenseChore(ChoreContext context) {
-		this.context = context;
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		Path licenseMd = context.resolve("LICENSE.md");
 		Path license = context.resolve("LICENSE");
 		if (FilesSilent.exists(licenseMd)) {
 			FilesSilent.move(licenseMd, license);
 		}
 		if (context.hasGitHubRemote()) {
-			checkPom();
+			checkPom(context);
 			final String currentYear = ""
 					+ Year.now(context.clock()).getValue();
 			String newLicenseContent = MIT_LICENSE
@@ -85,7 +80,7 @@ public class LicenseChore {
 		}
 	}
 
-	private void checkPom() {
+	private void checkPom(ChoreContext context) {
 		Path pomXml = context.resolve("pom.xml");
 		if (!FilesSilent.exists(pomXml)) {
 			return;

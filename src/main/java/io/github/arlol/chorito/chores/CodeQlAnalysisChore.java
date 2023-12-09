@@ -7,19 +7,13 @@ import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.RandomCronBuilder;
 
-public class CodeQlAnalysisChore {
+public class CodeQlAnalysisChore implements Chore {
 
-	private final ChoreContext context;
-	private final RandomCronBuilder randomCronBuilder;
-
-	public CodeQlAnalysisChore(ChoreContext context) {
-		this.context = context;
-		this.randomCronBuilder = new RandomCronBuilder(
+	@Override
+	public void doit(ChoreContext context) {
+		RandomCronBuilder randomCronBuilder = new RandomCronBuilder(
 				context.randomGenerator()
 		);
-	}
-
-	public void doit() {
 		if (context.hasGitHubRemote()) {
 			String currentAnalysis = ClassPathFiles
 					.readString("/workflows/codeql-analysis.yaml");

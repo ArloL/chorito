@@ -10,15 +10,10 @@ import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
-public class GraalNativeImageMavenPluginMigrationChore {
+public class GraalNativeImageMavenPluginMigrationChore implements Chore {
 
-	private final ChoreContext context;
-
-	public GraalNativeImageMavenPluginMigrationChore(ChoreContext context) {
-		this.context = context;
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		Path pomXml = context.resolve("pom.xml");
 		if (FilesSilent.exists(pomXml)) {
 			Document doc = JsoupSilent

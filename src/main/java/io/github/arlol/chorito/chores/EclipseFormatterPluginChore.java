@@ -10,15 +10,10 @@ import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
-public class EclipseFormatterPluginChore {
+public class EclipseFormatterPluginChore implements Chore {
 
-	private final ChoreContext context;
-
-	public EclipseFormatterPluginChore(ChoreContext context) {
-		this.context = context;
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		Path pomXml = context.resolve("pom.xml");
 		if (FilesSilent.exists(pomXml)) {
 			Document doc = JsoupSilent

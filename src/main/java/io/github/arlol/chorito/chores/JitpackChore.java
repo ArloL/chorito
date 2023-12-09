@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 
-public class JitpackChore {
+public class JitpackChore implements Chore {
 
 	private static final String JAVA_JITPACK = """
 			jdk:
@@ -14,13 +14,8 @@ public class JitpackChore {
 			- ./mvnw --batch-mode install -DskipTests -Dsha1="${GIT_COMMIT}" -Drevision="${VERSION}"
 			""";
 
-	private ChoreContext context;
-
-	public JitpackChore(ChoreContext context) {
-		this.context = context;
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		Path pom = context.resolve("pom.xml");
 		Path jitpack = context.resolve("jitpack.yml");
 		if (FilesSilent.exists(pom) && !FilesSilent.exists(jitpack)) {

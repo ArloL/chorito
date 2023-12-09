@@ -17,7 +17,7 @@ public class DeleteUnnecessaryFilesChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new DeleteUnnecessaryFilesChore(extension.choreContext()).doit();
+		new DeleteUnnecessaryFilesChore().doit(extension.choreContext());
 	}
 
 	@Test
@@ -29,7 +29,7 @@ public class DeleteUnnecessaryFilesChoreTest {
 		FilesSilent.writeString(mavenSettings, "this is a text file");
 		FilesSilent.writeString(mavenWindowsSettings, "this is a text file");
 
-		new DeleteUnnecessaryFilesChore(extension.choreContext()).doit();
+		new DeleteUnnecessaryFilesChore().doit(extension.choreContext());
 
 		assertFalse(FilesSilent.exists(mavenSettings));
 		assertFalse(FilesSilent.exists(mavenWindowsSettings));

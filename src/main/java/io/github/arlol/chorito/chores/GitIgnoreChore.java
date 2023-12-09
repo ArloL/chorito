@@ -8,15 +8,10 @@ import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
 
-public class GitIgnoreChore {
+public class GitIgnoreChore implements Chore {
 
-	private final ChoreContext context;
-
-	public GitIgnoreChore(ChoreContext context) {
-		this.context = context;
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		Path gitignore = context.resolve(".gitignore");
 		if (FilesSilent.exists(context.resolve("pom.xml"))) {
 			if (FilesSilent.exists(gitignore)) {

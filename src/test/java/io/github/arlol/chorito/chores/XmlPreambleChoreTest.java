@@ -17,7 +17,7 @@ public class XmlPreambleChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new XmlPreambleChore(extension.choreContext()).doit();
+		new XmlPreambleChore().doit(extension.choreContext());
 	}
 
 	@Test
@@ -25,7 +25,7 @@ public class XmlPreambleChoreTest {
 		Path pomXml = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(pomXml, "<project />");
 
-		new XmlPreambleChore(extension.choreContext()).doit();
+		new XmlPreambleChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(pomXml)).startsWith(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project />"
@@ -56,7 +56,7 @@ public class XmlPreambleChoreTest {
 						"""
 		);
 
-		new XmlPreambleChore(extension.choreContext()).doit();
+		new XmlPreambleChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(xml)).startsWith(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE"
@@ -79,7 +79,7 @@ public class XmlPreambleChoreTest {
 						"""
 		);
 
-		new XmlPreambleChore(extension.choreContext()).doit();
+		new XmlPreambleChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(xml)).startsWith(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<settings"
@@ -100,7 +100,7 @@ public class XmlPreambleChoreTest {
 						"""
 		);
 
-		new XmlPreambleChore(extension.choreContext()).doit();
+		new XmlPreambleChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(xml)).startsWith(
 				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<inkscape"

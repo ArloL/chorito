@@ -12,7 +12,7 @@ public class GitMasterBranchChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new GitMasterBranchChore(extension.choreContext()).doit();
+		new GitMasterBranchChore().doit(extension.choreContext());
 	}
 
 }

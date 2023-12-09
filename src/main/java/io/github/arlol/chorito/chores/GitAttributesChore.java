@@ -15,14 +15,8 @@ public class GitAttributesChore implements Chore {
 			*.sh     text      eol=lf
 			""";
 
-	private final ChoreContext context;
-
-	public GitAttributesChore(ChoreContext context) {
-		this.context = context;
-	}
-
 	@Override
-	public void doit() {
+	public void doit(ChoreContext context) {
 		Path path = context.resolve(".gitattributes");
 		if (!FilesSilent.exists(path)) {
 			FilesSilent.writeString(path, DEFAULT_GITATTRIBUTES);

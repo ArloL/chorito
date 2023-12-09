@@ -189,7 +189,7 @@ public class GitHubActionChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new GitHubActionChore(extension.choreContext()).doit();
+		new GitHubActionChore().doit(extension.choreContext());
 	}
 
 	@Test
@@ -197,7 +197,7 @@ public class GitHubActionChoreTest {
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.touch(workflow);
 
-		new GitHubActionChore(extension.choreContext()).doit();
+		new GitHubActionChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(workflow)).isEqualTo("");
 	}
@@ -212,7 +212,7 @@ public class GitHubActionChoreTest {
 						+ "    steps:\n" + "    - run: whoami\n"
 		);
 
-		new GitHubActionChore(extension.choreContext()).doit();
+		new GitHubActionChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(workflow)).isEqualTo(
 				"jobs:\n" + "  linux:\n" + "    runs-on: ubuntu-latest\n"
@@ -231,7 +231,7 @@ public class GitHubActionChoreTest {
 						+ "      uses: egor-tensin/vs-shell@v2\n"
 		);
 
-		new GitHubActionChore(extension.choreContext()).doit();
+		new GitHubActionChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(workflow)).isEqualTo(
 				"jobs:\n" + "  windows:\n" + "    runs-on: windows-latest\n"
@@ -244,7 +244,7 @@ public class GitHubActionChoreTest {
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(workflow, INPUT_GRAALSETUP_OUTPUT);
 
-		new GitHubActionChore(extension.choreContext()).doit();
+		new GitHubActionChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(workflow))
 				.isEqualTo(EXPECTED_GRAALSETUP_OUTPUT);
@@ -255,7 +255,7 @@ public class GitHubActionChoreTest {
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(workflow, INPUT_ADOPT);
 
-		new GitHubActionChore(extension.choreContext()).doit();
+		new GitHubActionChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(workflow)).isEqualTo(EXPECTED_ADOPT);
 	}
@@ -265,7 +265,7 @@ public class GitHubActionChoreTest {
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(workflow, INPUT_STEPS_OUTPUT);
 
-		new GitHubActionChore(extension.choreContext()).doit();
+		new GitHubActionChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(workflow))
 				.isEqualTo(EXPECTED_STEPS_OUTPUT);
@@ -282,7 +282,7 @@ public class GitHubActionChoreTest {
 				.hasGitHubRemote(true)
 				.build();
 
-		new GitHubActionChore(context).doit();
+		new GitHubActionChore().doit(context);
 
 		assertThat(FilesSilent.readString(workflow)).startsWith("""
 				name: Chores
@@ -308,7 +308,7 @@ public class GitHubActionChoreTest {
 				.hasGitHubRemote(true)
 				.build();
 
-		new GitHubActionChore(context).doit();
+		new GitHubActionChore().doit(context);
 
 		assertThat(FilesSilent.readString(workflow)).doesNotStartWith("""
 				name: Chores
@@ -336,7 +336,7 @@ public class GitHubActionChoreTest {
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
-		new GitHubActionChore(context).doit();
+		new GitHubActionChore().doit(context);
 
 		assertThat(FilesSilent.readString(workflow))
 				.isEqualTo("- cron: '1 3 1 * *'\n");
@@ -354,7 +354,7 @@ public class GitHubActionChoreTest {
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
-		new GitHubActionChore(context).doit();
+		new GitHubActionChore().doit(context);
 
 		assertThat(FilesSilent.readString(workflow))
 				.isEqualTo("- cron: '1 3 1 * *'\n");
@@ -372,7 +372,7 @@ public class GitHubActionChoreTest {
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
-		new GitHubActionChore(context).doit();
+		new GitHubActionChore().doit(context);
 
 		assertThat(FilesSilent.readString(workflow))
 				.isEqualTo("- cron: '5 5 5 * *'\n");

@@ -10,15 +10,10 @@ import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
-public class PomScmChore {
+public class PomScmChore implements Chore {
 
-	private ChoreContext context;
-
-	public PomScmChore(ChoreContext context) {
-		this.context = context;
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		Path pom = context.resolve("pom.xml");
 		if (context.hasGitHubRemote() && context.remotes().size() == 1
 				&& FilesSilent.exists(pom)) {

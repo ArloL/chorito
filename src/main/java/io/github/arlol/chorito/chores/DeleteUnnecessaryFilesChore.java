@@ -5,15 +5,10 @@ import java.nio.file.Path;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 
-public class DeleteUnnecessaryFilesChore {
+public class DeleteUnnecessaryFilesChore implements Chore {
 
-	private final ChoreContext context;
-
-	public DeleteUnnecessaryFilesChore(ChoreContext context) {
-		this.context = context;
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		Path mavenSettings = context
 				.resolve(".github/github-packages-maven-settings.xml");
 		FilesSilent.deleteIfExists(mavenSettings);

@@ -28,7 +28,7 @@ public class JitpackChoreTest {
 	public void testWithNothing() {
 		Path jitpack = extension.root().resolve("jitpack.yml");
 
-		new JitpackChore(extension.choreContext()).doit();
+		new JitpackChore().doit(extension.choreContext());
 
 		assertFalse(FilesSilent.exists(jitpack));
 	}
@@ -39,7 +39,7 @@ public class JitpackChoreTest {
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(pom, "<project />");
 
-		new JitpackChore(extension.choreContext()).doit();
+		new JitpackChore().doit(extension.choreContext());
 
 		assertTrue(FilesSilent.exists(jitpack));
 		assertThat(FilesSilent.readString(jitpack)).isEqualTo(EXPECT_JITPACK);

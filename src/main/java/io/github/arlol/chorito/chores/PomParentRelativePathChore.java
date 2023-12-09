@@ -12,14 +12,8 @@ import io.github.arlol.chorito.tools.JsoupSilent;
 
 public class PomParentRelativePathChore implements Chore {
 
-	private ChoreContext context;
-
-	public PomParentRelativePathChore(ChoreContext context) {
-		this.context = context;
-	}
-
 	@Override
-	public void doit() {
+	public void doit(ChoreContext context) {
 		Path pom = context.resolve("pom.xml");
 		if (FilesSilent.exists(pom)) {
 			Document doc = JsoupSilent

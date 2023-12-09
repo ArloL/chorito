@@ -17,7 +17,7 @@ public class JavaUpdaterChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new JavaUpdaterChore(extension.choreContext()).doit();
+		new JavaUpdaterChore().doit(extension.choreContext());
 	}
 
 	@Test
@@ -25,7 +25,7 @@ public class JavaUpdaterChoreTest {
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(pom, "<java.version>11</java.version>");
 
-		new JavaUpdaterChore(extension.choreContext()).doit();
+		new JavaUpdaterChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(pom))
 				.isEqualTo("<java.version>17</java.version>");
@@ -36,7 +36,7 @@ public class JavaUpdaterChoreTest {
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(workflow, "  JAVA_VERSION: 11");
 
-		new JavaUpdaterChore(extension.choreContext()).doit();
+		new JavaUpdaterChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(workflow))
 				.isEqualTo("  JAVA_VERSION: 17\n");
@@ -47,7 +47,7 @@ public class JavaUpdaterChoreTest {
 		Path jitpack = extension.root().resolve("jitpack.yml");
 		FilesSilent.writeString(jitpack, "- openjdk8");
 
-		new JavaUpdaterChore(extension.choreContext()).doit();
+		new JavaUpdaterChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(jitpack)).isEqualTo("- openjdk17\n");
 	}
@@ -57,7 +57,7 @@ public class JavaUpdaterChoreTest {
 		Path jitpack = extension.root().resolve("jitpack.yml");
 		FilesSilent.writeString(jitpack, "- openjdk11");
 
-		new JavaUpdaterChore(extension.choreContext()).doit();
+		new JavaUpdaterChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(jitpack)).isEqualTo("- openjdk17\n");
 	}

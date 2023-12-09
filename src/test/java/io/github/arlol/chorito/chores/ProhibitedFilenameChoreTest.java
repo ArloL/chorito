@@ -19,7 +19,7 @@ public class ProhibitedFilenameChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new ProhibitedFilenameChore(extension.choreContext()).doit();
+		new ProhibitedFilenameChore().doit(extension.choreContext());
 	}
 
 	@Test
@@ -29,7 +29,7 @@ public class ProhibitedFilenameChoreTest {
 		Path nulTxt = context.resolve("NUL.txt");
 		assertTrue(FilesSilent.exists(nul));
 		assertTrue(FilesSilent.exists(nulTxt));
-		new ProhibitedFilenameChore(context()).doit();
+		new ProhibitedFilenameChore().doit(context());
 		assertFalse(FilesSilent.exists(nul));
 		assertFalse(FilesSilent.exists(nulTxt));
 	}

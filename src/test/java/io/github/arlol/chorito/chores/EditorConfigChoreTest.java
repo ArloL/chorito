@@ -53,14 +53,14 @@ public class EditorConfigChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new EditorConfigChore(extension.choreContext()).doit();
+		new EditorConfigChore().doit(extension.choreContext());
 	}
 
 	@Test
 	public void test() throws Exception {
 		Path editorConfig = extension.root().resolve(".editorconfig");
 
-		new EditorConfigChore(extension.choreContext()).doit();
+		new EditorConfigChore().doit(extension.choreContext());
 
 		assertTrue(FilesSilent.exists(editorConfig));
 		assertThat(FilesSilent.readString(editorConfig))
@@ -75,7 +75,7 @@ public class EditorConfigChoreTest {
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(pom, "");
 
-		new EditorConfigChore(extension.choreContext()).doit();
+		new EditorConfigChore().doit(extension.choreContext());
 
 		assertTrue(FilesSilent.exists(editorConfig));
 		assertThat(FilesSilent.readString(editorConfig))
@@ -88,7 +88,7 @@ public class EditorConfigChoreTest {
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(pom, "");
 
-		new EditorConfigChore(extension.choreContext()).doit();
+		new EditorConfigChore().doit(extension.choreContext());
 
 		assertTrue(FilesSilent.exists(editorConfig));
 		assertThat(FilesSilent.readString(editorConfig))

@@ -5,15 +5,10 @@ import java.nio.file.Path;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 
-public class GraalNativeImagePropertiesChore {
+public class GraalNativeImagePropertiesChore implements Chore {
 
-	private final ChoreContext context;
-
-	public GraalNativeImagePropertiesChore(ChoreContext context) {
-		this.context = context;
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		Path metaInfNativeImage = context
 				.resolve("src/main/resources/META-INF/native-image/");
 		if (FilesSilent.exists(metaInfNativeImage)) {

@@ -70,7 +70,7 @@ public class CodeQlAnalysisChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new CodeQlAnalysisChore(extension.choreContext()).doit();
+		new CodeQlAnalysisChore().doit(extension.choreContext());
 	}
 
 	@Test
@@ -83,7 +83,7 @@ public class CodeQlAnalysisChoreTest {
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
-		new CodeQlAnalysisChore(context).doit();
+		new CodeQlAnalysisChore().doit(context);
 
 		Path workflow = context
 				.resolve(".github/workflows/codeql-analysis.yaml");

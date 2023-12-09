@@ -7,7 +7,7 @@ import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.MyPaths;
 
-public class ProhibitedFilenameChore {
+public class ProhibitedFilenameChore implements Chore {
 
 	private static final List<String> PROHIBITED_FILENAMES = Arrays.asList(
 			"CON",
@@ -34,13 +34,8 @@ public class ProhibitedFilenameChore {
 			"LPT9"
 	);;
 
-	private final ChoreContext context;
-
-	public ProhibitedFilenameChore(ChoreContext context) {
-		this.context = context;
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		context.files().forEach(path -> {
 			String filenameNoExtension = MyPaths.getFileName(path).toString();
 			if (filenameNoExtension.contains(".")) {

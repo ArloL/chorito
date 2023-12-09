@@ -37,7 +37,7 @@ public class PomParentRelativePathChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new PomParentRelativePathChore(extension.choreContext()).doit();
+		new PomParentRelativePathChore().doit(extension.choreContext());
 	}
 
 	@Test
@@ -45,7 +45,7 @@ public class PomParentRelativePathChoreTest {
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(pom, INPUT);
 
-		new PomParentRelativePathChore(extension.choreContext()).doit();
+		new PomParentRelativePathChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(pom)).isEqualTo(EXPECTED);
 	}

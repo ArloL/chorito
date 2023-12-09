@@ -17,7 +17,7 @@ public class ModernizerPluginChoreTest {
 	final FileSystemExtension extension = new FileSystemExtension();
 
 	private void doit() {
-		new ModernizerPluginChore(extension.choreContext()).doit();
+		new ModernizerPluginChore().doit(extension.choreContext());
 	}
 
 	@Test

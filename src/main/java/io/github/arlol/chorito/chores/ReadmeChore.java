@@ -22,14 +22,8 @@ public class ReadmeChore implements Chore {
 
 			""";
 
-	private final ChoreContext context;
-
-	public ReadmeChore(ChoreContext context) {
-		this.context = context;
-	}
-
 	@Override
-	public void doit() {
+	public void doit(ChoreContext context) {
 		Path readmeMd = context.resolve("README.md");
 		Path readme = context.resolve("README");
 		Path readmeTxt = context.resolve("README.txt");

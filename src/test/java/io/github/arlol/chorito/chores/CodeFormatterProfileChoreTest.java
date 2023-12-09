@@ -17,7 +17,7 @@ public class CodeFormatterProfileChoreTest {
 	final FileSystemExtension extension = new FileSystemExtension();
 
 	private void doit() {
-		new CodeFormatterProfileChore(extension.choreContext()).doit();
+		new CodeFormatterProfileChore().doit(extension.choreContext());
 	}
 
 	@Test

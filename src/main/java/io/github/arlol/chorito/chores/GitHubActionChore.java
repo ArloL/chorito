@@ -10,35 +10,26 @@ import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.RandomCronBuilder;
 import io.github.arlol.chorito.tools.Renamer;
 
-public class GitHubActionChore {
+public class GitHubActionChore implements Chore {
 
-	private final ChoreContext context;
-	private final RandomCronBuilder randomCronBuilder;
-
-	public GitHubActionChore(ChoreContext context) {
-		this.context = context;
-		this.randomCronBuilder = new RandomCronBuilder(
-				context.randomGenerator()
-		);
+	@Override
+	public void doit(ChoreContext context) {
+		ensureYamlFileExtension(context);
+		updateChoresWorkflow(context);
+		updateGraalVmVersion(context);
+		removeCustomGithubPackagesMavenSettings(context);
+		useSpecificActionVersions(context);
+		replaceSetOutput(context);
+		migrateToGraalSetupAction(context);
+		migrateJavaDistributionFromAdoptToTemurin(context);
+		updateCodeQlSchedule(context);
+		updateMainSchedule(context);
+		removeSetupJava370(context);
+		migrateActionsCreateRelease(context);
+		migrateActionsUploadReleaseAsset(context);
 	}
 
-	public void doit() {
-		ensureYamlFileExtension();
-		updateChoresWorkflow();
-		updateGraalVmVersion();
-		removeCustomGithubPackagesMavenSettings();
-		useSpecificActionVersions();
-		replaceSetOutput();
-		migrateToGraalSetupAction();
-		migrateJavaDistributionFromAdoptToTemurin();
-		updateCodeQlSchedule();
-		updateMainSchedule();
-		removeSetupJava370();
-		migrateActionsCreateRelease();
-		migrateActionsUploadReleaseAsset();
-	}
-
-	private void migrateActionsCreateRelease() {
+	private void migrateActionsCreateRelease(ChoreContext context) {
 		Path workflowsLocation = context.resolve(".github/workflows");
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
@@ -64,7 +55,7 @@ public class GitHubActionChore {
 		});
 	}
 
-	private void migrateActionsUploadReleaseAsset() {
+	private void migrateActionsUploadReleaseAsset(ChoreContext context) {
 		Path workflowsLocation = context.resolve(".github/workflows");
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
@@ -85,7 +76,7 @@ public class GitHubActionChore {
 		});
 	}
 
-	private void ensureYamlFileExtension() {
+	private void ensureYamlFileExtension(ChoreContext context) {
 		Path workflowsLocation = context.resolve(".github/workflows");
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
@@ -99,7 +90,10 @@ public class GitHubActionChore {
 				);
 	}
 
-	private void updateChoresWorkflow() {
+	private void updateChoresWorkflow(ChoreContext context) {
+		RandomCronBuilder randomCronBuilder = new RandomCronBuilder(
+				context.randomGenerator()
+		);
 		String randomDayOfMonth = randomCronBuilder.randomDayOfMonth();
 		if (context.hasGitHubRemote()) {
 			Path choresYaml = context.resolve(".github/workflows/chores.yaml");
@@ -122,7 +116,10 @@ public class GitHubActionChore {
 		}
 	}
 
-	private void updateCodeQlSchedule() {
+	private void updateCodeQlSchedule(ChoreContext context) {
+		RandomCronBuilder randomCronBuilder = new RandomCronBuilder(
+				context.randomGenerator()
+		);
 		String randomDayOfMonth = randomCronBuilder.randomDayOfMonth();
 		Path yaml = context.resolve(".github/workflows/codeql-analysis.yaml");
 		if (FilesSilent.exists(yaml)) {
@@ -138,7 +135,10 @@ public class GitHubActionChore {
 		}
 	}
 
-	private void updateMainSchedule() {
+	private void updateMainSchedule(ChoreContext context) {
+		RandomCronBuilder randomCronBuilder = new RandomCronBuilder(
+				context.randomGenerator()
+		);
 		String randomDayOfMonth = randomCronBuilder.randomDayOfMonth();
 		Path yaml = context.resolve(".github/workflows/main.yaml");
 		if (FilesSilent.exists(yaml)) {
@@ -168,7 +168,9 @@ public class GitHubActionChore {
 		return Optional.of(yaml.substring(0, indexOf));
 	}
 
-	private void migrateJavaDistributionFromAdoptToTemurin() {
+	private void migrateJavaDistributionFromAdoptToTemurin(
+			ChoreContext context
+	) {
 		Path workflowsLocation = context.resolve(".github/workflows");
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
@@ -189,7 +191,7 @@ public class GitHubActionChore {
 		});
 	}
 
-	private void migrateToGraalSetupAction() {
+	private void migrateToGraalSetupAction(ChoreContext context) {
 		Path workflowsLocation = context.resolve(".github/workflows");
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
@@ -247,7 +249,7 @@ public class GitHubActionChore {
 		});
 	}
 
-	private void useSpecificActionVersions() {
+	private void useSpecificActionVersions(ChoreContext context) {
 		Path workflowsLocation = context.resolve(".github/workflows");
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
@@ -304,7 +306,7 @@ public class GitHubActionChore {
 		});
 	}
 
-	private void removeSetupJava370() {
+	private void removeSetupJava370(ChoreContext context) {
 		Path workflowsLocation = context.resolve(".github/workflows");
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
@@ -321,7 +323,7 @@ public class GitHubActionChore {
 		});
 	}
 
-	private void replaceSetOutput() {
+	private void replaceSetOutput(ChoreContext context) {
 		Path workflowsLocation = context.resolve(".github/workflows");
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
@@ -343,7 +345,7 @@ public class GitHubActionChore {
 		});
 	}
 
-	private void updateGraalVmVersion() {
+	private void updateGraalVmVersion(ChoreContext context) {
 		Path main = context.resolve(".github/workflows/main.yaml");
 		if (FilesSilent.exists(main)) {
 			List<String> updated = FilesSilent.readAllLines(main)
@@ -359,7 +361,7 @@ public class GitHubActionChore {
 		}
 	}
 
-	private void removeCustomGithubPackagesMavenSettings() {
+	private void removeCustomGithubPackagesMavenSettings(ChoreContext context) {
 		Path main = context.resolve(".github/workflows/main.yaml");
 		if (FilesSilent.exists(main)) {
 			List<String> updated = FilesSilent.readAllLines(main)

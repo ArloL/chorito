@@ -17,7 +17,7 @@ public class GitIgnoreChoreTest {
 	final FileSystemExtension extension = new FileSystemExtension();
 
 	private void doit() {
-		new GitIgnoreChore(extension.choreContext()).doit();
+		new GitIgnoreChore().doit(extension.choreContext());
 	}
 
 	@Test

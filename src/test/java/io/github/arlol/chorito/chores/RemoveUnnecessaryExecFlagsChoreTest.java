@@ -42,7 +42,7 @@ public class RemoveUnnecessaryExecFlagsChoreTest {
 		permissions.add(PosixFilePermission.OTHERS_EXECUTE);
 		FilesSilent.setPosixFilePermissions(binary, permissions);
 
-		new RemoveUnnecessaryExecFlagsChore(extension.choreContext()).doit();
+		new RemoveUnnecessaryExecFlagsChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.getPosixFilePermissions(runSh))
 				.contains(PosixFilePermission.OWNER_EXECUTE);

@@ -10,15 +10,10 @@ import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
-public class PomPropertiesChore {
+public class PomPropertiesChore implements Chore {
 
-	private ChoreContext context;
-
-	public PomPropertiesChore(ChoreContext context) {
-		this.context = context;
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		Path pom = context.resolve("pom.xml");
 		if (FilesSilent.exists(pom)) {
 			Document doc = JsoupSilent

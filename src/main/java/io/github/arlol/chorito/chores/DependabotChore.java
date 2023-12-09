@@ -3,7 +3,7 @@ package io.github.arlol.chorito.chores;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 
-public class DependabotChore {
+public class DependabotChore implements Chore {
 
 	private static String DEFAULT_DEPENDABOT = """
 			version: 2
@@ -52,13 +52,8 @@ public class DependabotChore {
 			      interval: "daily"
 			""";
 
-	private final ChoreContext context;
-
-	public DependabotChore(ChoreContext context) {
-		this.context = context;
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		if (context.hasGitHubRemote()) {
 			String content = DEFAULT_DEPENDABOT;
 			if (FilesSilent.exists(context.resolve("pom.xml"))) {

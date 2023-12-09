@@ -12,14 +12,8 @@ import io.github.arlol.chorito.tools.JsoupSilent;
 
 public class ModernizerPluginChore implements Chore {
 
-	private final ChoreContext context;
-
-	public ModernizerPluginChore(ChoreContext context) {
-		this.context = context;
-	}
-
 	@Override
-	public void doit() {
+	public void doit(ChoreContext context) {
 		Path pomXml = context.resolve("pom.xml");
 		if (FilesSilent.exists(pomXml)) {
 			Document doc = JsoupSilent

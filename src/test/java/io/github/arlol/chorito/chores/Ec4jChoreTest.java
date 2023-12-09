@@ -29,7 +29,7 @@ public class Ec4jChoreTest {
 		Path text = extension.root().resolve("test.txt");
 		FilesSilent.writeString(text, "file with a newline\r\n");
 
-		new Ec4jChore(extension.choreContext()).doit();
+		new Ec4jChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(text))
 				.isEqualTo("file with a newline\n");

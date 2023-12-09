@@ -13,15 +13,10 @@ import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
-public class CodeFormatterProfileChore {
+public class CodeFormatterProfileChore implements Chore {
 
-	private final ChoreContext context;
-
-	public CodeFormatterProfileChore(ChoreContext context) {
-		this.context = context;
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		Path pom = context.resolve("pom.xml");
 		if (FilesSilent.exists(pom)) {
 			Path profileXml = context

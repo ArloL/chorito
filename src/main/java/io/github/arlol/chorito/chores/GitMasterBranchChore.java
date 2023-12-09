@@ -11,18 +11,12 @@ import io.github.arlol.chorito.tools.ChoreContext;
 
 public class GitMasterBranchChore implements Chore {
 
-	private ChoreContext context;
-
-	public GitMasterBranchChore(ChoreContext context) {
-		this.context = context;
-	}
-
 	@Override
 	@SuppressFBWarnings(
 			value = "BC_UNCONFIRMED_CAST_OF_RETURN_VALUE",
 			justification = "FileRepositoryBuilder uses generics which spotbugs cant know"
 	)
-	public void doit() {
+	public void doit(ChoreContext context) {
 		try {
 			context.root().toFile();
 		} catch (UnsupportedOperationException e) {

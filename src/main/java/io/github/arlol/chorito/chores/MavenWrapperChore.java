@@ -7,10 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.github.arlol.chorito.tools.ChoreContext;
-import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.ExecutableFlagger;
+import io.github.arlol.chorito.tools.FilesSilent;
 
-public class MavenWrapperChore {
+public class MavenWrapperChore implements Chore {
 
 	private static Logger LOG = LoggerFactory
 			.getLogger(MavenWrapperChore.class);
@@ -36,13 +36,8 @@ public class MavenWrapperChore {
 			wrapperUrl=https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.1/maven-wrapper-3.1.1.jar
 			""";
 
-	private final ChoreContext context;
-
-	public MavenWrapperChore(ChoreContext context) {
-		this.context = context;
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		LOG.info("Running MavenWrapperChore");
 		Path pom = context.resolve("pom.xml");
 		if (!FilesSilent.exists(pom)) {

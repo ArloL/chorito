@@ -20,7 +20,7 @@ public class DockerfileChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new DockerfileChore(extension.choreContext()).doit();
+		new DockerfileChore().doit(extension.choreContext());
 	}
 
 	@ParameterizedTest
@@ -32,7 +32,7 @@ public class DockerfileChoreTest {
 		Path wronglyNamedFile = extension.root().resolve(name);
 		FilesSilent.touch(wronglyNamedFile);
 
-		new DockerfileChore(extension.choreContext()).doit();
+		new DockerfileChore().doit(extension.choreContext());
 
 		assertFalse(FilesSilent.exists(wronglyNamedFile));
 		assertTrue(FilesSilent.exists(extension.root().resolve("Dockerfile")));

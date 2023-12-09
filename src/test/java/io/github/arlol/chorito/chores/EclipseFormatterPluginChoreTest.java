@@ -17,7 +17,7 @@ public class EclipseFormatterPluginChoreTest {
 	final FileSystemExtension extension = new FileSystemExtension();
 
 	private void doit() {
-		new EclipseFormatterPluginChore(extension.choreContext()).doit();
+		new EclipseFormatterPluginChore().doit(extension.choreContext());
 	}
 
 	@Test

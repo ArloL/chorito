@@ -19,7 +19,7 @@ public class GraalNativeImagePropertiesChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new GraalNativeImagePropertiesChore(extension.choreContext()).doit();
+		new GraalNativeImagePropertiesChore().doit(extension.choreContext());
 	}
 
 	@Test
@@ -48,7 +48,7 @@ public class GraalNativeImagePropertiesChoreTest {
 
 		String before = FilesSilent.readString(nativeImageProperties);
 		assertThat(before).contains("--allow-incomplete-classpath");
-		new GraalNativeImagePropertiesChore(context).doit();
+		new GraalNativeImagePropertiesChore().doit(context);
 
 		String actual = FilesSilent.readString(nativeImageProperties);
 		assertThat(actual).doesNotContain("--allow-incomplete-classpath");

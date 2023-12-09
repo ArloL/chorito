@@ -18,7 +18,7 @@ public class GradleWrapperChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new GradleWrapperChore(extension.choreContext()).doit();
+		new GradleWrapperChore().doit(extension.choreContext());
 	}
 
 	@Test
@@ -37,7 +37,7 @@ public class GradleWrapperChoreTest {
 						zipStorePath=wrapper/dists
 						"""
 		);
-		new GradleWrapperChore(context).doit();
+		new GradleWrapperChore().doit(context);
 		assertTrue(FilesSilent.exists(gradleProperties));
 	}
 

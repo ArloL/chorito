@@ -49,38 +49,37 @@ public class ChoritoCommand {
 
 	public void execute() {
 		List<Chore> chores = List.of(
-				new GitMasterBranchChore(context),
-				new ReadmeChore(context),
-				new GitAttributesChore(context),
-				new EditorConfigChore(context),
-				new PomParentRelativePathChore(context)
+				new GitMasterBranchChore(),
+				new ReadmeChore(),
+				new GitAttributesChore(),
+				new EditorConfigChore(),
+				new PomParentRelativePathChore(),
+				new PomScmChore(),
+				new PomPropertiesChore(),
+				new LicenseChore(),
+				new XmlPreambleChore(),
+				new MavenWrapperChore(),
+				new GradleWrapperChore(),
+				new DockerfileChore(),
+				new DependabotChore(),
+				new CodeQlAnalysisChore(),
+				new GitHubActionChore(),
+				new GitIgnoreChore(),
+				new JavaUpdaterChore(),
+				new JitpackChore(),
+				new GraalNativeImagePropertiesChore(),
+				new Ec4jChore(),
+				new DeleteUnnecessaryFilesChore(),
+				new DeleteUnwantedFilesChore(),
+				new ProhibitedFilenameChore(),
+				new GraalNativeImageMavenPluginMigrationChore(),
+				new RemoveUnnecessaryExecFlagsChore(),
+				new CodeFormatterProfileChore(),
+				new EclipseFormatterPluginChore(),
+				new SpotbugsPluginChore(),
+				new ModernizerPluginChore()
 		);
-		chores.forEach(Chore::doit);
-
-		new PomScmChore(context).doit();
-		new PomPropertiesChore(context).doit();
-		new LicenseChore(context).doit();
-		new XmlPreambleChore(context).doit();
-		new MavenWrapperChore(context).doit();
-		new GradleWrapperChore(context).doit();
-		new DockerfileChore(context).doit();
-		new DependabotChore(context).doit();
-		new CodeQlAnalysisChore(context).doit();
-		new GitHubActionChore(context).doit();
-		new GitIgnoreChore(context).doit();
-		new JavaUpdaterChore(context).doit();
-		new JitpackChore(context).doit();
-		new GraalNativeImagePropertiesChore(context).doit();
-		new Ec4jChore(context).doit();
-		new DeleteUnnecessaryFilesChore(context).doit();
-		new DeleteUnwantedFilesChore(context).doit();
-		new ProhibitedFilenameChore(context).doit();
-		new GraalNativeImageMavenPluginMigrationChore(context).doit();
-		new RemoveUnnecessaryExecFlagsChore(context).doit();
-		new CodeFormatterProfileChore(context).doit();
-		new EclipseFormatterPluginChore(context).doit();
-		new SpotbugsPluginChore(context).doit();
-		new ModernizerPluginChore(context).doit();
+		chores.forEach(chore -> chore.doit(context));
 
 	}
 

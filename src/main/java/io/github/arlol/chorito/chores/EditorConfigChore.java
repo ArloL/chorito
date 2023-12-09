@@ -41,14 +41,8 @@ public class EditorConfigChore implements Chore {
 			indent_style = tab
 			""";
 
-	private final ChoreContext context;
-
-	public EditorConfigChore(ChoreContext context) {
-		this.context = context;
-	}
-
 	@Override
-	public void doit() {
+	public void doit(ChoreContext context) {
 		Path editorConfigPath = context.resolve(".editorconfig");
 		if (!FilesSilent.exists(editorConfigPath)) {
 			FilesSilent.writeString(editorConfigPath, DEFAULT_EDITORCONFIG);

@@ -9,15 +9,10 @@ import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
-public class XmlPreambleChore {
+public class XmlPreambleChore implements Chore {
 
-	private final ChoreContext context;
-
-	public XmlPreambleChore(ChoreContext context) {
-		this.context = context;
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		context.textFiles()
 				.stream()
 				.filter(path -> path.toString().endsWith(".xml"))

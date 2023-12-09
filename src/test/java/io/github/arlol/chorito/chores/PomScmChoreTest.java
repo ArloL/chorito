@@ -38,7 +38,7 @@ public class PomScmChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new PomScmChore(extension.choreContext()).doit();
+		new PomScmChore().doit(extension.choreContext());
 	}
 
 	@Test
@@ -52,7 +52,7 @@ public class PomScmChoreTest {
 				.hasGitHubRemote(true)
 				.build();
 
-		new PomScmChore(context).doit();
+		new PomScmChore().doit(context);
 
 		assertThat(FilesSilent.readString(pom)).isEqualTo(EXPECTED);
 	}

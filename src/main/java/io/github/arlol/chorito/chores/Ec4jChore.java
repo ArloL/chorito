@@ -25,19 +25,14 @@ import org.slf4j.LoggerFactory;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 
-public class Ec4jChore {
+public class Ec4jChore implements Chore {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Ec4jChore.class);
 
 	private static final org.ec4j.lint.api.Logger EC4J_LOGGER = org.ec4j.lint.api.Logger.NO_OP;
 
-	private final ChoreContext context;
-
-	public Ec4jChore(ChoreContext context) {
-		this.context = context.refresh();
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		try {
 			LinterRegistry linterRegistry = buildLinterRegistry(context.root());
 			ViolationHandler handler = new FormattingHandler(

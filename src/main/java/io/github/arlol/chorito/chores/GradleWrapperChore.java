@@ -10,7 +10,7 @@ import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ExecutableFlagger;
 import io.github.arlol.chorito.tools.FilesSilent;
 
-public class GradleWrapperChore {
+public class GradleWrapperChore implements Chore {
 
 	private static Logger LOG = LoggerFactory
 			.getLogger(GradleWrapperChore.class);
@@ -24,13 +24,8 @@ public class GradleWrapperChore {
 			zipStorePath=wrapper/dists
 			""";
 
-	private final ChoreContext context;
-
-	public GradleWrapperChore(ChoreContext context) {
-		this.context = context;
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		LOG.info("Running GradleWrapperChore");
 		Path wrapper = context.resolve("gradlew");
 		if (FilesSilent.exists(wrapper)) {

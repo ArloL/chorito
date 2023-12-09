@@ -58,7 +58,7 @@ public class PomPropertiesChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new PomPropertiesChore(extension.choreContext()).doit();
+		new PomPropertiesChore().doit(extension.choreContext());
 	}
 
 	@Test
@@ -66,7 +66,7 @@ public class PomPropertiesChoreTest {
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(pom, INPUT);
 
-		new PomPropertiesChore(extension.choreContext()).doit();
+		new PomPropertiesChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(pom)).isEqualTo(EXPECTED);
 	}

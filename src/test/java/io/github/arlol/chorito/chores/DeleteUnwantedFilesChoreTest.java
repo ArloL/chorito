@@ -19,7 +19,7 @@ public class DeleteUnwantedFilesChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new DeleteUnwantedFilesChore(extension.choreContext()).doit();
+		new DeleteUnwantedFilesChore().doit(extension.choreContext());
 	}
 
 	@Test
@@ -27,7 +27,7 @@ public class DeleteUnwantedFilesChoreTest {
 		ChoreContext context = context();
 		Path dsStore = context.resolve(".DS_Store");
 		assertTrue(FilesSilent.exists(dsStore));
-		new DeleteUnwantedFilesChore(context()).doit();
+		new DeleteUnwantedFilesChore().doit(context());
 		assertFalse(FilesSilent.exists(dsStore));
 	}
 

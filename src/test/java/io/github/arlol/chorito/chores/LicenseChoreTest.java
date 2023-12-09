@@ -23,7 +23,7 @@ public class LicenseChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new LicenseChore(extension.choreContext()).doit();
+		new LicenseChore().doit(extension.choreContext());
 	}
 
 	@Test
@@ -36,7 +36,7 @@ public class LicenseChoreTest {
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
-		new LicenseChore(context).doit();
+		new LicenseChore().doit(context);
 
 		Path license = extension.root().resolve("LICENSE");
 		assertTrue(FilesSilent.exists(license));
@@ -58,7 +58,7 @@ public class LicenseChoreTest {
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
-		new LicenseChore(context).doit();
+		new LicenseChore().doit(context);
 
 		assertFalse(FilesSilent.exists(licenseMd));
 		assertTrue(FilesSilent.exists(license));
@@ -79,7 +79,7 @@ public class LicenseChoreTest {
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
-		new LicenseChore(context).doit();
+		new LicenseChore().doit(context);
 
 		assertTrue(FilesSilent.exists(license));
 		assertThat(FilesSilent.readString(license))
@@ -99,7 +99,7 @@ public class LicenseChoreTest {
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
-		new LicenseChore(context).doit();
+		new LicenseChore().doit(context);
 
 		assertTrue(FilesSilent.exists(license));
 		assertThat(FilesSilent.readString(license))
@@ -119,7 +119,7 @@ public class LicenseChoreTest {
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
-		new LicenseChore(context).doit();
+		new LicenseChore().doit(context);
 
 		assertTrue(FilesSilent.exists(license));
 		assertThat(FilesSilent.readString(license))
@@ -139,7 +139,7 @@ public class LicenseChoreTest {
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
-		new LicenseChore(context).doit();
+		new LicenseChore().doit(context);
 
 		assertTrue(FilesSilent.exists(license));
 		assertThat(FilesSilent.readString(license))
@@ -162,7 +162,7 @@ public class LicenseChoreTest {
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
-		new LicenseChore(context).doit();
+		new LicenseChore().doit(context);
 
 		assertTrue(FilesSilent.exists(license));
 		assertThat(FilesSilent.readString(license))

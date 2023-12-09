@@ -4,18 +4,13 @@ import java.io.UncheckedIOException;
 import java.nio.charset.MalformedInputException;
 
 import io.github.arlol.chorito.tools.ChoreContext;
-import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.ExecutableFlagger;
+import io.github.arlol.chorito.tools.FilesSilent;
 
-public class RemoveUnnecessaryExecFlagsChore {
+public class RemoveUnnecessaryExecFlagsChore implements Chore {
 
-	private final ChoreContext context;
-
-	public RemoveUnnecessaryExecFlagsChore(ChoreContext context) {
-		this.context = context.refresh();
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		context.textFiles().forEach(path -> {
 			if (ExecutableFlagger.isExecutable(path)) {
 				try {

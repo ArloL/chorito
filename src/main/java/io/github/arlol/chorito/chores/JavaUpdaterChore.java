@@ -10,21 +10,16 @@ import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
-public class JavaUpdaterChore {
+public class JavaUpdaterChore implements Chore {
 
-	private final ChoreContext context;
-
-	public JavaUpdaterChore(ChoreContext context) {
-		this.context = context;
+	@Override
+	public void doit(ChoreContext context) {
+		updatePomXmlJavaVersionProperty(context);
+		updateGithubActions(context);
+		updateJitpackYml(context);
 	}
 
-	public void doit() {
-		updatePomXmlJavaVersionProperty();
-		updateGithubActions();
-		updateJitpackYml();
-	}
-
-	private void updatePomXmlJavaVersionProperty() {
+	private void updatePomXmlJavaVersionProperty(ChoreContext context) {
 		Path pomXml = context.resolve("pom.xml");
 		if (FilesSilent.exists(pomXml)) {
 			Document doc = JsoupSilent
@@ -37,7 +32,7 @@ public class JavaUpdaterChore {
 		}
 	}
 
-	private void updateGithubActions() {
+	private void updateGithubActions(ChoreContext context) {
 		Path workflowsLocation = context.resolve(".github/workflows");
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
@@ -58,7 +53,7 @@ public class JavaUpdaterChore {
 		});
 	}
 
-	private void updateJitpackYml() {
+	private void updateJitpackYml(ChoreContext context) {
 		Path jitpack = context.resolve("jitpack.yml");
 		if (FilesSilent.exists(jitpack)) {
 			List<String> updated = FilesSilent.readAllLines(jitpack)

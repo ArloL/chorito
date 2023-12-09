@@ -16,7 +16,7 @@ public class MavenWrapperChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		new MavenWrapperChore(extension.choreContext()).doit();
+		new MavenWrapperChore().doit(extension.choreContext());
 	}
 
 	@Test
@@ -25,7 +25,7 @@ public class MavenWrapperChoreTest {
 				.toBuilder()
 				.processBuilderFactory(FakeProcessBuilderSilent.factory())
 				.build();
-		new MavenWrapperChore(context).doit();
+		new MavenWrapperChore().doit(context);
 	}
 
 	@Test
@@ -39,7 +39,7 @@ public class MavenWrapperChoreTest {
 		Path pom = context.resolve("pom.xml");
 		FilesSilent.touch(pom);
 
-		new MavenWrapperChore(context).doit();
+		new MavenWrapperChore().doit(context);
 	}
 
 	private void fakeMavenWrapper() {

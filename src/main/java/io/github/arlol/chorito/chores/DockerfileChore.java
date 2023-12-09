@@ -4,15 +4,10 @@ import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.MyPaths;
 
-public class DockerfileChore {
+public class DockerfileChore implements Chore {
 
-	private final ChoreContext context;
-
-	public DockerfileChore(ChoreContext context) {
-		this.context = context;
-	}
-
-	public void doit() {
+	@Override
+	public void doit(ChoreContext context) {
 		context.textFiles().forEach(textFile -> {
 			String filename = MyPaths.getFileName(textFile).toString();
 			if (filename.equalsIgnoreCase("dockerfile")

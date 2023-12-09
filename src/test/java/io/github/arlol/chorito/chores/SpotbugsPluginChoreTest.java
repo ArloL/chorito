@@ -17,7 +17,7 @@ public class SpotbugsPluginChoreTest {
 	final FileSystemExtension extension = new FileSystemExtension();
 
 	private void doit() {
-		new SpotbugsPluginChore(extension.choreContext()).doit();
+		new SpotbugsPluginChore().doit(extension.choreContext());
 	}
 
 	@Test
