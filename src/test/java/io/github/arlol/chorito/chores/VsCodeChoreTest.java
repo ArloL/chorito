@@ -12,20 +12,20 @@ import io.github.arlol.chorito.tools.FilesSilent;
 
 public class VsCodeChoreTest {
 
-    @RegisterExtension
-    final FileSystemExtension extension = new FileSystemExtension();
+	@RegisterExtension
+	final FileSystemExtension extension = new FileSystemExtension();
 
-    private void doit() {
-        new VsCodeChore().doit(extension.choreContext());
-    }
+	private void doit() {
+		new VsCodeChore().doit(extension.choreContext());
+	}
 
-    @Test
-    public void testWithNothing() {
-        Path pom = extension.root().resolve("pom.xml");
-        FilesSilent.touch(pom);
-        Path extensions = extension.root().resolve(".vscode/extensions.json");
-        doit();
-        assertThat(FilesSilent.exists(extensions)).isTrue();
-    }
+	@Test
+	public void testWithNothing() {
+		Path pom = extension.root().resolve("pom.xml");
+		FilesSilent.touch(pom);
+		Path extensions = extension.root().resolve(".vscode/extensions.json");
+		doit();
+		assertThat(FilesSilent.exists(extensions)).isTrue();
+	}
 
 }
