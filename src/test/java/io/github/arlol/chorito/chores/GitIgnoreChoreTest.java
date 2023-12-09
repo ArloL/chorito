@@ -32,7 +32,6 @@ public class GitIgnoreChoreTest {
 
 		Path gitignore = extension.root().resolve(".gitignore");
 		assertThat(FilesSilent.readString(gitignore)).isEqualTo(".project\n");
-		assertThat(FilesSilent.exists(gitignore)).isTrue();
 	}
 
 	@Test
@@ -46,7 +45,6 @@ public class GitIgnoreChoreTest {
 
 		assertThat(FilesSilent.readString(gitignore))
 				.isEqualTo("lol\n.project\n");
-		assertThat(FilesSilent.exists(gitignore)).isTrue();
 	}
 
 	@Test
@@ -59,7 +57,6 @@ public class GitIgnoreChoreTest {
 		new GitIgnoreChore(extension.choreContext()).doit();
 
 		assertThat(FilesSilent.readString(gitignore)).isEqualTo(".project\n");
-		assertThat(FilesSilent.exists(gitignore)).isTrue();
 	}
 
 }
