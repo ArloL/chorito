@@ -163,6 +163,9 @@
 			<resource>
 				<directory>${basedir}/.github</directory>
 			</resource>
+			<resource>
+				<directory>${basedir}/.settings</directory>
+			</resource>
 		</resources>
 		<plugins>
 			<plugin>

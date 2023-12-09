@@ -6,7 +6,8 @@
     {"pattern":"org/slf4j/impl/StaticLoggerBinder.class"},
     {"pattern":"\\QMETA-INF/MANIFEST.MF\\E"},
     {"pattern":"workflows/chores.yaml"},
-    {"pattern":"workflows/codeql-analysis.yaml"}
+    {"pattern":"workflows/codeql-analysis.yaml"},
+    {"pattern":".gitignore"}
   ]},
   "bundles":[
     {"name":"org.eclipse.jgit.internal.JGitText"}

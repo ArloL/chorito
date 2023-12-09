@@ -16,10 +16,14 @@ public class GitIgnoreChoreTest {
 	@RegisterExtension
 	final FileSystemExtension extension = new FileSystemExtension();
 
+	private void doit() {
+		new GitIgnoreChore(extension.choreContext()).doit();
+	}
+
 	@Test
 	public void testWithNothing() {
 		Path gitignore = extension.root().resolve(".gitignore");
-		new GitIgnoreChore(extension.choreContext()).doit();
+		doit();
 		assertThat(FilesSilent.exists(gitignore)).isFalse();
 	}
 
@@ -28,7 +32,7 @@ public class GitIgnoreChoreTest {
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.touch(pom);
 
-		new GitIgnoreChore(extension.choreContext()).doit();
+		doit();
 
 		Path gitignore = extension.root().resolve(".gitignore");
 		assertThat(FilesSilent.readString(gitignore)).isEqualTo(".project\n");
@@ -41,7 +45,7 @@ public class GitIgnoreChoreTest {
 		Path gitignore = extension.root().resolve(".gitignore");
 		FilesSilent.write(gitignore, List.of("lol"), "\n");
 
-		new GitIgnoreChore(extension.choreContext()).doit();
+		doit();
 
 		assertThat(FilesSilent.readString(gitignore))
 				.isEqualTo("lol\n.project\n");
@@ -54,9 +58,25 @@ public class GitIgnoreChoreTest {
 		Path gitignore = extension.root().resolve(".gitignore");
 		FilesSilent.write(gitignore, List.of(".settings"), "\n");
 
-		new GitIgnoreChore(extension.choreContext()).doit();
+		doit();
 
 		assertThat(FilesSilent.readString(gitignore)).isEqualTo(".project\n");
+	}
+
+	@Test
+	public void testWithPom() throws Exception {
+		Path pom = extension.root().resolve("pom.xml");
+		FilesSilent.touch(pom);
+
+		doit();
+
+		Path settingsGitignore = extension.root()
+				.resolve(".settings/.gitignore");
+		assertThat(FilesSilent.readString(settingsGitignore)).isEqualTo(
+				"*\n" + "!code-formatter-profile.xml\n"
+						+ "!org.eclipse.jdt.core.prefs\n"
+						+ "!org.eclipse.jdt.ui.prefs\n" + ""
+		);
 	}
 
 }

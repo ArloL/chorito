@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.github.arlol.chorito.tools.ChoreContext;
+import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
 
 public class GitIgnoreChore {
@@ -30,6 +31,10 @@ public class GitIgnoreChore {
 			} else {
 				FilesSilent.writeString(gitignore, ".project\n");
 			}
+
+			Path settingsGitignore = context.resolve(".settings/.gitignore");
+			String currentGitignore = ClassPathFiles.readString("/.gitignore");
+			FilesSilent.writeString(settingsGitignore, currentGitignore);
 		}
 	}
 
