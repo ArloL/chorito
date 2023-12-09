@@ -27,7 +27,10 @@ public class EclipseFormatterPluginChore implements Chore {
 						"plugin:has(groupId:containsWholeOwnText(org.codehaus.mojo)):has(artifactId:containsWholeOwnText(flatten-maven-plugin))"
 				).first();
 				if (flattenPlugin == null) {
-					throw new IllegalStateException("No flatten plugin");
+					flattenPlugin = doc.select("plugin").last();
+					if (flattenPlugin == null) {
+						throw new IllegalStateException("No plugin");
+					}
 				}
 				flattenPlugin.after(
 						"\n			<plugin>\n"
