@@ -28,14 +28,14 @@ public class EclipseFormatterPluginChore {
 					"plugin:has(groupId:containsWholeOwnText(net.revelc.code.formatter)):has(artifactId:containsWholeOwnText(formatter-maven-plugin))"
 			).first();
 			if (formatterPlugin == null) {
-				Element spotbugsPlugin = doc.select(
-						"plugin:has(groupId:containsWholeOwnText(com.github.spotbugs)):has(artifactId:containsWholeOwnText(spotbugs-maven-plugin))"
+				Element flattenPlugin = doc.select(
+						"plugin:has(groupId:containsWholeOwnText(org.codehaus.mojo)):has(artifactId:containsWholeOwnText(flatten-maven-plugin))"
 				).first();
-				if (spotbugsPlugin == null) {
-					throw new IllegalStateException("No spotbugs plugin");
+				if (flattenPlugin == null) {
+					throw new IllegalStateException("No flatten plugin");
 				}
-				spotbugsPlugin.before(
-						"<plugin>\n"
+				flattenPlugin.after(
+						"\n			<plugin>\n"
 								+ "				<groupId>net.revelc.code.formatter</groupId>\n"
 								+ "				<artifactId>formatter-maven-plugin</artifactId>\n"
 								+ "				<version>2.23.0</version>\n"
@@ -49,7 +49,7 @@ public class EclipseFormatterPluginChore {
 								+ "						</goals>\n"
 								+ "					</execution>\n"
 								+ "				</executions>\n"
-								+ "			</plugin>\n			"
+								+ "			</plugin>"
 				);
 			}
 
