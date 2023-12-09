@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 
-public class GitAttributesChore {
+public class GitAttributesChore implements Chore {
 
 	private static String DEFAULT_GITATTRIBUTES = """
 			*        text=auto eol=lf
@@ -21,6 +21,7 @@ public class GitAttributesChore {
 		this.context = context;
 	}
 
+	@Override
 	public void doit() {
 		Path path = context.resolve(".gitattributes");
 		if (!FilesSilent.exists(path)) {

@@ -10,7 +10,7 @@ import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
-public class PomParentRelativePathChore {
+public class PomParentRelativePathChore implements Chore {
 
 	private ChoreContext context;
 
@@ -18,6 +18,7 @@ public class PomParentRelativePathChore {
 		this.context = context;
 	}
 
+	@Override
 	public void doit() {
 		Path pom = context.resolve("pom.xml");
 		if (FilesSilent.exists(pom)) {

@@ -8,7 +8,7 @@ import java.util.Arrays;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 
-public class EditorConfigChore {
+public class EditorConfigChore implements Chore {
 
 	private static String DEFAULT_EDITORCONFIG = """
 			# https://editorconfig.org
@@ -47,6 +47,7 @@ public class EditorConfigChore {
 		this.context = context;
 	}
 
+	@Override
 	public void doit() {
 		Path editorConfigPath = context.resolve(".editorconfig");
 		if (!FilesSilent.exists(editorConfigPath)) {

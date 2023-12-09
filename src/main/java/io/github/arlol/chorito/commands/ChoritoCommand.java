@@ -1,5 +1,8 @@
 package io.github.arlol.chorito.commands;
 
+import java.util.List;
+
+import io.github.arlol.chorito.chores.Chore;
 import io.github.arlol.chorito.chores.CodeFormatterProfileChore;
 import io.github.arlol.chorito.chores.CodeQlAnalysisChore;
 import io.github.arlol.chorito.chores.DeleteUnnecessaryFilesChore;
@@ -44,11 +47,15 @@ public class ChoritoCommand {
 	}
 
 	public void execute() {
-		new GitMasterBranchChore(context).doit();
-		new ReadmeChore(context).doit();
-		new GitAttributesChore(context).doit();
-		new EditorConfigChore(context).doit();
-		new PomParentRelativePathChore(context).doit();
+		List<Chore> chores = List.of(
+				new GitMasterBranchChore(context),
+				new ReadmeChore(context),
+				new GitAttributesChore(context),
+				new EditorConfigChore(context),
+				new PomParentRelativePathChore(context)
+		);
+		chores.forEach(Chore::doit);
+
 		new PomScmChore(context).doit();
 		new PomPropertiesChore(context).doit();
 		new LicenseChore(context).doit();

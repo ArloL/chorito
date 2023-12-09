@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 
-public class ReadmeChore {
+public class ReadmeChore implements Chore {
 
 	private static String DEFAULT_README = """
 			# ${PROJECT}
@@ -28,6 +28,7 @@ public class ReadmeChore {
 		this.context = context;
 	}
 
+	@Override
 	public void doit() {
 		Path readmeMd = context.resolve("README.md");
 		Path readme = context.resolve("README");

@@ -9,7 +9,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.arlol.chorito.tools.ChoreContext;
 
-public class GitMasterBranchChore {
+public class GitMasterBranchChore implements Chore {
 
 	private ChoreContext context;
 
@@ -17,6 +17,7 @@ public class GitMasterBranchChore {
 		this.context = context;
 	}
 
+	@Override
 	@SuppressFBWarnings(
 			value = "BC_UNCONFIRMED_CAST_OF_RETURN_VALUE",
 			justification = "FileRepositoryBuilder uses generics which spotbugs cant know"
