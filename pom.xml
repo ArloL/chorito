@@ -166,6 +166,9 @@
 			<resource>
 				<directory>${basedir}/.settings</directory>
 			</resource>
+			<resource>
+				<directory>${basedir}/.vscode</directory>
+			</resource>
 		</resources>
 		<plugins>
 			<plugin>

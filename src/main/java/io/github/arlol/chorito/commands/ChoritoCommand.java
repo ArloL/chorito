@@ -32,6 +32,7 @@ import io.github.arlol.chorito.chores.ProhibitedFilenameChore;
 import io.github.arlol.chorito.chores.ReadmeChore;
 import io.github.arlol.chorito.chores.RemoveUnnecessaryExecFlagsChore;
 import io.github.arlol.chorito.chores.SpotbugsPluginChore;
+import io.github.arlol.chorito.chores.VsCodeChore;
 import io.github.arlol.chorito.chores.XmlPreambleChore;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.GitChoreContext;
@@ -79,7 +80,8 @@ public class ChoritoCommand {
 				new EclipseFormatterPluginChore(),
 				new SpotbugsPluginChore(),
 				new ModernizerPluginChore(),
-				new LifecycleMappingChore()
+				new LifecycleMappingChore(),
+				new VsCodeChore()
 		);
 		chores.forEach(chore -> chore.doit(context));
 
