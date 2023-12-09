@@ -85,8 +85,10 @@ public class ChoritoCommand {
 				new VsCodeChore(),
 				new IntellijChore()
 		);
-		chores.forEach(chore -> chore.doit(context));
-
+		ChoreContext currentContext = context;
+		for (Chore chore : chores) {
+			currentContext = chore.doit(currentContext);
+		}
 	}
 
 }

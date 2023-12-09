@@ -15,12 +15,13 @@ public class JitpackChore implements Chore {
 			""";
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		Path pom = context.resolve("pom.xml");
 		Path jitpack = context.resolve("jitpack.yml");
 		if (FilesSilent.exists(pom) && !FilesSilent.exists(jitpack)) {
 			FilesSilent.writeString(jitpack, JAVA_JITPACK);
 		}
+		return context;
 	}
 
 }

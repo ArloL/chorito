@@ -13,13 +13,14 @@ public class DeleteUnwantedFilesChore implements Chore {
 			.asList(".DS_Store");
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		context.files().forEach(path -> {
 			String filename = MyPaths.getFileName(path).toString();
 			if (PROHIBITED_FILES.contains(filename)) {
 				FilesSilent.deleteIfExists(path);
 			}
 		});
+		return context;
 	}
 
 }

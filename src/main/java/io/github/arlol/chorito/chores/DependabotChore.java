@@ -53,7 +53,7 @@ public class DependabotChore implements Chore {
 			""";
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		if (context.hasGitHubRemote()) {
 			String content = DEFAULT_DEPENDABOT;
 			if (FilesSilent.exists(context.resolve("pom.xml"))) {
@@ -80,6 +80,7 @@ public class DependabotChore implements Chore {
 					content
 			);
 		}
+		return context;
 	}
 
 }

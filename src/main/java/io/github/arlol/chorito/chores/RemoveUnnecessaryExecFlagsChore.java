@@ -10,7 +10,7 @@ import io.github.arlol.chorito.tools.FilesSilent;
 public class RemoveUnnecessaryExecFlagsChore implements Chore {
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		context.textFiles().forEach(path -> {
 			if (ExecutableFlagger.isExecutable(path)) {
 				try {
@@ -25,6 +25,7 @@ public class RemoveUnnecessaryExecFlagsChore implements Chore {
 				}
 			}
 		});
+		return context;
 	}
 
 }

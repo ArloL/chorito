@@ -173,7 +173,7 @@ public class GitIgnoreChore implements Chore {
 			# End of chorito. Add your ignores after this line and they will be preserved.""";
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		Path gitignore = context.resolve(".gitignore");
 		if (FilesSilent.exists(context.resolve("pom.xml"))) {
 			if (!FilesSilent.exists(gitignore)) {
@@ -197,6 +197,7 @@ public class GitIgnoreChore implements Chore {
 			String templateGitignore = ClassPathFiles.readString("/.gitignore");
 			FilesSilent.writeString(settingsGitignore, templateGitignore);
 		}
+		return context;
 	}
 
 }

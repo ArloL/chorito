@@ -10,7 +10,7 @@ import io.github.arlol.chorito.tools.RandomCronBuilder;
 public class CodeQlAnalysisChore implements Chore {
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		RandomCronBuilder randomCronBuilder = new RandomCronBuilder(
 				context.randomGenerator()
 		);
@@ -32,6 +32,7 @@ public class CodeQlAnalysisChore implements Chore {
 				}
 			}
 		}
+		return context;
 	}
 
 }

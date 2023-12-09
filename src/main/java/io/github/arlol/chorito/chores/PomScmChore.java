@@ -13,7 +13,7 @@ import io.github.arlol.chorito.tools.JsoupSilent;
 public class PomScmChore implements Chore {
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		Path pom = context.resolve("pom.xml");
 		if (context.hasGitHubRemote() && context.remotes().size() == 1
 				&& FilesSilent.exists(pom)) {
@@ -39,6 +39,7 @@ public class PomScmChore implements Chore {
 			}
 			FilesSilent.writeString(pom, doc.outerHtml());
 		}
+		return context;
 	}
 
 }

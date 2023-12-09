@@ -35,7 +35,7 @@ public class ProhibitedFilenameChore implements Chore {
 	);;
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		context.files().forEach(path -> {
 			String filenameNoExtension = MyPaths.getFileName(path).toString();
 			if (filenameNoExtension.contains(".")) {
@@ -46,6 +46,7 @@ public class ProhibitedFilenameChore implements Chore {
 				FilesSilent.deleteIfExists(path);
 			}
 		});
+		return context;
 	}
 
 }

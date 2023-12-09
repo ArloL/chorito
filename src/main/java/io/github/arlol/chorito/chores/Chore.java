@@ -4,6 +4,6 @@ import io.github.arlol.chorito.tools.ChoreContext;
 
 public interface Chore {
 
-	void doit(ChoreContext context);
+	ChoreContext doit(ChoreContext context);
 
 }

@@ -12,7 +12,7 @@ import io.github.arlol.chorito.tools.JsoupSilent;
 public class XmlPreambleChore implements Chore {
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		context.textFiles()
 				.stream()
 				.filter(path -> path.toString().endsWith(".xml"))
@@ -30,6 +30,7 @@ public class XmlPreambleChore implements Chore {
 					}
 					FilesSilent.writeString(path, doc.outerHtml());
 				});
+		return context;
 	}
 
 }

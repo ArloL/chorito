@@ -13,7 +13,7 @@ import io.github.arlol.chorito.tools.Renamer;
 public class GitHubActionChore implements Chore {
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		ensureYamlFileExtension(context);
 		updateChoresWorkflow(context);
 		updateGraalVmVersion(context);
@@ -27,6 +27,7 @@ public class GitHubActionChore implements Chore {
 		removeSetupJava370(context);
 		migrateActionsCreateRelease(context);
 		migrateActionsUploadReleaseAsset(context);
+		return context;
 	}
 
 	private void migrateActionsCreateRelease(ChoreContext context) {

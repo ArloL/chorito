@@ -13,10 +13,11 @@ import io.github.arlol.chorito.tools.JsoupSilent;
 public class JavaUpdaterChore implements Chore {
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		updatePomXmlJavaVersionProperty(context);
 		updateGithubActions(context);
 		updateJitpackYml(context);
+		return context;
 	}
 
 	private void updatePomXmlJavaVersionProperty(ChoreContext context) {

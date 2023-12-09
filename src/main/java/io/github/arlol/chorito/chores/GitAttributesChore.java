@@ -16,11 +16,12 @@ public class GitAttributesChore implements Chore {
 			""";
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		Path path = context.resolve(".gitattributes");
 		if (!FilesSilent.exists(path)) {
 			FilesSilent.writeString(path, DEFAULT_GITATTRIBUTES);
 		}
+		return context;
 	}
 
 }

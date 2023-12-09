@@ -32,7 +32,7 @@ public class Ec4jChore implements Chore {
 	private static final org.ec4j.lint.api.Logger EC4J_LOGGER = org.ec4j.lint.api.Logger.NO_OP;
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		try {
 			LinterRegistry linterRegistry = buildLinterRegistry(context.root());
 			ViolationHandler handler = new FormattingHandler(
@@ -93,6 +93,7 @@ public class Ec4jChore implements Chore {
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
+		return context;
 	}
 
 	private LinterRegistry buildLinterRegistry(Path currentDir) {

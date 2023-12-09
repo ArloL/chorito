@@ -16,7 +16,7 @@ import io.github.arlol.chorito.tools.JsoupSilent;
 public class CodeFormatterProfileChore implements Chore {
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		Path pom = context.resolve("pom.xml");
 		if (FilesSilent.exists(pom)) {
 			Path profileXml = context
@@ -71,6 +71,7 @@ public class CodeFormatterProfileChore implements Chore {
 				FilesSilent.writeString(jdtUiPrefs, currentJdtUiPrefs);
 			}
 		}
+		return context;
 	}
 
 }

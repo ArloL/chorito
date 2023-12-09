@@ -34,7 +34,7 @@ public class LicenseChore implements Chore {
 			""";
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		Path licenseMd = context.resolve("LICENSE.md");
 		Path license = context.resolve("LICENSE");
 		if (FilesSilent.exists(licenseMd)) {
@@ -78,6 +78,7 @@ public class LicenseChore implements Chore {
 			}
 			FilesSilent.writeString(license, newLicenseContent);
 		}
+		return context;
 	}
 
 	private void checkPom(ChoreContext context) {

@@ -8,7 +8,7 @@ import io.github.arlol.chorito.tools.FilesSilent;
 public class GraalNativeImagePropertiesChore implements Chore {
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		Path metaInfNativeImage = context
 				.resolve("src/main/resources/META-INF/native-image/");
 		if (FilesSilent.exists(metaInfNativeImage)) {
@@ -22,6 +22,7 @@ public class GraalNativeImagePropertiesChore implements Chore {
 						FilesSilent.writeString(p, content);
 					});
 		}
+		return context;
 	}
 
 }

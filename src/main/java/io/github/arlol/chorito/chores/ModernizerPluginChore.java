@@ -13,7 +13,7 @@ import io.github.arlol.chorito.tools.JsoupSilent;
 public class ModernizerPluginChore implements Chore {
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		Path pomXml = context.resolve("pom.xml");
 		if (FilesSilent.exists(pomXml)) {
 			Document doc = JsoupSilent
@@ -50,6 +50,7 @@ public class ModernizerPluginChore implements Chore {
 
 			FilesSilent.writeString(pomXml, doc.outerHtml());
 		}
+		return context;
 	}
 
 }

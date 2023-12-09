@@ -9,7 +9,7 @@ import io.github.arlol.chorito.tools.FilesSilent;
 public class IntellijChore implements Chore {
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		if (FilesSilent.exists(context.resolve("pom.xml"))) {
 			Path externalDependencies = context
 					.resolve(".idea/externalDependencies.xml");
@@ -29,6 +29,7 @@ public class IntellijChore implements Chore {
 					templateEclipseCodeFormatter
 			);
 		}
+		return context;
 	}
 
 }

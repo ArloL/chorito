@@ -13,7 +13,7 @@ import io.github.arlol.chorito.tools.JsoupSilent;
 public class LifecycleMappingChore implements Chore {
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		Path pomXml = context.resolve("pom.xml");
 		if (FilesSilent.exists(pomXml)) {
 			Document doc = JsoupSilent
@@ -23,7 +23,7 @@ public class LifecycleMappingChore implements Chore {
 					"plugin:has(groupId:containsWholeOwnText(org.eclipse.m2e)):has(artifactId:containsWholeOwnText(lifecycle-mapping))"
 			).first();
 			if (lifecycleMappingPlugin == null) {
-				return;
+				return context;
 			}
 			while (!(lifecycleMappingPlugin
 					.previousSibling() instanceof Element)) {
@@ -33,6 +33,7 @@ public class LifecycleMappingChore implements Chore {
 
 			FilesSilent.writeString(pomXml, doc.outerHtml());
 		}
+		return context;
 	}
 
 }

@@ -9,7 +9,7 @@ import io.github.arlol.chorito.tools.FilesSilent;
 public class VsCodeChore implements Chore {
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		if (FilesSilent.exists(context.resolve("pom.xml"))) {
 			Path settings = context.resolve(".vscode/settings.json");
 			if (!FilesSilent.exists(settings)) {
@@ -25,6 +25,7 @@ public class VsCodeChore implements Chore {
 				FilesSilent.writeString(extensions, templateExtensions);
 			}
 		}
+		return context;
 	}
 
 }

@@ -23,7 +23,7 @@ public class ReadmeChore implements Chore {
 			""";
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		Path readmeMd = context.resolve("README.md");
 		Path readme = context.resolve("README");
 		Path readmeTxt = context.resolve("README.txt");
@@ -32,6 +32,7 @@ public class ReadmeChore implements Chore {
 				.noneExists(readmeMd, readme, readmeTxt, readmeMarkdown)) {
 			FilesSilent.writeString(readmeMd, DEFAULT_README);
 		}
+		return context;
 	}
 
 }

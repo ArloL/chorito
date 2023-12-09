@@ -47,7 +47,7 @@ public class EditorConfigChore implements Chore {
 			""";
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		Path editorConfigPath = context.resolve(".editorconfig");
 		if (!FilesSilent.exists(editorConfigPath)) {
 			FilesSilent.writeString(editorConfigPath, DEFAULT_EDITORCONFIG);
@@ -89,6 +89,7 @@ public class EditorConfigChore implements Chore {
 		}
 		content = removeBracketsFromSingleExtensionGroups(content);
 		FilesSilent.writeString(editorConfigPath, content);
+		return context;
 	}
 
 	public static String removeBracketsFromSingleExtensionGroups(

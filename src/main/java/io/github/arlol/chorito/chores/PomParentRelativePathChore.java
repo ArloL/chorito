@@ -13,7 +13,7 @@ import io.github.arlol.chorito.tools.JsoupSilent;
 public class PomParentRelativePathChore implements Chore {
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		Path pom = context.resolve("pom.xml");
 		if (FilesSilent.exists(pom)) {
 			Document doc = JsoupSilent
@@ -27,6 +27,7 @@ public class PomParentRelativePathChore implements Chore {
 			}
 			FilesSilent.writeString(pom, doc.outerHtml());
 		}
+		return context;
 	}
 
 }

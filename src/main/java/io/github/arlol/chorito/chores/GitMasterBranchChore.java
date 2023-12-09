@@ -16,18 +16,18 @@ public class GitMasterBranchChore implements Chore {
 			value = "BC_UNCONFIRMED_CAST_OF_RETURN_VALUE",
 			justification = "FileRepositoryBuilder uses generics which spotbugs cant know"
 	)
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		try {
 			context.root().toFile();
 		} catch (UnsupportedOperationException e) {
-			return;
+			return context;
 		}
 		FileRepositoryBuilder builder = new FileRepositoryBuilder()
 				.setMustExist(false)
 				.readEnvironment()
 				.findGitDir(context.root().toFile());
 		if (builder.getGitDir() == null && builder.getWorkTree() == null) {
-			return;
+			return context;
 		}
 		try (Repository repository = builder.build()) {
 			if (repository.getBranch().equalsIgnoreCase("master")) {
@@ -36,6 +36,7 @@ public class GitMasterBranchChore implements Chore {
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
+		return context;
 	}
 
 }

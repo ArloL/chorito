@@ -37,11 +37,11 @@ public class MavenWrapperChore implements Chore {
 			""";
 
 	@Override
-	public void doit(ChoreContext context) {
+	public ChoreContext doit(ChoreContext context) {
 		LOG.info("Running MavenWrapperChore");
 		Path pom = context.resolve("pom.xml");
 		if (!FilesSilent.exists(pom)) {
-			return;
+			return context;
 		}
 		Path wrapper = context.resolve("mvnw");
 		if (!FilesSilent.exists(wrapper)) {
@@ -71,6 +71,7 @@ public class MavenWrapperChore implements Chore {
 				).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
 			}
 		}
+		return context;
 	}
 
 }
