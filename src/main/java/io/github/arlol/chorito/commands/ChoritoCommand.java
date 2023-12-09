@@ -1,5 +1,6 @@
 package io.github.arlol.chorito.commands;
 
+import io.github.arlol.chorito.chores.CodeFormatterProfileChore;
 import io.github.arlol.chorito.chores.CodeQlAnalysisChore;
 import io.github.arlol.chorito.chores.DeleteUnnecessaryFilesChore;
 import io.github.arlol.chorito.chores.DeleteUnwantedFilesChore;
@@ -66,6 +67,7 @@ public class ChoritoCommand {
 		new ProhibitedFilenameChore(context).doit();
 		new GraalNativeImageMavenPluginMigrationChore(context).doit();
 		new RemoveUnnecessaryExecFlagsChore(context).doit();
+		new CodeFormatterProfileChore(context).doit();
 	}
 
 }

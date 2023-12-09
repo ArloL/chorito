@@ -7,7 +7,8 @@
     {"pattern":"\\QMETA-INF/MANIFEST.MF\\E"},
     {"pattern":"workflows/chores.yaml"},
     {"pattern":"workflows/codeql-analysis.yaml"},
-    {"pattern":".gitignore"}
+    {"pattern":".gitignore"},
+    {"pattern":"code-formatter-profile.xml"}
   ]},
   "bundles":[
     {"name":"org.eclipse.jgit.internal.JGitText"}
