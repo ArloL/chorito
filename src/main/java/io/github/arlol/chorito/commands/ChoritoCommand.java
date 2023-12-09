@@ -26,6 +26,7 @@ import io.github.arlol.chorito.chores.PomScmChore;
 import io.github.arlol.chorito.chores.ProhibitedFilenameChore;
 import io.github.arlol.chorito.chores.ReadmeChore;
 import io.github.arlol.chorito.chores.RemoveUnnecessaryExecFlagsChore;
+import io.github.arlol.chorito.chores.SpotbugsPluginChore;
 import io.github.arlol.chorito.chores.XmlPreambleChore;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.GitChoreContext;
@@ -70,6 +71,7 @@ public class ChoritoCommand {
 		new RemoveUnnecessaryExecFlagsChore(context).doit();
 		new CodeFormatterProfileChore(context).doit();
 		new EclipseFormatterPluginChore(context).doit();
+		new SpotbugsPluginChore(context).doit();
 	}
 
 }
