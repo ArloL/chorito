@@ -7,15 +7,14 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jgit.api.AddCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.ConfigConstants;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.eclipse.jgit.treewalk.TreeWalk;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.arlol.chorito.filter.FileIsGoneFilter;
@@ -39,9 +38,7 @@ public class GitChoreContext {
 				.setMustExist(true)
 				.readEnvironment()
 				.findGitDir(root.toFile())
-				.build();
-				RevWalk revWalk = new RevWalk(repository);
-				TreeWalk treeWalk = new TreeWalk(repository)) {
+				.build()) {
 
 			for (String remoteName : repository.getRemoteNames()) {
 				Config config = repository.getConfig();
@@ -56,25 +53,22 @@ public class GitChoreContext {
 				}
 			}
 
-			ObjectId headId = repository.resolve(Constants.HEAD);
-			RevCommit headCommit = revWalk.parseCommit(headId);
-			treeWalk.addTree(headCommit.getTree());
-			while (treeWalk.next()) {
-				if (treeWalk.isSubtree()) {
-					treeWalk.enterSubtree();
-				} else {
-					Path path = root.resolve(treeWalk.getPathString());
-					if (!FileIsGoneFilter.fileIsGone(path)) {
-						files.add(path);
-					}
-					if (!FileIsGoneOrBinaryFilter.fileIsGoneOrBinary(path)) {
-						textFiles.add(path);
-					}
+			DirCache dirCache = new AddCommand(repository).addFilepattern(".")
+					.call();
+			for (DirCacheEntry dirCacheEntry : dirCache.getEntriesWithin("")) {
+				Path path = root.resolve(dirCacheEntry.getPathString());
+				if (!FileIsGoneFilter.fileIsGone(path)) {
+					files.add(path);
+				}
+				if (!FileIsGoneOrBinaryFilter.fileIsGoneOrBinary(path)) {
+					textFiles.add(path);
 				}
 			}
 
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
+		} catch (GitAPIException e) {
+			throw new IllegalStateException(e);
 		}
 
 		return builder.textFiles(textFiles)
