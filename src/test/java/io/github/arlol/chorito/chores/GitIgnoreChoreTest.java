@@ -60,7 +60,8 @@ public class GitIgnoreChoreTest {
 
 		doit();
 
-		assertThat(FilesSilent.readString(gitignore)).isEqualTo(".project\n");
+		assertThat(FilesSilent.readString(gitignore))
+				.isEqualTo("# .settings\n.project\n");
 	}
 
 	@Test
