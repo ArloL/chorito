@@ -10,6 +10,7 @@ public class IntellijChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
+		boolean changed = false;
 		if (FilesSilent.exists(context.resolve("pom.xml"))) {
 			Path externalDependencies = context
 					.resolve(".idea/externalDependencies.xml");
@@ -28,6 +29,10 @@ public class IntellijChore implements Chore {
 					eclipseCodeFormatter,
 					templateEclipseCodeFormatter
 			);
+			changed = true;
+		}
+		if (changed) {
+			context = context.refresh();
 		}
 		return context;
 	}

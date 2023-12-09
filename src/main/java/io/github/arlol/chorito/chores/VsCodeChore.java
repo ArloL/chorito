@@ -10,12 +10,14 @@ public class VsCodeChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
+		boolean changed = false;
 		if (FilesSilent.exists(context.resolve("pom.xml"))) {
 			Path settings = context.resolve(".vscode/settings.json");
 			if (!FilesSilent.exists(settings)) {
 				String templateSettings = ClassPathFiles
 						.readString("/settings.json");
 				FilesSilent.writeString(settings, templateSettings);
+				changed = true;
 			}
 
 			Path extensions = context.resolve(".vscode/extensions.json");
@@ -23,7 +25,11 @@ public class VsCodeChore implements Chore {
 				String templateExtensions = ClassPathFiles
 						.readString("/extensions.json");
 				FilesSilent.writeString(extensions, templateExtensions);
+				changed = true;
 			}
+		}
+		if (changed) {
+			context = context.refresh();
 		}
 		return context;
 	}
