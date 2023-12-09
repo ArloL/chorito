@@ -22,6 +22,7 @@ import io.github.arlol.chorito.chores.GradleWrapperChore;
 import io.github.arlol.chorito.chores.JavaUpdaterChore;
 import io.github.arlol.chorito.chores.JitpackChore;
 import io.github.arlol.chorito.chores.LicenseChore;
+import io.github.arlol.chorito.chores.LifecycleMappingChore;
 import io.github.arlol.chorito.chores.MavenWrapperChore;
 import io.github.arlol.chorito.chores.ModernizerPluginChore;
 import io.github.arlol.chorito.chores.PomParentRelativePathChore;
@@ -77,7 +78,8 @@ public class ChoritoCommand {
 				new CodeFormatterProfileChore(),
 				new EclipseFormatterPluginChore(),
 				new SpotbugsPluginChore(),
-				new ModernizerPluginChore()
+				new ModernizerPluginChore(),
+				new LifecycleMappingChore()
 		);
 		chores.forEach(chore -> chore.doit(context));
 
