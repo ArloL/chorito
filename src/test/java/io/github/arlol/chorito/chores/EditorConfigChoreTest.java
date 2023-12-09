@@ -46,6 +46,9 @@ public class EditorConfigChoreTest {
 
 			[pom.xml]
 			indent_style = tab
+
+			[**.java]
+			indent_style = tab
 			""";
 
 	@RegisterExtension

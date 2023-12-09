@@ -20,3 +20,6 @@ insert_final_newline = false
 
 [.idea/**]
 insert_final_newline = false
+
+[**.java]
+indent_style = tab

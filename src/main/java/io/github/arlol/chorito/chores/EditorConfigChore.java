@@ -40,6 +40,11 @@ public class EditorConfigChore implements Chore {
 			[pom.xml]
 			indent_style = tab
 			""";
+	private static String DEFAULT_JAVA = """
+
+			[**.java]
+			indent_style = tab
+			""";
 
 	@Override
 	public void doit(ChoreContext context) {
@@ -74,6 +79,12 @@ public class EditorConfigChore implements Chore {
 			Path pom = context.resolve("pom.xml");
 			if (FilesSilent.exists(pom)) {
 				content += DEFAULT_POM_XML;
+			}
+		}
+		if (!content.contains("[**.java]")) {
+			Path pom = context.resolve("pom.xml");
+			if (FilesSilent.exists(pom)) {
+				content += DEFAULT_JAVA;
 			}
 		}
 		content = removeBracketsFromSingleExtensionGroups(content);
