@@ -8,7 +8,8 @@
     {"pattern":"workflows/chores.yaml"},
     {"pattern":"workflows/codeql-analysis.yaml"},
     {"pattern":".gitignore"},
-    {"pattern":"code-formatter-profile.xml"}
+    {"pattern":"code-formatter-profile.xml"},
+    {"pattern":"org.eclipse.jdt.ui.prefs"}
   ]},
   "bundles":[
     {"name":"org.eclipse.jgit.internal.JGitText"}
