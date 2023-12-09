@@ -7,6 +7,7 @@ import io.github.arlol.chorito.chores.DeleteUnwantedFilesChore;
 import io.github.arlol.chorito.chores.DependabotChore;
 import io.github.arlol.chorito.chores.DockerfileChore;
 import io.github.arlol.chorito.chores.Ec4jChore;
+import io.github.arlol.chorito.chores.EclipseFormatterPluginChore;
 import io.github.arlol.chorito.chores.EditorConfigChore;
 import io.github.arlol.chorito.chores.GitAttributesChore;
 import io.github.arlol.chorito.chores.GitHubActionChore;
@@ -68,6 +69,7 @@ public class ChoritoCommand {
 		new GraalNativeImageMavenPluginMigrationChore(context).doit();
 		new RemoveUnnecessaryExecFlagsChore(context).doit();
 		new CodeFormatterProfileChore(context).doit();
+		new EclipseFormatterPluginChore(context).doit();
 	}
 
 }
