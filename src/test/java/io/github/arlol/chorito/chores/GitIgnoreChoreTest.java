@@ -49,4 +49,17 @@ public class GitIgnoreChoreTest {
 		assertThat(FilesSilent.exists(gitignore)).isTrue();
 	}
 
+	@Test
+	public void testWithPomAndExistingGitignoreWithSettings() throws Exception {
+		Path pom = extension.root().resolve("pom.xml");
+		FilesSilent.touch(pom);
+		Path gitignore = extension.root().resolve(".gitignore");
+		FilesSilent.write(gitignore, List.of(".settings"), "\n");
+
+		new GitIgnoreChore(extension.choreContext()).doit();
+
+		assertThat(FilesSilent.readString(gitignore)).isEqualTo(".project\n");
+		assertThat(FilesSilent.exists(gitignore)).isTrue();
+	}
+
 }

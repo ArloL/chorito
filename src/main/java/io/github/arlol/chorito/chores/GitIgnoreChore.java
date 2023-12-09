@@ -22,10 +22,11 @@ public class GitIgnoreChore {
 				List<String> lines = new ArrayList<>(
 						FilesSilent.readAllLines(gitignore)
 				);
+				lines.remove(".settings");
 				if (!lines.contains(".project")) {
 					lines.add(".project");
-					FilesSilent.write(gitignore, lines, "\n");
 				}
+				FilesSilent.write(gitignore, lines, "\n");
 			} else {
 				FilesSilent.writeString(gitignore, ".project\n");
 			}
