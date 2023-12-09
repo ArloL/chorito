@@ -19,6 +19,7 @@ import io.github.arlol.chorito.chores.GitMasterBranchChore;
 import io.github.arlol.chorito.chores.GraalNativeImageMavenPluginMigrationChore;
 import io.github.arlol.chorito.chores.GraalNativeImagePropertiesChore;
 import io.github.arlol.chorito.chores.GradleWrapperChore;
+import io.github.arlol.chorito.chores.IntellijChore;
 import io.github.arlol.chorito.chores.JavaUpdaterChore;
 import io.github.arlol.chorito.chores.JitpackChore;
 import io.github.arlol.chorito.chores.LicenseChore;
@@ -81,7 +82,8 @@ public class ChoritoCommand {
 				new SpotbugsPluginChore(),
 				new ModernizerPluginChore(),
 				new LifecycleMappingChore(),
-				new VsCodeChore()
+				new VsCodeChore(),
+				new IntellijChore()
 		);
 		chores.forEach(chore -> chore.doit(context));
 

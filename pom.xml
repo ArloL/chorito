@@ -169,6 +169,9 @@
 			<resource>
 				<directory>${basedir}/.vscode</directory>
 			</resource>
+			<resource>
+				<directory>${basedir}/.idea</directory>
+			</resource>
 		</resources>
 		<plugins>
 			<plugin>

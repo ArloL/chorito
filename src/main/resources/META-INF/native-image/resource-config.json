@@ -11,7 +11,9 @@
     {"pattern":"code-formatter-profile.xml"},
     {"pattern":"org.eclipse.jdt.ui.prefs"},
     {"pattern":"settings.json"},
-    {"pattern":"extensions.json"}
+    {"pattern":"extensions.json"},
+    {"pattern":"eclipseCodeFormatter.xml"},
+    {"pattern":"externalDependencies.xml"}
   ]},
   "bundles":[
     {"name":"org.eclipse.jgit.internal.JGitText"}
