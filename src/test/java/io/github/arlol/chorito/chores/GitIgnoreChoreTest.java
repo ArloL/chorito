@@ -18,9 +18,9 @@ public class GitIgnoreChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		Path pom = extension.root().resolve(".gitignore");
+		Path gitignore = extension.root().resolve(".gitignore");
 		new GitIgnoreChore(extension.choreContext()).doit();
-		assertThat(FilesSilent.exists(pom)).isFalse();
+		assertThat(FilesSilent.exists(gitignore)).isFalse();
 	}
 
 	@Test
