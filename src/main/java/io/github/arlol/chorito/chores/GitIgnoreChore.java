@@ -14,18 +14,29 @@ public class GitIgnoreChore implements Chore {
 	public void doit(ChoreContext context) {
 		Path gitignore = context.resolve(".gitignore");
 		if (FilesSilent.exists(context.resolve("pom.xml"))) {
+
+			List<String> lines;
 			if (FilesSilent.exists(gitignore)) {
-				List<String> lines = new ArrayList<>(
-						FilesSilent.readAllLines(gitignore)
-				);
-				lines.remove(".settings");
+				lines = new ArrayList<>(FilesSilent.readAllLines(gitignore));
+
 				if (!lines.contains(".project")) {
 					lines.add(".project");
 				}
-				FilesSilent.write(gitignore, lines, "\n");
+				lines = lines.stream().map(s -> {
+					if (s.equals(".settings")) {
+						return "# .settings";
+					}
+					if (s.equals(".settings/")) {
+						return "# .settings/";
+					}
+
+					return s;
+				}).toList();
+
 			} else {
-				FilesSilent.writeString(gitignore, ".project\n");
+				lines = List.of(".project");
 			}
+			FilesSilent.write(gitignore, lines, "\n");
 
 			Path settingsGitignore = context.resolve(".settings/.gitignore");
 			String currentGitignore = ClassPathFiles.readString("/.gitignore");
