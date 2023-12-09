@@ -89,6 +89,7 @@ public class ChoritoCommand {
 		for (Chore chore : chores) {
 			currentContext = chore.doit(currentContext);
 		}
+		currentContext.refresh();
 	}
 
 }
