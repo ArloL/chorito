@@ -73,8 +73,7 @@ public class GitIgnoreChoreTest {
 		Path settingsGitignore = extension.root()
 				.resolve(".settings/.gitignore");
 		assertThat(FilesSilent.readString(settingsGitignore)).isEqualTo(
-				"*\n" + "!code-formatter-profile.xml\n"
-						+ "!org.eclipse.jdt.core.prefs\n"
+				"*.prefs\n" + "!org.eclipse.jdt.core.prefs\n"
 						+ "!org.eclipse.jdt.ui.prefs\n" + ""
 		);
 	}
