@@ -174,6 +174,11 @@ public class GitIgnoreChoreTest {
 
 			.flattened-pom.xml
 
+			.idea/encodings.xml
+			.idea/jarRepositories.xml
+			.idea/misc.xml
+			.idea/vcs.xml
+
 			# End of chorito. Add your ignores after this line and they will be preserved.
 			""";
 
