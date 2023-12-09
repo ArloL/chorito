@@ -15,11 +15,15 @@ public class CodeFormatterProfileChoreTest {
 	@RegisterExtension
 	final FileSystemExtension extension = new FileSystemExtension();
 
+	private void doit() {
+		new CodeFormatterProfileChore(extension.choreContext()).doit();
+	}
+
 	@Test
 	public void testWithNothing() {
 		Path codeFormatterProfile = extension.root()
 				.resolve(".settings/code-formatter-profile.xml");
-		new CodeFormatterProfileChore(extension.choreContext()).doit();
+		doit();
 		assertThat(FilesSilent.exists(codeFormatterProfile)).isFalse();
 	}
 
@@ -28,7 +32,7 @@ public class CodeFormatterProfileChoreTest {
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.touch(pom);
 
-		new CodeFormatterProfileChore(extension.choreContext()).doit();
+		doit();
 
 		Path codeFormatterProfile = extension.root()
 				.resolve(".settings/code-formatter-profile.xml");
