@@ -55,7 +55,6 @@ public class ChoritoCommand {
 				new GitMasterBranchChore(),
 				new ReadmeChore(),
 				new GitAttributesChore(),
-				new EditorConfigChore(),
 				new PomParentRelativePathChore(),
 				new PomScmChore(),
 				new PomPropertiesChore(),
@@ -71,19 +70,20 @@ public class ChoritoCommand {
 				new JavaUpdaterChore(),
 				new JitpackChore(),
 				new GraalNativeImagePropertiesChore(),
-				new Ec4jChore(),
-				new DeleteUnnecessaryFilesChore(),
-				new DeleteUnwantedFilesChore(),
-				new ProhibitedFilenameChore(),
 				new GraalNativeImageMavenPluginMigrationChore(),
-				new RemoveUnnecessaryExecFlagsChore(),
 				new CodeFormatterProfileChore(),
 				new EclipseFormatterPluginChore(),
 				new SpotbugsPluginChore(),
 				new ModernizerPluginChore(),
 				new LifecycleMappingChore(),
 				new VsCodeChore(),
-				new IntellijChore()
+				new IntellijChore(),
+				new EditorConfigChore(),
+				new Ec4jChore(),
+				new RemoveUnnecessaryExecFlagsChore(),
+				new DeleteUnnecessaryFilesChore(),
+				new DeleteUnwantedFilesChore(),
+				new ProhibitedFilenameChore()
 		);
 		ChoreContext currentContext = context;
 		for (Chore chore : chores) {
