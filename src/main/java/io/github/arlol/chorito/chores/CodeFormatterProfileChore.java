@@ -42,7 +42,11 @@ public class CodeFormatterProfileChore implements Chore {
 								.toList()
 				);
 			} else {
-				jdtCorePrefsLines = new ArrayList<>();
+				jdtCorePrefsLines = new ArrayList<>(
+						List.of(
+								"org.eclipse.jdt.core.javaFormatter=org.eclipse.jdt.core.defaultJavaFormatter"
+						)
+				);
 			}
 
 			Document doc = JsoupSilent
