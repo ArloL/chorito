@@ -22,6 +22,9 @@ public class LifecycleMappingChore implements Chore {
 			Element lifecycleMappingPlugin = doc.select(
 					"plugin:has(groupId:containsWholeOwnText(org.eclipse.m2e)):has(artifactId:containsWholeOwnText(lifecycle-mapping))"
 			).first();
+			if (lifecycleMappingPlugin == null) {
+				return;
+			}
 			while (!(lifecycleMappingPlugin
 					.previousSibling() instanceof Element)) {
 				lifecycleMappingPlugin.previousSibling().remove();
