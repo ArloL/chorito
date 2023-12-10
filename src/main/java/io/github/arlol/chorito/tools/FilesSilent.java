@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.joining;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.CopyOption;
 import java.nio.file.FileVisitOption;
@@ -203,6 +204,17 @@ public abstract class FilesSilent {
 	public static Path createDirectories(Path dir, FileAttribute<?>... attrs) {
 		try {
 			return Files.createDirectories(dir, attrs);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
+	public static OutputStream newOutputStream(
+			Path path,
+			OpenOption... options
+	) {
+		try {
+			return Files.newOutputStream(path, options);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
