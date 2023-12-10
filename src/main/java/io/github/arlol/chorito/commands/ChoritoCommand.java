@@ -40,14 +40,10 @@ import io.github.arlol.chorito.tools.GitChoreContext;
 
 public class ChoritoCommand {
 
-	private final ChoreContext context;
-
-	public ChoritoCommand(ChoreContext context) {
-		this.context = context;
-	}
+	private final String root;
 
 	public ChoritoCommand(String root) {
-		this.context = GitChoreContext.newBuilder(root).build();
+		this.root = root;
 	}
 
 	public void execute() {
@@ -85,13 +81,13 @@ public class ChoritoCommand {
 				new DeleteUnwantedFilesChore(),
 				new ProhibitedFilenameChore()
 		);
-		ChoreContext currentContext = context;
+		ChoreContext currentContext = GitChoreContext.newBuilder(root).build();
 		for (Chore chore : chores) {
 			currentContext = chore.doit(currentContext);
 		}
 		currentContext = currentContext.refresh();
 		currentContext.deleteIgnoredFiles();
-		currentContext = currentContext.refresh();
+		currentContext.refresh();
 	}
 
 }
