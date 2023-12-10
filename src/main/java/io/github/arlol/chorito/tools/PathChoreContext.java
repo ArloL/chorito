@@ -23,7 +23,8 @@ public class PathChoreContext {
 	}
 
 	public static Builder newBuilder(Path root) {
-		return refresh(new Builder(root, PathChoreContext::refresh));
+		return refresh(new Builder(root, PathChoreContext::refresh, (r) -> {
+		}));
 	}
 
 }

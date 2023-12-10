@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.time.Clock;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
 
@@ -30,10 +31,16 @@ public class ChoreContext {
 		private Function<String[], ProcessBuilderSilent> processBuilderFactory = ProcessBuilderSilent
 				.factory();
 		private final BuilderRefresh builderRefresh;
+		private final Consumer<Path> deleteIgnoredFiles;
 
-		public Builder(Path root, BuilderRefresh builderRefresh) {
+		public Builder(
+				Path root,
+				BuilderRefresh builderRefresh,
+				Consumer<Path> deleteIgnoredFiles
+		) {
 			this.root = root;
 			this.builderRefresh = builderRefresh;
+			this.deleteIgnoredFiles = deleteIgnoredFiles;
 		}
 
 		public Builder(ChoreContext choreContext) {
@@ -46,6 +53,7 @@ public class ChoreContext {
 			this.clock = choreContext.clock();
 			this.processBuilderFactory = choreContext.processBuilderFactory();
 			this.builderRefresh = choreContext.builderRefresh;
+			this.deleteIgnoredFiles = choreContext.deleteIgnoredFiles;
 		}
 
 		public Path root() {
@@ -132,7 +140,8 @@ public class ChoreContext {
 					randomGenerator,
 					clock,
 					processBuilderFactory,
-					builderRefresh
+					builderRefresh,
+					deleteIgnoredFiles
 			);
 		}
 
@@ -147,6 +156,7 @@ public class ChoreContext {
 	private final Clock clock;
 	private final Function<String[], ProcessBuilderSilent> processBuilderFactory;
 	private final BuilderRefresh builderRefresh;
+	private final Consumer<Path> deleteIgnoredFiles;
 
 	public ChoreContext(
 			Path root,
@@ -157,7 +167,8 @@ public class ChoreContext {
 			RandomGenerator randomGenerator,
 			Clock clock,
 			Function<String[], ProcessBuilderSilent> processBuilderFactory,
-			BuilderRefresh builderRefresh
+			BuilderRefresh builderRefresh,
+			Consumer<Path> deleteIgnoredFilesConsumer
 	) {
 		this.root = root;
 		this.textFiles = List.copyOf(textFiles);
@@ -168,6 +179,7 @@ public class ChoreContext {
 		this.clock = clock;
 		this.processBuilderFactory = processBuilderFactory;
 		this.builderRefresh = builderRefresh;
+		this.deleteIgnoredFiles = deleteIgnoredFilesConsumer;
 	}
 
 	public Builder toBuilder() {
@@ -220,6 +232,10 @@ public class ChoreContext {
 
 	public ChoreContext refresh() {
 		return builderRefresh.refresh(toBuilder()).build();
+	}
+
+	public void deleteIgnoredFiles() {
+		deleteIgnoredFiles.accept(root);
 	}
 
 }

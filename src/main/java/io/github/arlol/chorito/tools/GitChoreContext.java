@@ -10,11 +10,16 @@ import java.util.List;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.dircache.DirCacheBuildIterator;
 import org.eclipse.jgit.dircache.DirCacheEntry;
+import org.eclipse.jgit.dircache.DirCacheIterator;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.treewalk.FileTreeIterator;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.WorkingTreeIterator;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.arlol.chorito.filter.FileIsGoneFilter;
@@ -77,9 +82,49 @@ public class GitChoreContext {
 				.hasGitHubRemote(hasGitHubRemote);
 	}
 
+	public static void deleteIgnoredFiles(Path root) {
+		try (Repository repository = new FileRepositoryBuilder()
+				.setMustExist(true)
+				.readEnvironment()
+				.findGitDir(root.toFile())
+				.build(); TreeWalk treeWalk = new TreeWalk(repository);) {
+			treeWalk.addTree(
+					new DirCacheBuildIterator(
+							repository.readDirCache().builder()
+					)
+			);
+
+			WorkingTreeIterator workingTreeIterator = new FileTreeIterator(
+					repository
+			);
+			workingTreeIterator.setDirCacheIterator(treeWalk, 0);
+			treeWalk.setRecursive(true);
+			treeWalk.addTree(workingTreeIterator);
+			while (treeWalk.next()) {
+				DirCacheIterator c = treeWalk
+						.getTree(0, DirCacheIterator.class);
+				WorkingTreeIterator f = treeWalk
+						.getTree(1, WorkingTreeIterator.class);
+				if (c != null && f != null && f.isEntryIgnored()) {
+					Path path = root.resolve(treeWalk.getPathString());
+					FilesSilent.deleteIfExists(path);
+					continue;
+				}
+			}
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
 	public static Builder newBuilder(String rootString) {
 		Path root = Paths.get(rootString).toAbsolutePath().normalize();
-		return refresh(new Builder(root, GitChoreContext::refresh));
+		return refresh(
+				new Builder(
+						root,
+						GitChoreContext::refresh,
+						GitChoreContext::deleteIgnoredFiles
+				)
+		);
 	}
 
 }
