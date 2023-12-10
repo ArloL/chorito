@@ -7,11 +7,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jgit.api.AddCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheBuildIterator;
-import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.dircache.DirCacheIterator;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.ConfigConstants;
@@ -43,7 +39,7 @@ public class GitChoreContext {
 				.setMustExist(true)
 				.readEnvironment()
 				.findGitDir(root.toFile())
-				.build()) {
+				.build(); TreeWalk treeWalk = new TreeWalk(repository);) {
 
 			for (String remoteName : repository.getRemoteNames()) {
 				Config config = repository.getConfig();
@@ -58,10 +54,27 @@ public class GitChoreContext {
 				}
 			}
 
-			DirCache dirCache = new AddCommand(repository).addFilepattern(".")
-					.call();
-			for (DirCacheEntry dirCacheEntry : dirCache.getEntriesWithin("")) {
-				Path path = root.resolve(dirCacheEntry.getPathString());
+			treeWalk.addTree(
+					new DirCacheBuildIterator(
+							repository.readDirCache().builder()
+					)
+			);
+
+			WorkingTreeIterator workingTreeIterator = new FileTreeIterator(
+					repository
+			);
+			workingTreeIterator.setDirCacheIterator(treeWalk, 0);
+			treeWalk.setRecursive(true);
+			treeWalk.addTree(workingTreeIterator);
+			while (treeWalk.next()) {
+				DirCacheIterator c = treeWalk
+						.getTree(0, DirCacheIterator.class);
+				WorkingTreeIterator f = treeWalk
+						.getTree(1, WorkingTreeIterator.class);
+				if (c == null && f != null && f.isEntryIgnored()) {
+					continue;
+				}
+				Path path = root.resolve(treeWalk.getPathString());
 				if (!FileIsGoneFilter.fileIsGone(path)) {
 					files.add(path);
 				}
@@ -72,8 +85,6 @@ public class GitChoreContext {
 
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
-		} catch (GitAPIException e) {
-			throw new IllegalStateException(e);
 		}
 
 		return builder.textFiles(textFiles)
