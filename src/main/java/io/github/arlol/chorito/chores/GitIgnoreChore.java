@@ -139,7 +139,7 @@ public class GitIgnoreChore implements Chore {
 			buildNumber.properties
 			.mvn/timing.properties
 			# https://github.com/takari/maven-wrapper#usage-without-binary-jar
-			.mvn/wrapper/maven-wrapper.jar
+			# .mvn/wrapper/maven-wrapper.jar
 
 			# Eclipse m2e generated files
 			# Eclipse Core
