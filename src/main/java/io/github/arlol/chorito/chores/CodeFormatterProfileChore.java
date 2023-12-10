@@ -1,9 +1,9 @@
 package io.github.arlol.chorito.chores;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.parser.Parser;
@@ -12,6 +12,7 @@ import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.JsoupSilent;
+import io.github.arlol.chorito.tools.PropertiesSilent;
 
 public class CodeFormatterProfileChore implements Chore {
 
@@ -28,40 +29,33 @@ public class CodeFormatterProfileChore implements Chore {
 			Path jdtCorePrefs = context
 					.resolve(".settings/org.eclipse.jdt.core.prefs");
 
-			List<String> jdtCorePrefsLines;
+			Map<String, String> jdtCorePrefsMap;
 			if (FilesSilent.exists(jdtCorePrefs)) {
-				jdtCorePrefsLines = new ArrayList<>(
-						FilesSilent.readAllLines(jdtCorePrefs)
-								.stream()
-								.skip(1)
-								.filter(
-										s -> !s.startsWith(
-												"org.eclipse.jdt.core.formatter"
-										)
-								)
-								.toList()
-				);
+				jdtCorePrefsMap = new PropertiesSilent().load(jdtCorePrefs)
+						.toMap();
 			} else {
-				jdtCorePrefsLines = new ArrayList<>(
-						List.of(
-								"org.eclipse.jdt.core.javaFormatter=org.eclipse.jdt.core.defaultJavaFormatter"
-						)
-				);
+				jdtCorePrefsMap = new TreeMap<>();
 			}
+			jdtCorePrefsMap.put("eclipse.preferences.version", "1");
+			jdtCorePrefsMap.put(
+					"org.eclipse.jdt.core.javaFormatter",
+					"org.eclipse.jdt.core.defaultJavaFormatter"
+			);
 
 			Document doc = JsoupSilent
 					.parse(profileXml, "UTF-8", "", Parser.xmlParser());
 			doc.select("setting").forEach(element -> {
-				jdtCorePrefsLines
-						.add(
-								element.attr("id") + "="
-										+ element.attr("value")
-												.replace(":", "\\:")
-						);
+				jdtCorePrefsMap.put(element.attr("id"), element.attr("value"));
 			});
-			Collections.sort(jdtCorePrefsLines);
-			jdtCorePrefsLines.add(0, "eclipse.preferences.version=1");
-			FilesSilent.write(jdtCorePrefs, jdtCorePrefsLines, "\n");
+
+			List<String> propertyList = jdtCorePrefsMap.entrySet()
+					.stream()
+					.map(
+							e -> e.getKey() + "="
+									+ e.getValue().replace(":", "\\:")
+					)
+					.toList();
+			FilesSilent.write(jdtCorePrefs, propertyList, "\n");
 
 			Path jdtUiPrefs = context
 					.resolve(".settings/org.eclipse.jdt.ui.prefs");
