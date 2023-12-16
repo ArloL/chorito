@@ -80,10 +80,6 @@ public class GitHubActionsWorkflowFile {
 		return string + "\n";
 	}
 
-	public GitHubActionsWorkflowFile(Node root) {
-		this.root = root;
-	}
-
 	public MappingNode getJobs() {
 		if (root instanceof MappingNode mappingNode) {
 			return getKeyAsMap(mappingNode, "jobs");
