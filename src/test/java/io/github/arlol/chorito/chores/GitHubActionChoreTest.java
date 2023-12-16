@@ -135,19 +135,19 @@ public class GitHubActionChoreTest {
 			      run: |
 			        echo "::set-output name=new_version::${NEW_VERSION:-$GITHUB_SHA}"
 			  macos:
-				runs-on: macos-latest
-				needs: version
-				env:
-				  REVISION: ${{ needs.version.outputs.new_version }}
-				steps:
-				- name: Build with Maven
-				  run: |
-				    set -o xtrace
-				    ./mvnw \
-				      --batch-mode \
-				      -Dsha1="${GITHUB_SHA}" \
-				      -Drevision="${REVISION}" \
-				      verify
+			    runs-on: macos-latest
+			    needs: version
+			    env:
+			      REVISION: ${{ needs.version.outputs.new_version }}
+			    steps:
+			    - name: Build with Maven
+			      run: |
+			        set -o xtrace
+			        ./mvnw \
+			          --batch-mode \
+			          -Dsha1="${GITHUB_SHA}" \
+			          -Drevision="${REVISION}" \
+			          verify
 			""";
 	private static final String EXPECTED_STEPS_OUTPUT = """
 			jobs:
@@ -169,19 +169,19 @@ public class GitHubActionChoreTest {
 			      run: |
 			        echo "new_version=${NEW_VERSION:-$GITHUB_SHA}" >> $GITHUB_OUTPUT
 			  macos:
-				runs-on: macos-latest
-				needs: version
-				env:
-				  REVISION: ${{ needs.version.outputs.new_version }}
-				steps:
-				- name: Build with Maven
-				  run: |
-				    set -o xtrace
-				    ./mvnw \
-				      --batch-mode \
-				      -Dsha1="${GITHUB_SHA}" \
-				      -Drevision="${REVISION}" \
-				      verify
+			    runs-on: macos-latest
+			    needs: version
+			    env:
+			      REVISION: ${{ needs.version.outputs.new_version }}
+			    steps:
+			    - name: Build with Maven
+			      run: |
+			        set -o xtrace
+			        ./mvnw \
+			          --batch-mode \
+			          -Dsha1="${GITHUB_SHA}" \
+			          -Drevision="${REVISION}" \
+			          verify
 			""";
 
 	@RegisterExtension
