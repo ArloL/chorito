@@ -7,6 +7,7 @@ import java.util.Optional;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.GitHubActionsWorkflowFile;
 import io.github.arlol.chorito.tools.RandomCronBuilder;
 import io.github.arlol.chorito.tools.Renamer;
 
@@ -27,7 +28,30 @@ public class GitHubActionChore implements Chore {
 		removeSetupJava370(context);
 		migrateActionsCreateRelease(context);
 		migrateActionsUploadReleaseAsset(context);
+		updateGraalSteps(context);
 		return context;
+	}
+
+	private void updateGraalSteps(ChoreContext context) {
+		Path mainYaml = context.resolve(".github/workflows/main.yaml");
+		if (!FilesSilent.exists(mainYaml)) {
+			return;
+		}
+		String string = FilesSilent.readString(mainYaml);
+		if (!string.contains("setup-graalvm")) {
+			return;
+		}
+		var main = new GitHubActionsWorkflowFile(string);
+		if (!main.hasJob("version")) {
+			return;
+		}
+		var currentMain = new GitHubActionsWorkflowFile(
+				ClassPathFiles.readString("/workflows/main.yaml")
+		);
+		main.setJob("macos", currentMain.getJob("macos"));
+		main.setJob("linux", currentMain.getJob("linux"));
+		main.setJob("windows", currentMain.getJob("windows"));
+		FilesSilent.writeString(mainYaml, main.asString());
 	}
 
 	private void migrateActionsCreateRelease(ChoreContext context) {

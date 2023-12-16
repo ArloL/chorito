@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.github.arlol.chorito.tools.ChoreContext;
+import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FakeRandomGenerator;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
@@ -376,6 +377,28 @@ public class GitHubActionChoreTest {
 
 		assertThat(FilesSilent.readString(workflow))
 				.isEqualTo("- cron: '5 5 5 * *'\n");
+	}
+
+	@Test
+	public void testUpxRemoval() {
+		Path pom = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(
+				pom,
+				ClassPathFiles
+						.readString("/github-actions/upx-removal-input.yaml")
+		);
+
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.hasGitHubRemote(true)
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new GitHubActionChore().doit(context);
+
+		String expected = ClassPathFiles
+				.readString("/github-actions/upx-removal-output.yaml");
+		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
 	}
 
 }
