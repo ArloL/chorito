@@ -29,6 +29,7 @@ public class GitHubActionChore implements Chore {
 		migrateActionsCreateRelease(context);
 		migrateActionsUploadReleaseAsset(context);
 		updateGraalSteps(context);
+		updateDebugSteps(context);
 		return context;
 	}
 
@@ -52,6 +53,28 @@ public class GitHubActionChore implements Chore {
 		main.setJob("linux", currentMain.getJob("linux"));
 		main.setJob("windows", currentMain.getJob("windows"));
 		FilesSilent.writeString(mainYaml, main.asString());
+	}
+
+	private void updateDebugSteps(ChoreContext context) {
+		var currentMain = new GitHubActionsWorkflowFile(
+				ClassPathFiles.readString("/workflows/chores.yaml")
+		);
+		var debugJob = currentMain.getJob("debug");
+		Path workflowsLocation = context.resolve(".github/workflows");
+		context.textFiles().stream().filter(path -> {
+			if (path.startsWith(workflowsLocation)) {
+				return path.toString().endsWith(".yaml");
+			}
+			return false;
+		}).map(context::resolve).forEach(path -> {
+			var workflow = new GitHubActionsWorkflowFile(
+					FilesSilent.readString(path)
+			);
+			if (workflow.hasJob("debug")) {
+				workflow.setJob("debug", debugJob);
+			}
+			FilesSilent.writeString(path, workflow.asString());
+		});
 	}
 
 	private void migrateActionsCreateRelease(ChoreContext context) {

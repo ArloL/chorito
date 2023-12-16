@@ -37,6 +37,8 @@ jobs:
       env:
         MATRIX_CONTEXT: ${{ toJSON(matrix) }}
       run: echo "$MATRIX_CONTEXT"
+    - name: Dump environment variables
+      run: set
   trigger-chores:
     name: Trigger chores
     runs-on: ubuntu-latest
