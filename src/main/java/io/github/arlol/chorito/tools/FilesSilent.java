@@ -2,6 +2,7 @@ package io.github.arlol.chorito.tools;
 
 import static java.util.stream.Collectors.joining;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -215,6 +216,14 @@ public abstract class FilesSilent {
 	) {
 		try {
 			return Files.newOutputStream(path, options);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
+	public static BufferedReader newBufferedReader(Path path) {
+		try {
+			return Files.newBufferedReader(path);
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
