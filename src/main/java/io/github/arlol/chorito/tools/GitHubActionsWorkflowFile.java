@@ -73,6 +73,7 @@ public class GitHubActionsWorkflowFile {
 		serializer.emitStreamStart();
 		serializer.serializeDocument(root);
 		String string = writer.toString();
+		string = string.replaceAll("\n\s+\n", "\n\n");
 		if (string.endsWith("\n")) {
 			return string;
 		}

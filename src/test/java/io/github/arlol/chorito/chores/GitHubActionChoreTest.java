@@ -401,4 +401,26 @@ public class GitHubActionChoreTest {
 		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
 	}
 
+	@Test
+	public void testNoEmptyLines() {
+		Path pom = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(
+				pom,
+				ClassPathFiles
+						.readString("/github-actions/no-empty-lines-input.yaml")
+		);
+
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.hasGitHubRemote(true)
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new GitHubActionChore().doit(context);
+
+		String expected = ClassPathFiles
+				.readString("/github-actions/no-empty-lines-output.yaml");
+		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
+	}
+
 }
