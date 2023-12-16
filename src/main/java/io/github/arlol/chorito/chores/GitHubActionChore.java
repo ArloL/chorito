@@ -39,7 +39,7 @@ public class GitHubActionChore implements Chore {
 			return;
 		}
 		String string = FilesSilent.readString(mainYaml);
-		if (!string.contains("setup-graalvm")) {
+		if (!string.contains("setup-graalvm") || string.contains("gluonfx")) {
 			return;
 		}
 		var main = new GitHubActionsWorkflowFile(string);
