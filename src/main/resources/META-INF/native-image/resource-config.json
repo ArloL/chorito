@@ -31,6 +31,8 @@
   }, {
     "pattern":"\\Qworkflows/codeql-analysis.yaml\\E"
   }, {
+    "pattern":"\\Qworkflows/main.yaml\\E"
+  }, {
     "pattern":"code-formatter-profile.xml"
   }, {
     "pattern":"eclipseCodeFormatter.xml"
