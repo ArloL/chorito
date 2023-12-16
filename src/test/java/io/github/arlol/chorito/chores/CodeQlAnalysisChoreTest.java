@@ -58,6 +58,8 @@ public class CodeQlAnalysisChoreTest {
 			      env:
 			        MATRIX_CONTEXT: ${{ toJSON(matrix) }}
 			      run: echo "$MATRIX_CONTEXT"
+			    - name: Dump environment variables
+			      run: set
 			  analyze:
 			    name: Analyze
 			    runs-on: ubuntu-latest
