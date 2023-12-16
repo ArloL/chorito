@@ -21,6 +21,25 @@ public class JavaUpdaterChoreTest {
 	}
 
 	@Test
+	public void testEclipseSettings() throws Exception {
+		Path prefs = extension.root()
+				.resolve(".settings/org.eclipse.jdt.core.prefs");
+		FilesSilent.writeString(prefs, """
+				org.eclipse.jdt.core.compiler.source=11
+				org.eclipse.jdt.core.compiler.compliance=11
+				org.eclipse.jdt.core.compiler.codegen.targetPlatform=11
+				""");
+
+		new JavaUpdaterChore().doit(extension.choreContext());
+
+		assertThat(FilesSilent.readString(prefs)).isEqualTo("""
+				org.eclipse.jdt.core.compiler.codegen.targetPlatform=21
+				org.eclipse.jdt.core.compiler.compliance=21
+				org.eclipse.jdt.core.compiler.source=21
+						""");
+	}
+
+	@Test
 	public void testPomXml() throws Exception {
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(pom, "<java.version>11</java.version>");
@@ -28,7 +47,7 @@ public class JavaUpdaterChoreTest {
 		new JavaUpdaterChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(pom))
-				.isEqualTo("<java.version>17</java.version>");
+				.isEqualTo("<java.version>21</java.version>");
 	}
 
 	@Test
@@ -39,7 +58,7 @@ public class JavaUpdaterChoreTest {
 		new JavaUpdaterChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(workflow))
-				.isEqualTo("  JAVA_VERSION: 17\n");
+				.isEqualTo("  JAVA_VERSION: 21\n");
 	}
 
 	@Test
@@ -49,7 +68,7 @@ public class JavaUpdaterChoreTest {
 
 		new JavaUpdaterChore().doit(extension.choreContext());
 
-		assertThat(FilesSilent.readString(jitpack)).isEqualTo("- openjdk17\n");
+		assertThat(FilesSilent.readString(jitpack)).isEqualTo("- openjdk21\n");
 	}
 
 	@Test
@@ -59,7 +78,7 @@ public class JavaUpdaterChoreTest {
 
 		new JavaUpdaterChore().doit(extension.choreContext());
 
-		assertThat(FilesSilent.readString(jitpack)).isEqualTo("- openjdk17\n");
+		assertThat(FilesSilent.readString(jitpack)).isEqualTo("- openjdk21\n");
 	}
 
 }

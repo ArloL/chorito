@@ -28,7 +28,7 @@ public class CodeQlAnalysisChoreTest {
 			  schedule:
 			  - cron: '1 3 1 * *'
 			env:
-			  JAVA_VERSION: 17
+			  JAVA_VERSION: 21
 
 			jobs:
 			  debug:
