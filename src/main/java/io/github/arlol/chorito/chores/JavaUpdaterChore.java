@@ -2,6 +2,7 @@ package io.github.arlol.chorito.chores;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.parser.Parser;
@@ -9,6 +10,7 @@ import org.jsoup.parser.Parser;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.JsoupSilent;
+import io.github.arlol.chorito.tools.PropertiesSilent;
 
 public class JavaUpdaterChore implements Chore {
 
@@ -17,7 +19,29 @@ public class JavaUpdaterChore implements Chore {
 		updatePomXmlJavaVersionProperty(context);
 		updateGithubActions(context);
 		updateJitpackYml(context);
+		updateEclipseSettings(context);
 		return context;
+	}
+
+	private void updateEclipseSettings(ChoreContext context) {
+		Path prefsFile = context
+				.resolve(".settings/org.eclipse.jdt.core.prefs");
+		if (!FilesSilent.exists(prefsFile)) {
+			return;
+		}
+		Map<String, String> prefsMap = new PropertiesSilent().load(prefsFile)
+				.toMap();
+		prefsMap.put("org.eclipse.jdt.core.compiler.source", "21");
+		prefsMap.put("org.eclipse.jdt.core.compiler.compliance", "21");
+		prefsMap.put(
+				"org.eclipse.jdt.core.compiler.codegen.targetPlatform",
+				"21"
+		);
+		List<String> propertyList = prefsMap.entrySet()
+				.stream()
+				.map(e -> e.getKey() + "=" + e.getValue().replace(":", "\\:"))
+				.toList();
+		FilesSilent.write(prefsFile, propertyList, "\n");
 	}
 
 	private void updatePomXmlJavaVersionProperty(ChoreContext context) {
