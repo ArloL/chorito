@@ -2,6 +2,7 @@ package io.github.arlol.chorito.tools;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -75,6 +76,9 @@ public class GitChoreContext {
 					continue;
 				}
 				Path path = root.resolve(treeWalk.getPathString());
+				if (Files.isSymbolicLink(path)) {
+					continue;
+				}
 				if (!FileIsGoneFilter.fileIsGone(path)) {
 					files.add(path);
 				}

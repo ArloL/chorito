@@ -47,7 +47,8 @@ public class GitHubActionChore implements Chore {
 			return;
 		}
 		var currentMain = new GitHubActionsWorkflowFile(
-				ClassPathFiles.readString("/workflows/main.yaml")
+				ClassPathFiles
+						.readString("/github-settings/workflows/main.yaml")
 		);
 		main.setJob("macos", currentMain.getJob("macos"));
 		main.setJob("linux", currentMain.getJob("linux"));
@@ -57,7 +58,8 @@ public class GitHubActionChore implements Chore {
 
 	private void updateDebugSteps(ChoreContext context) {
 		var currentMain = new GitHubActionsWorkflowFile(
-				ClassPathFiles.readString("/workflows/chores.yaml")
+				ClassPathFiles
+						.readString("/github-settings/workflows/chores.yaml")
 		);
 		var debugJob = currentMain.getJob("debug");
 		Path workflowsLocation = context.resolve(".github/workflows");
@@ -146,7 +148,7 @@ public class GitHubActionChore implements Chore {
 		if (context.hasGitHubRemote()) {
 			Path choresYaml = context.resolve(".github/workflows/chores.yaml");
 			String currentChores = ClassPathFiles
-					.readString("/workflows/chores.yaml");
+					.readString("/github-settings/workflows/chores.yaml");
 			String cron;
 			if (FilesSilent.exists(choresYaml)) {
 				String content = FilesSilent.readString(choresYaml);
