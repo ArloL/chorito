@@ -161,23 +161,6 @@
 	</dependencies>
 
 	<build>
-		<resources>
-			<resource>
-				<directory>${basedir}/src/main/resources</directory>
-			</resource>
-			<resource>
-				<directory>${basedir}/.github</directory>
-			</resource>
-			<resource>
-				<directory>${basedir}/.settings</directory>
-			</resource>
-			<resource>
-				<directory>${basedir}/.vscode</directory>
-			</resource>
-			<resource>
-				<directory>${basedir}/.idea</directory>
-			</resource>
-		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

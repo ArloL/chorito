@@ -265,7 +265,8 @@ public class GitIgnoreChore implements Chore {
 			FilesSilent.write(gitignore, currentGitignore, "\n");
 
 			Path settingsGitignore = context.resolve(".settings/.gitignore");
-			String templateGitignore = ClassPathFiles.readString("/.gitignore");
+			String templateGitignore = ClassPathFiles
+					.readString("/eclipse-settings/.gitignore");
 			FilesSilent.writeString(settingsGitignore, templateGitignore);
 		}
 		return context;

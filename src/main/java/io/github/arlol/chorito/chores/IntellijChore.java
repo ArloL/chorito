@@ -15,7 +15,7 @@ public class IntellijChore implements Chore {
 			Path externalDependencies = context
 					.resolve(".idea/externalDependencies.xml");
 			String templateExternalDependencies = ClassPathFiles
-					.readString("/externalDependencies.xml");
+					.readString("/idea-settings/externalDependencies.xml");
 			FilesSilent.writeString(
 					externalDependencies,
 					templateExternalDependencies
@@ -24,7 +24,7 @@ public class IntellijChore implements Chore {
 			Path eclipseCodeFormatter = context
 					.resolve(".idea/eclipseCodeFormatter.xml");
 			String templateEclipseCodeFormatter = ClassPathFiles
-					.readString("/eclipseCodeFormatter.xml");
+					.readString("/idea-settings/eclipseCodeFormatter.xml");
 			FilesSilent.writeString(
 					eclipseCodeFormatter,
 					templateEclipseCodeFormatter

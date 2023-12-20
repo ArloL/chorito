@@ -23,7 +23,7 @@ public class CodeFormatterProfileChore implements Chore {
 			Path profileXml = context
 					.resolve(".settings/code-formatter-profile.xml");
 			String currentProfile = ClassPathFiles
-					.readString("/code-formatter-profile.xml");
+					.readString("/eclipse-settings/code-formatter-profile.xml");
 			FilesSilent.writeString(profileXml, currentProfile);
 
 			Path jdtCorePrefs = context
@@ -60,8 +60,9 @@ public class CodeFormatterProfileChore implements Chore {
 			Path jdtUiPrefs = context
 					.resolve(".settings/org.eclipse.jdt.ui.prefs");
 			if (!FilesSilent.exists(jdtUiPrefs)) {
-				String currentJdtUiPrefs = ClassPathFiles
-						.readString("/org.eclipse.jdt.ui.prefs");
+				String currentJdtUiPrefs = ClassPathFiles.readString(
+						"/eclipse-settings/org.eclipse.jdt.ui.prefs"
+				);
 				FilesSilent.writeString(jdtUiPrefs, currentJdtUiPrefs);
 			}
 		}
