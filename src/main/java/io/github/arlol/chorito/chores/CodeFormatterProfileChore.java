@@ -36,6 +36,8 @@ public class CodeFormatterProfileChore implements Chore {
 			} else {
 				jdtCorePrefsMap = new TreeMap<>();
 			}
+			int prefsHashCodeAtStart = jdtCorePrefsMap.hashCode();
+
 			jdtCorePrefsMap.put("eclipse.preferences.version", "1");
 			jdtCorePrefsMap.put(
 					"org.eclipse.jdt.core.javaFormatter",
@@ -55,7 +57,11 @@ public class CodeFormatterProfileChore implements Chore {
 									+ e.getValue().replace(":", "\\:")
 					)
 					.toList();
-			FilesSilent.write(jdtCorePrefs, propertyList, "\n");
+			// update the file only if something changed - otherwise this
+			// triggers a rebuild in Eclipse and Eclipse-based tools (VS Code)
+			if (jdtCorePrefsMap.hashCode() != prefsHashCodeAtStart) {
+				FilesSilent.write(jdtCorePrefs, propertyList, "\n");
+			}
 
 			Path jdtUiPrefs = context
 					.resolve(".settings/org.eclipse.jdt.ui.prefs");
