@@ -22,9 +22,6 @@ public abstract class ClassPathFiles {
 
 	public static byte[] readAllBytes(String path) {
 		try (InputStream stream = newInputStream(path)) {
-			if (stream == null) {
-				throw new IllegalStateException("Could not find " + path);
-			}
 			return stream.readAllBytes();
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
@@ -60,7 +57,11 @@ public abstract class ClassPathFiles {
 	}
 
 	public static InputStream newInputStream(String path) {
-		return Main.class.getResourceAsStream(path);
+		InputStream inputStream = Main.class.getResourceAsStream(path);
+		if (inputStream == null) {
+			throw new IllegalStateException("Could not find " + path);
+		}
+		return inputStream;
 	}
 
 	public static BufferedReader newBufferedReader(String path) {
