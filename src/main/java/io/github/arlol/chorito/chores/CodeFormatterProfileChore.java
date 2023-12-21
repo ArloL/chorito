@@ -65,10 +65,9 @@ public class CodeFormatterProfileChore implements Chore {
 
 			Path jdtUiPrefs = context
 					.resolve(".settings/org.eclipse.jdt.ui.prefs");
+			String currentJdtUiPrefs = ClassPathFiles
+					.readString("/eclipse-settings/org.eclipse.jdt.ui.prefs");
 			if (!FilesSilent.exists(jdtUiPrefs)) {
-				String currentJdtUiPrefs = ClassPathFiles.readString(
-						"/eclipse-settings/org.eclipse.jdt.ui.prefs"
-				);
 				FilesSilent.writeString(jdtUiPrefs, currentJdtUiPrefs);
 			}
 		}
