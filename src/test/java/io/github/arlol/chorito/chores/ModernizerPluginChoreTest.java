@@ -30,13 +30,13 @@ public class ModernizerPluginChoreTest {
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(
 				pom,
-				ClassPathFiles.readString("/modernizer-plugin/input.xml")
+				ClassPathFiles.readString("modernizer-plugin/input.xml")
 		);
 
 		doit();
 
 		String expected = ClassPathFiles
-				.readString("/modernizer-plugin/expected.xml");
+				.readString("modernizer-plugin/expected.xml");
 		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
 	}
 
