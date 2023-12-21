@@ -423,4 +423,58 @@ public class GitHubActionChoreTest {
 		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
 	}
 
+	@Test
+	public void testTestExectuableCreation() {
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(
+				workflow,
+				ClassPathFiles
+						.readString("/github-actions/upx-removal-output.yaml")
+		);
+
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.hasGitHubRemote(true)
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new GitHubActionChore().doit(context);
+
+		Path testExecutable = extension.root()
+				.resolve("src/main/resources/test-executable.sh");
+		String expected = ClassPathFiles
+				.readString("/github-actions/test-executable-expected.sh");
+		assertThat(FilesSilent.readString(testExecutable)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testTestExectuableUpdate() {
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(
+				workflow,
+				ClassPathFiles
+						.readString("/github-actions/upx-removal-output.yaml")
+		);
+		Path testExecutable = extension.root()
+				.resolve("src/main/resources/test-executable.sh");
+		FilesSilent.writeString(testExecutable, """
+				lol
+				# add custom tests here:
+				lololol
+				""");
+
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.hasGitHubRemote(true)
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new GitHubActionChore().doit(context);
+
+		String expected = ClassPathFiles.readString(
+				"/github-actions/test-executable-expected-update.sh"
+		);
+		assertThat(FilesSilent.readString(testExecutable)).isEqualTo(expected);
+	}
+
 }
