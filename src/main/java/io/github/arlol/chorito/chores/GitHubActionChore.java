@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
+import io.github.arlol.chorito.tools.ExecutableFlagger;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.GitHubActionsWorkflowFile;
 import io.github.arlol.chorito.tools.RandomCronBuilder;
@@ -76,6 +77,7 @@ public class GitHubActionChore implements Chore {
 			templateLines.addAll(testExecutableLines);
 		}
 		FilesSilent.write(testExectuable, templateLines, "\n");
+		ExecutableFlagger.makeExecutableIfPossible(testExectuable);
 	}
 
 	private void updateDebugSteps(ChoreContext context) {
