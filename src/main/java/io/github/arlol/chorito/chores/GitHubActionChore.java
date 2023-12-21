@@ -59,13 +59,13 @@ public class GitHubActionChore implements Chore {
 
 	private void updateTestExecutable(ChoreContext context) {
 		List<String> templateLines = ClassPathFiles
-				.readAllLines("test-executable.sh");
+				.readAllLines("native-test/test-executable.sh");
 		templateLines = templateLines.subList(
 				0,
 				templateLines.indexOf("# add custom tests here:") + 1
 		);
 		Path testExectuable = context
-				.resolve("src/main/resources/test-executable.sh");
+				.resolve("src/test/native/test-executable.sh");
 		if (FilesSilent.exists(testExectuable)) {
 			List<String> testExecutableLines = FilesSilent
 					.readAllLines(testExectuable);
