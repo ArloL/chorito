@@ -14,7 +14,7 @@ public class VsCodeChore implements Chore {
 		if (FilesSilent.exists(context.resolve("pom.xml"))) {
 			Path settings = context.resolve(".vscode/settings.json");
 			String templateSettings = ClassPathFiles
-					.readString("/vscode-settings/settings.json");
+					.readString("vscode-settings/settings.json");
 			if (!FilesSilent.exists(settings)) {
 				FilesSilent.writeString(settings, templateSettings);
 				changed = true;
@@ -22,7 +22,7 @@ public class VsCodeChore implements Chore {
 
 			Path extensions = context.resolve(".vscode/extensions.json");
 			String templateExtensions = ClassPathFiles
-					.readString("/vscode-settings/extensions.json");
+					.readString("vscode-settings/extensions.json");
 			if (!FilesSilent.exists(extensions)) {
 				FilesSilent.writeString(extensions, templateExtensions);
 				changed = true;

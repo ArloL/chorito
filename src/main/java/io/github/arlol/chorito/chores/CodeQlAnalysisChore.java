@@ -16,7 +16,7 @@ public class CodeQlAnalysisChore implements Chore {
 		);
 		if (context.hasGitHubRemote()) {
 			String currentAnalysis = ClassPathFiles.readString(
-					"/github-settings/workflows/codeql-analysis.yaml"
+					"github-settings/workflows/codeql-analysis.yaml"
 			);
 			Path codeQlAnalysis = context
 					.resolve(".github/workflows/codeql-analysis.yaml");
