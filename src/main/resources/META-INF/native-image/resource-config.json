@@ -13,31 +13,11 @@
   }, {
     "pattern":"\\QMETA-INF/services/org.slf4j.spi.SLF4JServiceProvider\\E"
   }, {
-    "pattern":"\\Qeclipse-settings/.gitignore\\E"
-  }, {
-    "pattern":"\\Qeclipse-settings/code-formatter-profile.xml\\E"
-  }, {
-    "pattern":"\\Qeclipse-settings/org.eclipse.jdt.ui.prefs\\E"
-  }, {
-    "pattern":"\\Qgithub-settings/workflows/chores.yaml\\E"
-  }, {
-    "pattern":"\\Qgithub-settings/workflows/codeql-analysis.yaml\\E"
-  }, {
-    "pattern":"\\Qgithub-settings/workflows/main.yaml\\E"
-  }, {
-    "pattern":"\\Qidea-settings/eclipseCodeFormatter.xml\\E"
-  }, {
-    "pattern":"\\Qidea-settings/externalDependencies.xml\\E"
+    "pattern": "io/github/arlol/chorito/.*"
   }, {
     "pattern":"\\Qorg/slf4j/impl/StaticLoggerBinder.class\\E"
   }, {
     "pattern":"\\Qsimplelogger.properties\\E"
-  }, {
-    "pattern":"\\Qtest-executable.sh\\E"
-  }, {
-    "pattern":"\\Qvscode-settings/extensions.json\\E"
-  }, {
-    "pattern":"\\Qvscode-settings/settings.json\\E"
   }, {
     "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt72b/nfc.nrm\\E"
   }, {
