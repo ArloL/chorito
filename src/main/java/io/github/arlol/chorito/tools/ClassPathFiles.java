@@ -13,6 +13,8 @@ import java.nio.charset.CharsetDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.arlol.chorito.Main;
+
 public abstract class ClassPathFiles {
 
 	private ClassPathFiles() {
@@ -58,7 +60,7 @@ public abstract class ClassPathFiles {
 	}
 
 	public static InputStream newInputStream(String path) {
-		return ClassPathFiles.class.getResourceAsStream(path);
+		return Main.class.getResourceAsStream(path);
 	}
 
 	public static BufferedReader newBufferedReader(String path) {

@@ -385,7 +385,7 @@ public class GitHubActionChoreTest {
 		FilesSilent.writeString(
 				pom,
 				ClassPathFiles
-						.readString("/github-actions/upx-removal-input.yaml")
+						.readString("github-actions/upx-removal-input.yaml")
 		);
 
 		ChoreContext context = extension.choreContext()
@@ -397,7 +397,7 @@ public class GitHubActionChoreTest {
 		new GitHubActionChore().doit(context);
 
 		String expected = ClassPathFiles
-				.readString("/github-actions/upx-removal-output.yaml");
+				.readString("github-actions/upx-removal-output.yaml");
 		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
 	}
 
@@ -407,7 +407,7 @@ public class GitHubActionChoreTest {
 		FilesSilent.writeString(
 				pom,
 				ClassPathFiles
-						.readString("/github-actions/no-empty-lines-input.yaml")
+						.readString("github-actions/no-empty-lines-input.yaml")
 		);
 
 		ChoreContext context = extension.choreContext()
@@ -419,7 +419,7 @@ public class GitHubActionChoreTest {
 		new GitHubActionChore().doit(context);
 
 		String expected = ClassPathFiles
-				.readString("/github-actions/no-empty-lines-output.yaml");
+				.readString("github-actions/no-empty-lines-output.yaml");
 		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
 	}
 
@@ -429,7 +429,7 @@ public class GitHubActionChoreTest {
 		FilesSilent.writeString(
 				workflow,
 				ClassPathFiles
-						.readString("/github-actions/upx-removal-output.yaml")
+						.readString("github-actions/upx-removal-output.yaml")
 		);
 
 		ChoreContext context = extension.choreContext()
@@ -443,7 +443,7 @@ public class GitHubActionChoreTest {
 		Path testExecutable = extension.root()
 				.resolve("src/main/resources/test-executable.sh");
 		String expected = ClassPathFiles
-				.readString("/github-actions/test-executable-expected.sh");
+				.readString("github-actions/test-executable-expected.sh");
 		assertThat(FilesSilent.readString(testExecutable)).isEqualTo(expected);
 	}
 
@@ -453,7 +453,7 @@ public class GitHubActionChoreTest {
 		FilesSilent.writeString(
 				workflow,
 				ClassPathFiles
-						.readString("/github-actions/upx-removal-output.yaml")
+						.readString("github-actions/upx-removal-output.yaml")
 		);
 		Path testExecutable = extension.root()
 				.resolve("src/main/resources/test-executable.sh");
@@ -472,7 +472,7 @@ public class GitHubActionChoreTest {
 		new GitHubActionChore().doit(context);
 
 		String expected = ClassPathFiles.readString(
-				"/github-actions/test-executable-expected-update.sh"
+				"github-actions/test-executable-expected-update.sh"
 		);
 		assertThat(FilesSilent.readString(testExecutable)).isEqualTo(expected);
 	}

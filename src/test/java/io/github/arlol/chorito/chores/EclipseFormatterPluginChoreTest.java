@@ -30,13 +30,13 @@ public class EclipseFormatterPluginChoreTest {
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(
 				pom,
-				ClassPathFiles.readString("/eclipse-formatter-plugin/input.xml")
+				ClassPathFiles.readString("eclipse-formatter-plugin/input.xml")
 		);
 
 		doit();
 
 		String expected = ClassPathFiles
-				.readString("/eclipse-formatter-plugin/expected.xml");
+				.readString("eclipse-formatter-plugin/expected.xml");
 		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
 	}
 

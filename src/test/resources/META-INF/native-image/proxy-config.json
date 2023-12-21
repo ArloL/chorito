@@ -1,0 +1,7 @@
+[
+  {
+    "interfaces": [
+      "java.nio.file.attribute.PosixFileAttributeView"
+    ]
+  }
+]

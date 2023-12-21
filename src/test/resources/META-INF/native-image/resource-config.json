@@ -1,0 +1,11 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": "io/github/arlol/chorito/.*"
+      }
+    ]
+  },
+  "bundles": [
+  ]
+}

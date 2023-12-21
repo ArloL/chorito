@@ -30,13 +30,13 @@ public class LifecycleMappingChoreTest {
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(
 				pom,
-				ClassPathFiles.readString("/lifecycle-mapping/input.xml")
+				ClassPathFiles.readString("lifecycle-mapping/input.xml")
 		);
 
 		doit();
 
 		String expected = ClassPathFiles
-				.readString("/lifecycle-mapping/expected.xml");
+				.readString("lifecycle-mapping/expected.xml");
 		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
 	}
 
