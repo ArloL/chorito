@@ -8,19 +8,53 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class ClassPathFiles {
 
 	private ClassPathFiles() {
 	}
 
-	public static String readString(String path) {
+	public static byte[] readAllBytes(String path) {
 		try (InputStream stream = newInputStream(path)) {
-			return new String(stream.readAllBytes(), UTF_8);
+			if (stream == null) {
+				throw new IllegalStateException("Could not find " + path);
+			}
+			return stream.readAllBytes();
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	public static String readString(String path) {
+		return readString(path, UTF_8);
+	}
+
+	public static String readString(String path, Charset cs) {
+		return new String(readAllBytes(path), cs);
+	}
+
+	public static List<String> readAllLines(String path, Charset cs) {
+		try (BufferedReader reader = newBufferedReader(path, cs)) {
+			List<String> result = new ArrayList<>();
+			for (;;) {
+				String line = reader.readLine();
+				if (line == null) {
+					break;
+				}
+				result.add(line);
+			}
+			return result;
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
+	public static List<String> readAllLines(String path) {
+		return readAllLines(path, UTF_8);
 	}
 
 	public static InputStream newInputStream(String path) {
@@ -28,7 +62,11 @@ public abstract class ClassPathFiles {
 	}
 
 	public static BufferedReader newBufferedReader(String path) {
-		CharsetDecoder decoder = UTF_8.newDecoder();
+		return newBufferedReader(path, UTF_8);
+	}
+
+	public static BufferedReader newBufferedReader(String path, Charset cs) {
+		CharsetDecoder decoder = cs.newDecoder();
 		Reader reader = new InputStreamReader(newInputStream(path), decoder);
 		return new BufferedReader(reader);
 	}
