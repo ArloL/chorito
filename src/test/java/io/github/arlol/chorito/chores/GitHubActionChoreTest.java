@@ -441,7 +441,7 @@ public class GitHubActionChoreTest {
 		new GitHubActionChore().doit(context);
 
 		Path testExecutable = extension.root()
-				.resolve("src/main/resources/test-executable.sh");
+				.resolve("src/test/native/test-executable.sh");
 		String expected = ClassPathFiles
 				.readString("github-actions/test-executable-expected.sh");
 		assertThat(FilesSilent.readString(testExecutable)).isEqualTo(expected);
@@ -456,7 +456,7 @@ public class GitHubActionChoreTest {
 						.readString("github-actions/upx-removal-output.yaml")
 		);
 		Path testExecutable = extension.root()
-				.resolve("src/main/resources/test-executable.sh");
+				.resolve("src/test/native/test-executable.sh");
 		FilesSilent.writeString(testExecutable, """
 				lol
 				# add custom tests here:

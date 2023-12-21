@@ -85,7 +85,7 @@ jobs:
           -Drevision="${REVISION}" \
           verify
     - name: Test executable
-      run: sh ./src/main/resources/test-executable.sh "${{ env.ARTIFACT }}" macos "${{ env.REVISION }}"
+      run: sh ./src/test/native/test-executable.sh "${{ env.ARTIFACT }}" macos "${{ env.REVISION }}"
     - name: Move artifacts
       run: |
         mkdir target/artifacts
@@ -119,7 +119,7 @@ jobs:
           -Drevision="${REVISION}" \
           verify
     - name: Test executable
-      run: sh ./src/main/resources/test-executable.sh "${{ env.ARTIFACT }}" linux "${{ env.REVISION }}"
+      run: sh ./src/test/native/test-executable.sh "${{ env.ARTIFACT }}" linux "${{ env.REVISION }}"
     - name: Move artifacts
       run: |
         mkdir target/artifacts
@@ -150,7 +150,7 @@ jobs:
       run: |
         .\mvnw --batch-mode -Dsha1="$env:GITHUB_SHA" -Drevision="$env:REVISION" verify
     - name: Test executable
-      run: sh ./src/main/resources/test-executable.sh "${{ env.ARTIFACT }}" windows "${{ env.REVISION }}"
+      run: sh ./src/test/native/test-executable.sh "${{ env.ARTIFACT }}" windows "${{ env.REVISION }}"
     - name: Move artifacts
       run: |
         mkdir target/artifacts
