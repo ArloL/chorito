@@ -61,6 +61,10 @@ public class CodeQlAnalysisChoreTest {
 			    - name: Dump environment variables
 			      run: set
 			  analyze:
+			    permissions:
+			      actions: read
+			      contents: read
+			      security-events: write
 			    name: Analyze
 			    runs-on: ubuntu-latest
 			    steps:
