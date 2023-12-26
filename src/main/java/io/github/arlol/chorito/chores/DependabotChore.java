@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.MyPaths;
 
 public class DependabotChore implements Chore {
 
@@ -72,7 +73,9 @@ public class DependabotChore implements Chore {
 			String ecosystem
 	) {
 		return getEcosystemIfFilterMatches(context, path -> {
-			return path.getFileName().toString().matches(fileNamePattern);
+			return MyPaths.getFileName(path)
+					.toString()
+					.matches(fileNamePattern);
 		}, ecosystem);
 	}
 
