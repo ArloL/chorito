@@ -32,7 +32,7 @@ public class DependabotChoreTest {
 	}
 
 	@Test
-	public void test() throws Exception {
+	public void testPackageJson() throws Exception {
 		FilesSilent.touch(
 				extension.root()
 						.resolve("test-projects/vite-project/package.json")
@@ -79,6 +79,27 @@ public class DependabotChoreTest {
 				      interval: "daily"
 				  - package-ecosystem: "npm"
 				    directory: "/test-projects/vite-project/"
+				    schedule:
+				      interval: "daily"
+				""");
+	}
+
+	@Test
+	public void testTerraform() throws Exception {
+		FilesSilent.touch(extension.root().resolve(".terraform.lock.hcl"));
+
+		doit();
+
+		Path dependabot = extension.root().resolve(".github/dependabot.yml");
+		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
+				version: 2
+				updates:
+				  - package-ecosystem: "github-actions"
+				    directory: "/"
+				    schedule:
+				      interval: "daily"
+				  - package-ecosystem: "terraform"
+				    directory: "/"
 				    schedule:
 				      interval: "daily"
 				""");
