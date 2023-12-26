@@ -41,6 +41,11 @@ public class DependabotChore implements Chore {
 					"build.gradle",
 					"gradle"
 			);
+			content += getEcosystemIfFileExists(
+					context,
+					".terraform.lock.hcl",
+					"terraform"
+			);
 
 			FilesSilent.writeString(
 					context.resolve(".github/dependabot.yml"),
