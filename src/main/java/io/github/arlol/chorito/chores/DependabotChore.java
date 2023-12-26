@@ -1,52 +1,14 @@
 package io.github.arlol.chorito.chores;
 
+import java.nio.file.Path;
+
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 
 public class DependabotChore implements Chore {
 
-	private static String DEFAULT_DEPENDABOT = """
-			version: 2
-			updates:
-			""";
-	private static String DEFAULT_MAVEN_DEPENDABOT = """
-			  - package-ecosystem: "maven"
-			    directory: "/"
-			    schedule:
-			      interval: "daily"
-			""";
 	private static String DEFAULT_GITHUB_ACTIONS_DEPENDABOT = """
 			  - package-ecosystem: "github-actions"
-			    directory: "/"
-			    schedule:
-			      interval: "daily"
-			""";
-	private static String DEFAULT_BUNDLER_DEPENDABOT = """
-			  - package-ecosystem: "bundler"
-			    directory: "/"
-			    schedule:
-			      interval: "daily"
-			""";
-	private static String DEFAULT_DOCKER_DEPENDABOT = """
-			  - package-ecosystem: "docker"
-			    directory: "/"
-			    schedule:
-			      interval: "daily"
-			""";
-	private static String DEFAULT_PIP_DEPENDABOT = """
-			  - package-ecosystem: "pip"
-			    directory: "/"
-			    schedule:
-			      interval: "daily"
-			""";
-	private static String DEFAULT_NPM_DEPENDABOT = """
-			  - package-ecosystem: "npm"
-			    directory: "/"
-			    schedule:
-			      interval: "daily"
-			""";
-	private static String DEFAULT_GRADLE_DEPENDABOT = """
-			  - package-ecosystem: "gradle"
 			    directory: "/"
 			    schedule:
 			      interval: "daily"
@@ -55,32 +17,70 @@ public class DependabotChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		if (context.hasGitHubRemote()) {
-			String content = DEFAULT_DEPENDABOT;
-			if (FilesSilent.exists(context.resolve("pom.xml"))) {
-				content += DEFAULT_MAVEN_DEPENDABOT;
-			}
-			if (FilesSilent.exists(context.resolve("Gemfile.lock"))) {
-				content += DEFAULT_BUNDLER_DEPENDABOT;
-			}
+
+			String content = """
+					version: 2
+					updates:
+					""";
+			content += getEcosystemIfFileExists(context, "pom.xml", "maven");
+			content += getEcosystemIfFileExists(
+					context,
+					"Gemfile.lock",
+					"bundler"
+			);
 			content += DEFAULT_GITHUB_ACTIONS_DEPENDABOT;
-			if (FilesSilent.exists(context.resolve("Dockerfile"))) {
-				content += DEFAULT_DOCKER_DEPENDABOT;
-			}
-			if (FilesSilent.exists(context.resolve("Pipfile"))) {
-				content += DEFAULT_PIP_DEPENDABOT;
-			}
-			if (FilesSilent.exists(context.resolve("package.json"))) {
-				content += DEFAULT_NPM_DEPENDABOT;
-			}
-			if (FilesSilent.exists(context.resolve("build.gradle"))) {
-				content += DEFAULT_GRADLE_DEPENDABOT;
-			}
+			content += getEcosystemIfFileExists(
+					context,
+					"Dockerfile",
+					"docker"
+			);
+			content += getEcosystemIfFileExists(context, "Pipfile", "pip");
+			content += getEcosystemIfFileExists(context, "package.json", "npm");
+			content += getEcosystemIfFileExists(
+					context,
+					"build.gradle",
+					"gradle"
+			);
+
 			FilesSilent.writeString(
 					context.resolve(".github/dependabot.yml"),
 					content
 			);
 		}
 		return context;
+	}
+
+	private String getEcosystemIfFileExists(
+			ChoreContext context,
+			String fileName,
+			String ecosystem
+	) {
+		StringBuilder result = new StringBuilder();
+		context.textFiles().stream().filter(path -> {
+			return path.endsWith(fileName);
+		})
+				.map(context::resolve)
+				.map(path -> getRootRelativePath(context.root(), path))
+				.forEach(rootRelativePath -> {
+					result.append("""
+							  - package-ecosystem: "%s"
+							    directory: "%s"
+							    schedule:
+							      interval: "daily"
+							""".formatted(ecosystem, rootRelativePath));
+				});
+		return result.toString();
+	}
+
+	private String getRootRelativePath(Path root, Path path) {
+		String rootRelativePath = root.relativize(path.getParent()).toString();
+		if (!rootRelativePath.startsWith("/")) {
+			rootRelativePath = "/" + rootRelativePath;
+		}
+		if (!rootRelativePath.endsWith("/")) {
+			rootRelativePath += "/";
+		}
+		return rootRelativePath;
 	}
 
 }
