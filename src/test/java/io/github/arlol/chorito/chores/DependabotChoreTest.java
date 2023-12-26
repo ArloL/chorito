@@ -105,4 +105,68 @@ public class DependabotChoreTest {
 				""");
 	}
 
+	@Test
+	public void testDockerfile() throws Exception {
+		FilesSilent.touch(extension.root().resolve("random.Dockerfile"));
+
+		doit();
+
+		Path dependabot = extension.root().resolve(".github/dependabot.yml");
+		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
+				version: 2
+				updates:
+				  - package-ecosystem: "github-actions"
+				    directory: "/"
+				    schedule:
+				      interval: "daily"
+				  - package-ecosystem: "docker"
+				    directory: "/"
+				    schedule:
+				      interval: "daily"
+				""");
+	}
+
+	@Test
+	public void testDockerfileLowercase() throws Exception {
+		FilesSilent.touch(extension.root().resolve("random.dockerfile"));
+
+		doit();
+
+		Path dependabot = extension.root().resolve(".github/dependabot.yml");
+		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
+				version: 2
+				updates:
+				  - package-ecosystem: "github-actions"
+				    directory: "/"
+				    schedule:
+				      interval: "daily"
+				  - package-ecosystem: "docker"
+				    directory: "/"
+				    schedule:
+				      interval: "daily"
+				""");
+	}
+
+	@Test
+	public void testMultipleDockerfiles() throws Exception {
+		FilesSilent.touch(extension.root().resolve("random.dockerfile"));
+		FilesSilent.touch(extension.root().resolve("another.dockerfile"));
+
+		doit();
+
+		Path dependabot = extension.root().resolve(".github/dependabot.yml");
+		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
+				version: 2
+				updates:
+				  - package-ecosystem: "github-actions"
+				    directory: "/"
+				    schedule:
+				      interval: "daily"
+				  - package-ecosystem: "docker"
+				    directory: "/"
+				    schedule:
+				      interval: "daily"
+				""");
+	}
+
 }

@@ -1,6 +1,7 @@
 package io.github.arlol.chorito.chores;
 
 import java.nio.file.Path;
+import java.util.function.Predicate;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
@@ -29,9 +30,9 @@ public class DependabotChore implements Chore {
 					"bundler"
 			);
 			content += DEFAULT_GITHUB_ACTIONS_DEPENDABOT;
-			content += getEcosystemIfFileExists(
+			content += getEcosystemIfFileNameMatches(
 					context,
-					"Dockerfile",
+					"(?i).*dockerfile.*",
 					"docker"
 			);
 			content += getEcosystemIfFileExists(context, "Pipfile", "pip");
@@ -60,12 +61,33 @@ public class DependabotChore implements Chore {
 			String fileName,
 			String ecosystem
 	) {
-		StringBuilder result = new StringBuilder();
-		context.textFiles().stream().filter(path -> {
+		return getEcosystemIfFilterMatches(context, path -> {
 			return path.endsWith(fileName);
-		})
+		}, ecosystem);
+	}
+
+	private String getEcosystemIfFileNameMatches(
+			ChoreContext context,
+			String fileNamePattern,
+			String ecosystem
+	) {
+		return getEcosystemIfFilterMatches(context, path -> {
+			return path.getFileName().toString().matches(fileNamePattern);
+		}, ecosystem);
+	}
+
+	private String getEcosystemIfFilterMatches(
+			ChoreContext context,
+			Predicate<? super Path> predicate,
+			String ecosystem
+	) {
+		StringBuilder result = new StringBuilder();
+		context.textFiles()
+				.stream()
+				.filter(predicate)
 				.map(context::resolve)
 				.map(path -> getRootRelativePath(context.root(), path))
+				.distinct()
 				.forEach(rootRelativePath -> {
 					result.append("""
 							  - package-ecosystem: "%s"
