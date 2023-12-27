@@ -9,67 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.github.arlol.chorito.tools.ChoreContext;
+import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FakeRandomGenerator;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
 
 public class CodeQlAnalysisChoreTest {
-
-	private static final String EXPECTED_JAVA = """
-			name: CodeQL Analysis
-
-			on:
-			  push:
-			    branches:
-			    - main
-			  pull_request:
-			    branches:
-			    - main
-			  schedule:
-			  - cron: '1 3 1 * *'
-			env:
-			  JAVA_VERSION: 17
-
-			jobs:
-			  debug:
-			    runs-on: ubuntu-latest
-			    steps:
-			    - name: Dump GitHub context
-			      env:
-			        GITHUB_CONTEXT: ${{ toJSON(github) }}
-			      run: echo "$GITHUB_CONTEXT"
-			    - name: Dump job context
-			      env:
-			        JOB_CONTEXT: ${{ toJSON(job) }}
-			      run: echo "$JOB_CONTEXT"
-			    - name: Dump steps context
-			      env:
-			        STEPS_CONTEXT: ${{ toJSON(steps) }}
-			      run: echo "$STEPS_CONTEXT"
-			    - name: Dump runner context
-			      env:
-			        RUNNER_CONTEXT: ${{ toJSON(runner) }}
-			      run: echo "$RUNNER_CONTEXT"
-			    - name: Dump strategy context
-			      env:
-			        STRATEGY_CONTEXT: ${{ toJSON(strategy) }}
-			      run: echo "$STRATEGY_CONTEXT"
-			    - name: Dump matrix context
-			      env:
-			        MATRIX_CONTEXT: ${{ toJSON(matrix) }}
-			      run: echo "$MATRIX_CONTEXT"
-			    - name: Dump environment variables
-			      run: set
-			  analyze:
-			    permissions:
-			      actions: read
-			      contents: read
-			      security-events: write
-			    name: Analyze
-			    runs-on: ubuntu-latest
-			    steps:
-			    - name: Checkout repository
-			""";
 
 	@RegisterExtension
 	final FileSystemExtension extension = new FileSystemExtension();
@@ -94,7 +39,33 @@ public class CodeQlAnalysisChoreTest {
 		Path workflow = context
 				.resolve(".github/workflows/codeql-analysis.yaml");
 		assertTrue(FilesSilent.exists(workflow));
-		assertThat(FilesSilent.readString(workflow)).startsWith(EXPECTED_JAVA);
+		assertThat(FilesSilent.readString(workflow)).isEqualTo(
+				ClassPathFiles.readString("codeql/java-expected.yaml")
+		);
+	}
+
+	@Test
+	public void testAddingPermissions() throws Exception {
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
+
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.hasGitHubRemote(true)
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		Path workflow = context
+				.resolve(".github/workflows/codeql-analysis.yaml");
+
+		FilesSilent.writeString(
+				workflow,
+				ClassPathFiles.readString("codeql/input.yaml")
+		);
+
+		new CodeQlAnalysisChore().doit(context);
+
+		assertThat(FilesSilent.readString(workflow))
+				.isEqualTo(ClassPathFiles.readString("codeql/expected.yaml"));
 	}
 
 }
