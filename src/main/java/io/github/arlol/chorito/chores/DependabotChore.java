@@ -33,7 +33,7 @@ public class DependabotChore implements Chore {
 			content += DEFAULT_GITHUB_ACTIONS_DEPENDABOT;
 			content += getEcosystemIfFileNameMatches(
 					context,
-					"(?i).*dockerfile.*",
+					"(?i).*dockerfile",
 					"docker"
 			);
 			content += getEcosystemIfFileExists(context, "Pipfile", "pip");
