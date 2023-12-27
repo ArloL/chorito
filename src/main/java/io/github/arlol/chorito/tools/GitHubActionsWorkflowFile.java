@@ -3,11 +3,13 @@ package io.github.arlol.chorito.tools;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.snakeyaml.engine.v2.api.DumpSettings;
 import org.snakeyaml.engine.v2.api.LoadSettings;
 import org.snakeyaml.engine.v2.api.StreamDataWriter;
+import org.snakeyaml.engine.v2.common.ScalarStyle;
 import org.snakeyaml.engine.v2.composer.Composer;
 import org.snakeyaml.engine.v2.emitter.Emitter;
 import org.snakeyaml.engine.v2.nodes.MappingNode;
@@ -15,11 +17,19 @@ import org.snakeyaml.engine.v2.nodes.Node;
 import org.snakeyaml.engine.v2.nodes.NodeTuple;
 import org.snakeyaml.engine.v2.nodes.ScalarNode;
 import org.snakeyaml.engine.v2.nodes.SequenceNode;
+import org.snakeyaml.engine.v2.nodes.Tag;
 import org.snakeyaml.engine.v2.parser.ParserImpl;
 import org.snakeyaml.engine.v2.scanner.StreamReader;
 import org.snakeyaml.engine.v2.serializer.Serializer;
 
 public class GitHubActionsWorkflowFile {
+
+	private static Optional<MappingNode> getKeyAsMap(
+			MappingNode map,
+			String key
+	) {
+		return getKeyAsMap(Optional.of(map), key);
+	}
 
 	private static Optional<MappingNode> getKeyAsMap(
 			Optional<MappingNode> map,
@@ -33,13 +43,6 @@ public class GitHubActionsWorkflowFile {
 			String key
 	) {
 		return objectToSequence(getKeyAsNode(map, key));
-	}
-
-	private Optional<ScalarNode> getKeyAsScalar(
-			Optional<MappingNode> map,
-			String key
-	) {
-		return objectToScalar(getKeyAsNode(map, key));
 	}
 
 	private static Optional<Node> getKeyAsNode(
@@ -66,9 +69,21 @@ public class GitHubActionsWorkflowFile {
 				.findFirst();
 	}
 
+	private static String scalarValue(Node node) {
+		return nodeToScalar(node).getValue();
+	}
+
+	private static ScalarNode nodeToScalar(Node node) {
+		return objectToScalar(Optional.of(node)).orElseThrow();
+	}
+
 	private static Optional<ScalarNode> objectToScalar(Optional<Node> node) {
 		return node.filter(n -> n instanceof ScalarNode)
 				.map(n -> (ScalarNode) n);
+	}
+
+	private static MappingNode objectToMap(Node node) {
+		return objectToMap(Optional.of(node)).orElseThrow();
 	}
 
 	private static Optional<MappingNode> objectToMap(Optional<Node> node) {
@@ -81,6 +96,12 @@ public class GitHubActionsWorkflowFile {
 	) {
 		return node.filter(n -> n instanceof SequenceNode)
 				.map(n -> (SequenceNode) n);
+	}
+
+	private static Consumer<? super MappingNode> copyValue(
+			Optional<MappingNode> template
+	) {
+		return node -> node.setValue(template.orElseThrow().getValue());
 	}
 
 	private Optional<Node> root;
@@ -135,9 +156,7 @@ public class GitHubActionsWorkflowFile {
 	}
 
 	public void setJob(String name, Optional<MappingNode> debugJob) {
-		getJob(name).ifPresent(
-				job -> job.setValue(debugJob.orElseThrow().getValue())
-		);
+		getJob(name).ifPresent(copyValue(debugJob));
 	}
 
 	public Optional<MappingNode> getOn() {
@@ -145,7 +164,7 @@ public class GitHubActionsWorkflowFile {
 	}
 
 	public void setOn(Optional<MappingNode> newOn) {
-		getOn().ifPresent(on -> on.setValue(newOn.orElseThrow().getValue()));
+		getOn().ifPresent(copyValue(newOn));
 	}
 
 	public Optional<SequenceNode> getOnSchedule() {
@@ -158,12 +177,10 @@ public class GitHubActionsWorkflowFile {
 				onSchedule.map(SequenceNode::getValue).map(l -> l.get(0))
 		);
 		var tuple = getKeyAsTuple(firstScheduleNode, "cron").orElseThrow();
-		var currentCronNode = getKeyAsScalar(firstScheduleNode, "cron")
-				.orElseThrow();
 		var scalarNode = new ScalarNode(
-				currentCronNode.getTag(),
+				Tag.STR,
 				newCron,
-				currentCronNode.getScalarStyle()
+				ScalarStyle.SINGLE_QUOTED
 		);
 		NodeTuple nodeTuple = new NodeTuple(tuple.getKeyNode(), scalarNode);
 		firstScheduleNode.orElseThrow().setValue(List.of(nodeTuple));
@@ -174,9 +191,62 @@ public class GitHubActionsWorkflowFile {
 	}
 
 	public void setEnv(Optional<MappingNode> newEnv) {
-		getEnv().ifPresent(
-				env -> env.setValue(newEnv.orElseThrow().getValue())
-		);
+		getEnv().ifPresent(copyValue(newEnv));
+	}
+
+	public void updatePermissionsFromTemplate(
+			GitHubActionsWorkflowFile template
+	) {
+		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
+				.orElse(List.of())) {
+			String jobName = scalarValue(jobTuple.getKeyNode());
+			var job = objectToMap(jobTuple.getValueNode());
+			if (template.hasJob(jobName)) {
+				var templatePermissions = getKeyAsMap(
+						template.getJob(jobName),
+						"permissions"
+				);
+				if (templatePermissions.isPresent()) {
+					Optional<MappingNode> permissions = getKeyAsMap(
+							job,
+							"permissions"
+					);
+					permissions.ifPresent(copyValue(templatePermissions));
+
+					if (permissions.isEmpty()) {
+						var permissionsKeyNode = new ScalarNode(
+								Tag.STR,
+								"permissions",
+								ScalarStyle.PLAIN
+						);
+						var permissionsTuple = new NodeTuple(
+								permissionsKeyNode,
+								templatePermissions.orElseThrow()
+						);
+
+						int index = 0;
+						for (; index < job.getValue().size(); index++) {
+							NodeTuple jobDetailsTuple = job.getValue()
+									.get(index);
+							String detailKey = scalarValue(
+									jobDetailsTuple.getKeyNode()
+							);
+							if ("runs-on".equals(detailKey)) {
+								continue;
+							}
+							if ("if".equals(detailKey)) {
+								continue;
+							}
+							if ("needs".equals(detailKey)) {
+								continue;
+							}
+							break;
+						}
+						job.getValue().add(index, permissionsTuple);
+					}
+				}
+			}
+		}
 	}
 
 }

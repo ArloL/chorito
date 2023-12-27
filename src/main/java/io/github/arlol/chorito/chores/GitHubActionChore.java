@@ -31,10 +31,25 @@ public class GitHubActionChore implements Chore {
 		migrateActionsUploadReleaseAsset(context);
 		updateGraalSteps(context);
 		updateDebugSteps(context);
+		updatePermissions(context);
 		return context;
 	}
 
-	private void updateGraalSteps(ChoreContext context) {
+	public void updatePermissions(ChoreContext context) {
+		Path mainYaml = context.resolve(".github/workflows/main.yaml");
+		if (!FilesSilent.exists(mainYaml)) {
+			return;
+		}
+		String string = FilesSilent.readString(mainYaml);
+		var main = new GitHubActionsWorkflowFile(string);
+		var template = new GitHubActionsWorkflowFile(
+				ClassPathFiles.readString("github-settings/workflows/main.yaml")
+		);
+		main.updatePermissionsFromTemplate(template);
+		FilesSilent.writeString(mainYaml, main.asString());
+	}
+
+	public void updateGraalSteps(ChoreContext context) {
 		Path mainYaml = context.resolve(".github/workflows/main.yaml");
 		if (!FilesSilent.exists(mainYaml)) {
 			return;

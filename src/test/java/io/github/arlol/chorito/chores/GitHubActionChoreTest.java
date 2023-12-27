@@ -154,6 +154,8 @@ public class GitHubActionChoreTest {
 			jobs:
 			  version:
 			    runs-on: ubuntu-latest
+			    permissions:
+			      contents: write
 			    outputs:
 			      new_version: ${{ steps.output.outputs.new_version }}
 			    steps:
@@ -394,7 +396,7 @@ public class GitHubActionChoreTest {
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
-		new GitHubActionChore().doit(context);
+		new GitHubActionChore().updateGraalSteps(context);
 
 		String expected = ClassPathFiles
 				.readString("github-actions/upx-removal-output.yaml");
@@ -475,6 +477,28 @@ public class GitHubActionChoreTest {
 				"github-actions/test-executable-expected-update.sh"
 		);
 		assertThat(FilesSilent.readString(testExecutable)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testPermissionUpdate() {
+		Path pom = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(
+				pom,
+				ClassPathFiles
+						.readString("github-actions/permission-input.yaml")
+		);
+
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.hasGitHubRemote(true)
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new GitHubActionChore().updatePermissions(context);
+
+		String expected = ClassPathFiles
+				.readString("github-actions/permission-expected.yaml");
+		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
 	}
 
 }
