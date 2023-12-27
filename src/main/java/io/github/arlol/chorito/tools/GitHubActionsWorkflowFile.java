@@ -167,8 +167,6 @@ public class GitHubActionsWorkflowFile {
 		);
 		NodeTuple nodeTuple = new NodeTuple(tuple.getKeyNode(), scalarNode);
 		firstScheduleNode.orElseThrow().setValue(List.of(nodeTuple));
-
-		System.out.println();
 	}
 
 	public Optional<MappingNode> getEnv() {
