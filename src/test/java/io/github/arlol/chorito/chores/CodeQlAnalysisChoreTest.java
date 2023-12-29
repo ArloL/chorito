@@ -68,4 +68,24 @@ public class CodeQlAnalysisChoreTest {
 				.isEqualTo(ClassPathFiles.readString("codeql/expected.yaml"));
 	}
 
+	@Test
+	public void testJavaScript() throws Exception {
+		FilesSilent.touch(extension.root().resolve("package.json"));
+
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.hasGitHubRemote(true)
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		Path workflow = context
+				.resolve(".github/workflows/codeql-analysis.yaml");
+
+		new CodeQlAnalysisChore().doit(context);
+
+		assertThat(FilesSilent.readString(workflow)).isEqualTo(
+				ClassPathFiles.readString("codeql/javascript-expected.yaml")
+		);
+	}
+
 }

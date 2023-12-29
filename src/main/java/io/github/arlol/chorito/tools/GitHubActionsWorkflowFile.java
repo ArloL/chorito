@@ -1,6 +1,8 @@
 package io.github.arlol.chorito.tools;
 
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -9,6 +11,7 @@ import java.util.stream.Stream;
 import org.snakeyaml.engine.v2.api.DumpSettings;
 import org.snakeyaml.engine.v2.api.LoadSettings;
 import org.snakeyaml.engine.v2.api.StreamDataWriter;
+import org.snakeyaml.engine.v2.common.FlowStyle;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
 import org.snakeyaml.engine.v2.composer.Composer;
 import org.snakeyaml.engine.v2.emitter.Emitter;
@@ -35,14 +38,32 @@ public class GitHubActionsWorkflowFile {
 			Optional<MappingNode> map,
 			String key
 	) {
-		return objectToMap(getKeyAsNode(map, key));
+		return nodeAsMap(getKeyAsNode(map, key));
 	}
 
 	private static Optional<SequenceNode> getKeyAsSequence(
 			Optional<MappingNode> map,
 			String key
 	) {
-		return objectToSequence(getKeyAsNode(map, key));
+		return nodeAsSequence(getKeyAsNode(map, key));
+	}
+
+	private static Optional<ScalarNode> getKeyAsScalar(
+			MappingNode map,
+			String key
+	) {
+		return getKeyAsScalar(Optional.of(map), key);
+	}
+
+	private static Optional<ScalarNode> getKeyAsScalar(
+			Optional<MappingNode> map,
+			String key
+	) {
+		return nodeAsScalar(getKeyAsNode(map, key));
+	}
+
+	private static Optional<Node> getKeyAsNode(MappingNode map, String key) {
+		return getKeyAsNode(Optional.of(map), key);
 	}
 
 	private static Optional<Node> getKeyAsNode(
@@ -70,30 +91,32 @@ public class GitHubActionsWorkflowFile {
 	}
 
 	private static String scalarValue(Node node) {
-		return nodeToScalar(node).getValue();
+		return scalarValue(Optional.of(node)).orElseThrow();
 	}
 
-	private static ScalarNode nodeToScalar(Node node) {
-		return objectToScalar(Optional.of(node)).orElseThrow();
+	private static Optional<String> scalarValue(Optional<Node> node) {
+		return nodeAsScalar(node).map(ScalarNode::getValue);
 	}
 
-	private static Optional<ScalarNode> objectToScalar(Optional<Node> node) {
+	private static ScalarNode nodeAsScalar(Node node) {
+		return nodeAsScalar(Optional.of(node)).orElseThrow();
+	}
+
+	private static Optional<ScalarNode> nodeAsScalar(Optional<Node> node) {
 		return node.filter(n -> n instanceof ScalarNode)
 				.map(n -> (ScalarNode) n);
 	}
 
-	private static MappingNode objectToMap(Node node) {
-		return objectToMap(Optional.of(node)).orElseThrow();
+	private static MappingNode nodeAsMap(Node node) {
+		return nodeAsMap(Optional.of(node)).orElseThrow();
 	}
 
-	private static Optional<MappingNode> objectToMap(Optional<Node> node) {
+	private static Optional<MappingNode> nodeAsMap(Optional<Node> node) {
 		return node.filter(n -> n instanceof MappingNode)
 				.map(n -> (MappingNode) n);
 	}
 
-	private static Optional<SequenceNode> objectToSequence(
-			Optional<Node> node
-	) {
+	private static Optional<SequenceNode> nodeAsSequence(Optional<Node> node) {
 		return node.filter(n -> n instanceof SequenceNode)
 				.map(n -> (SequenceNode) n);
 	}
@@ -102,6 +125,40 @@ public class GitHubActionsWorkflowFile {
 			Optional<MappingNode> template
 	) {
 		return node -> node.setValue(template.orElseThrow().getValue());
+	}
+
+	private static void setKey(
+			Optional<MappingNode> map,
+			String key,
+			Node node
+	) {
+		List<NodeTuple> newValue = map.map(MappingNode::getValue)
+				.map(List::stream)
+				.orElse(Stream.empty())
+				.map(t -> {
+					if (t.getKeyNode() instanceof ScalarNode keyNode
+							&& key.equals(keyNode.getValue())) {
+						return new NodeTuple(t.getKeyNode(), node);
+					}
+					return t;
+				})
+				.toList();
+		map.ifPresent(mn -> mn.setValue(newValue));
+	}
+
+	private static void removeKey(Optional<MappingNode> map, String key) {
+		List<NodeTuple> newValue = map.map(MappingNode::getValue)
+				.map(List::stream)
+				.orElse(Stream.empty())
+				.filter(t -> {
+					if (t.getKeyNode() instanceof ScalarNode keyNode
+							&& key.equals(keyNode.getValue())) {
+						return false;
+					}
+					return true;
+				})
+				.toList();
+		map.ifPresent(mn -> mn.setValue(newValue));
 	}
 
 	private Optional<Node> root;
@@ -144,7 +201,7 @@ public class GitHubActionsWorkflowFile {
 	}
 
 	public Optional<MappingNode> getJobs() {
-		return getKeyAsMap(objectToMap(root), "jobs");
+		return getKeyAsMap(nodeAsMap(root), "jobs");
 	}
 
 	public Optional<MappingNode> getJob(String name) {
@@ -160,7 +217,7 @@ public class GitHubActionsWorkflowFile {
 	}
 
 	public Optional<MappingNode> getOn() {
-		return getKeyAsMap(objectToMap(root), "on");
+		return getKeyAsMap(nodeAsMap(root), "on");
 	}
 
 	public void setOn(Optional<MappingNode> newOn) {
@@ -173,7 +230,7 @@ public class GitHubActionsWorkflowFile {
 
 	public void setOnScheduleCron(String newCron) {
 		var onSchedule = getOnSchedule();
-		var firstScheduleNode = objectToMap(
+		var firstScheduleNode = nodeAsMap(
 				onSchedule.map(SequenceNode::getValue).map(l -> l.get(0))
 		);
 		var tuple = getKeyAsTuple(firstScheduleNode, "cron").orElseThrow();
@@ -187,7 +244,7 @@ public class GitHubActionsWorkflowFile {
 	}
 
 	public Optional<MappingNode> getEnv() {
-		return getKeyAsMap(objectToMap(root), "env");
+		return getKeyAsMap(nodeAsMap(root), "env");
 	}
 
 	public void setEnv(Optional<MappingNode> newEnv) {
@@ -200,7 +257,7 @@ public class GitHubActionsWorkflowFile {
 		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
 				.orElse(List.of())) {
 			String jobName = scalarValue(jobTuple.getKeyNode());
-			var job = objectToMap(jobTuple.getValueNode());
+			var job = nodeAsMap(jobTuple.getValueNode());
 			if (template.hasJob(jobName)) {
 				var templatePermissions = getKeyAsMap(
 						template.getJob(jobName),
@@ -247,6 +304,47 @@ public class GitHubActionsWorkflowFile {
 				}
 			}
 		}
+	}
+
+	public void removeEnv() {
+		removeKey(nodeAsMap(root), "env");
+	}
+
+	public void removeActionFromJob(String jobName, String actionName) {
+		var jobNode = getJob(jobName);
+		List<Node> nodes = new ArrayList<>();
+
+		nodes = getKeyAsSequence(jobNode, "steps").map(SequenceNode::getValue)
+				.orElse(List.of())
+				.stream()
+				.filter(step -> {
+					return scalarValue(getKeyAsNode(nodeAsMap(step), "uses"))
+							.filter(uses -> uses.startsWith(actionName))
+							.isEmpty();
+				})
+				.toList();
+		setKey(
+				jobNode,
+				"steps",
+				new SequenceNode(Tag.SEQ, nodes, FlowStyle.BLOCK)
+		);
+	}
+
+	public void setKeyToSequence(String yamlpath, List<String> sequence) {
+		List<String> split = Arrays.asList(yamlpath.split("\\."));
+		Optional<MappingNode> parentNode = nodeAsMap(root);
+		for (int i = 0; i < split.size() - 1; i++) {
+			String key = split.get(i);
+			parentNode = getKeyAsMap(parentNode, key);
+		}
+		List<Node> nodes = sequence.stream().map(value -> {
+			return (Node) new ScalarNode(Tag.STR, value, ScalarStyle.PLAIN);
+		}).toList();
+		setKey(
+				parentNode,
+				split.get(split.size() - 1),
+				new SequenceNode(Tag.SEQ, nodes, FlowStyle.BLOCK)
+		);
 	}
 
 }
