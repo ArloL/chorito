@@ -1,7 +1,6 @@
 package io.github.arlol.chorito.tools;
 
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -312,9 +311,8 @@ public class GitHubActionsWorkflowFile {
 
 	public void removeActionFromJob(String jobName, String actionName) {
 		var jobNode = getJob(jobName);
-		List<Node> nodes = new ArrayList<>();
-
-		nodes = getKeyAsSequence(jobNode, "steps").map(SequenceNode::getValue)
+		List<Node> nodes = getKeyAsSequence(jobNode, "steps")
+				.map(SequenceNode::getValue)
 				.orElse(List.of())
 				.stream()
 				.filter(step -> {
