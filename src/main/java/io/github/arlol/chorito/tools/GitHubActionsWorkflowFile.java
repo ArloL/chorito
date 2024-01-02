@@ -47,7 +47,7 @@ public class GitHubActionsWorkflowFile {
 		return nodeAsSequence(getKeyAsNode(map, key));
 	}
 
-	private static Optional<ScalarNode> getKeyAsScalar(
+	public static Optional<ScalarNode> getKeyAsScalar(
 			MappingNode map,
 			String key
 	) {
@@ -97,7 +97,7 @@ public class GitHubActionsWorkflowFile {
 		return nodeAsScalar(node).map(ScalarNode::getValue);
 	}
 
-	private static ScalarNode nodeAsScalar(Node node) {
+	public static ScalarNode nodeAsScalar(Node node) {
 		return nodeAsScalar(Optional.of(node)).orElseThrow();
 	}
 
