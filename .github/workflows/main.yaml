@@ -45,6 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       new_version: ${{ steps.output.outputs.new_version }}
+      changelog: ${{ steps.tag.outputs.changelog }}
     steps:
     - uses: actions/checkout@v4.1.1
       with:
