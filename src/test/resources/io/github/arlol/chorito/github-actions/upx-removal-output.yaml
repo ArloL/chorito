@@ -163,8 +163,8 @@ jobs:
       run: '& 7z d "$env:JAVA_HOME\lib\svm\builder\svm.jar" com/oracle/svm/core/windows/WindowsImageHeapProviderFeature.class'
     - name: Build with Maven
       run: |
-        .\mvnw --batch-mode -Dsha1="$env:GITHUB_SHA" -Drevision="$env:REVISION" -Dproject.build.outputTimestamp="$env:BUILD_TIMESTAMP" clean install
-        .\mvnw --batch-mode -Dsha1="$env:GITHUB_SHA" -Drevision="$env:REVISION" -Dproject.build.outputTimestamp="$env:BUILD_TIMESTAMP" clean verify artifact:compare
+        .\mvnw --batch-mode -Dsha1="$env:GITHUB_SHA" -Drevision="$env:REVISION" -D"project.build.outputTimestamp=$env:BUILD_TIMESTAMP" clean install
+        .\mvnw --batch-mode -Dsha1="$env:GITHUB_SHA" -Drevision="$env:REVISION" -D"project.build.outputTimestamp=$env:BUILD_TIMESTAMP" clean verify artifact:compare
     - name: Test executable
       run: sh ./src/test/native/test-executable.sh "${{ env.ARTIFACT }}" windows "${{ env.REVISION }}"
     - name: Move artifacts
