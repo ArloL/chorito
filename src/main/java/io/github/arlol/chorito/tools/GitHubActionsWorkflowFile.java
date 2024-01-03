@@ -123,7 +123,8 @@ public class GitHubActionsWorkflowFile {
 	private static Consumer<? super MappingNode> copyValue(
 			Optional<MappingNode> template
 	) {
-		return node -> node.setValue(template.orElseThrow().getValue());
+		return node -> template
+				.ifPresent(value -> node.setValue(value.getValue()));
 	}
 
 	private static void setKey(
