@@ -65,6 +65,7 @@ jobs:
     needs: version
     env:
       REVISION: ${{ needs.version.outputs.new_version }}
+      BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
     steps:
     - uses: actions/checkout@v4.1.1
     - uses: graalvm/setup-graalvm@v1.1.5
@@ -81,7 +82,14 @@ jobs:
           --batch-mode \
           -Dsha1="${GITHUB_SHA}" \
           -Drevision="${REVISION}" \
-          verify
+          -Dproject.build.outputTimestamp="${BUILD_TIMESTAMP}" \
+          clean install
+        ./mvnw \
+          --batch-mode \
+          -Dsha1="${GITHUB_SHA}" \
+          -Drevision="${REVISION}" \
+          -Dproject.build.outputTimestamp="${BUILD_TIMESTAMP}" \
+          clean verify artifact:compare
     - name: Test executable
       run: sh ./src/test/native/test-executable.sh "${{ env.ARTIFACT }}" macos "${{ env.REVISION }}"
     - name: Move artifacts
@@ -99,6 +107,7 @@ jobs:
     needs: version
     env:
       REVISION: ${{ needs.version.outputs.new_version }}
+      BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
     steps:
     - uses: actions/checkout@v4.1.1
     - uses: graalvm/setup-graalvm@v1.1.5
@@ -115,7 +124,14 @@ jobs:
           --batch-mode \
           -Dsha1="${GITHUB_SHA}" \
           -Drevision="${REVISION}" \
-          verify
+          -Dproject.build.outputTimestamp="${BUILD_TIMESTAMP}" \
+          clean install
+        ./mvnw \
+          --batch-mode \
+          -Dsha1="${GITHUB_SHA}" \
+          -Drevision="${REVISION}" \
+          -Dproject.build.outputTimestamp="${BUILD_TIMESTAMP}" \
+          clean verify artifact:compare
     - name: Test executable
       run: sh ./src/test/native/test-executable.sh "${{ env.ARTIFACT }}" linux "${{ env.REVISION }}"
     - name: Move artifacts
@@ -133,6 +149,7 @@ jobs:
     needs: version
     env:
       REVISION: ${{ needs.version.outputs.new_version }}
+      BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
     steps:
     - uses: actions/checkout@v4.1.1
     - uses: graalvm/setup-graalvm@v1.1.5
@@ -146,7 +163,8 @@ jobs:
       run: '& 7z d "$env:JAVA_HOME\lib\svm\builder\svm.jar" com/oracle/svm/core/windows/WindowsImageHeapProviderFeature.class'
     - name: Build with Maven
       run: |
-        .\mvnw --batch-mode -Dsha1="$env:GITHUB_SHA" -Drevision="$env:REVISION" verify
+        .\mvnw --batch-mode -Dsha1="$env:GITHUB_SHA" -Drevision="$env:REVISION" -Dproject.build.outputTimestamp="$env:BUILD_TIMESTAMP" clean install
+        .\mvnw --batch-mode -Dsha1="$env:GITHUB_SHA" -Drevision="$env:REVISION" -Dproject.build.outputTimestamp="$env:BUILD_TIMESTAMP" clean verify artifact:compare
     - name: Test executable
       run: sh ./src/test/native/test-executable.sh "${{ env.ARTIFACT }}" windows "${{ env.REVISION }}"
     - name: Move artifacts
