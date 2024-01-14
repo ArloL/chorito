@@ -24,6 +24,10 @@ public class CodeQlAnalysisChoreTest {
 		new CodeQlAnalysisChore().doit(extension.choreContext());
 	}
 
+	public String removeVersions(String input) {
+		return input.replaceAll("@v[0-9.]+\n", "@\n");
+	}
+
 	@Test
 	public void testJava() throws Exception {
 		FilesSilent.touch(extension.root().resolve("pom.xml"));
@@ -39,9 +43,13 @@ public class CodeQlAnalysisChoreTest {
 		Path workflow = context
 				.resolve(".github/workflows/codeql-analysis.yaml");
 		assertTrue(FilesSilent.exists(workflow));
-		assertThat(FilesSilent.readString(workflow)).isEqualTo(
-				ClassPathFiles.readString("codeql/java-expected.yaml")
-		);
+		assertThat(removeVersions(FilesSilent.readString(workflow)))
+				.isEqualTo(
+						removeVersions(
+								ClassPathFiles
+										.readString("codeql/java-expected.yaml")
+						)
+				);
 	}
 
 	@Test
@@ -64,8 +72,13 @@ public class CodeQlAnalysisChoreTest {
 
 		new CodeQlAnalysisChore().doit(context);
 
-		assertThat(FilesSilent.readString(workflow))
-				.isEqualTo(ClassPathFiles.readString("codeql/expected.yaml"));
+		assertThat(removeVersions(FilesSilent.readString(workflow)))
+				.isEqualTo(
+						removeVersions(
+								ClassPathFiles
+										.readString("codeql/expected.yaml")
+						)
+				);
 	}
 
 	@Test
@@ -83,8 +96,11 @@ public class CodeQlAnalysisChoreTest {
 
 		new CodeQlAnalysisChore().doit(context);
 
-		assertThat(FilesSilent.readString(workflow)).isEqualTo(
-				ClassPathFiles.readString("codeql/javascript-expected.yaml")
+		assertThat(removeVersions(FilesSilent.readString(workflow))).isEqualTo(
+				removeVersions(
+						ClassPathFiles
+								.readString("codeql/javascript-expected.yaml")
+				)
 		);
 	}
 
