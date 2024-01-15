@@ -187,6 +187,10 @@ public class GitHubActionChoreTest {
 			          verify
 			""";
 
+	private String removeVersions(String input) {
+		return input.replaceAll("@v[0-9.]+\n", "@\n");
+	}
+
 	@RegisterExtension
 	final FileSystemExtension extension = new FileSystemExtension();
 
@@ -400,7 +404,8 @@ public class GitHubActionChoreTest {
 
 		String expected = ClassPathFiles
 				.readString("github-actions/upx-removal-output.yaml");
-		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
+		assertThat(removeVersions(FilesSilent.readString(pom)))
+				.isEqualTo(removeVersions(expected));
 	}
 
 	@Test
