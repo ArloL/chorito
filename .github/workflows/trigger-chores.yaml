@@ -60,7 +60,7 @@ jobs:
         - sprinteins/drupal-client
     steps:
     - name: Trigger chores on ${{ matrix.repo }}
-      uses: peter-evans/repository-dispatch@v2.1.2
+      uses: peter-evans/repository-dispatch@v3.0.0
       with:
         token: ${{ secrets.PAT }}
         repository: ${{ matrix.repo }}
