@@ -363,17 +363,17 @@ public class GitHubActionChore implements Chore {
 					"uses: actions/setup-java@v3\n",
 					"uses: actions/setup-java@v3.5.1\n"
 			);
-			updated = updated.replace(
-					"uses: github/codeql-action/init@v2\n",
-					"uses: github/codeql-action/init@v2.1.27\n"
+			updated = updated.replaceAll(
+					"github/codeql-action/init@v3.*",
+					"github/codeql-action/init@v3"
 			);
-			updated = updated.replace(
-					"uses: github/codeql-action/autobuild@v2\n",
-					"uses: github/codeql-action/autobuild@v2.1.27\n"
+			updated = updated.replaceAll(
+					"github/codeql-action/autobuild@v3.*",
+					"github/codeql-action/autobuild@v3"
 			);
-			updated = updated.replace(
-					"uses: github/codeql-action/analyze@v2\n",
-					"uses: github/codeql-action/analyze@v2.1.27\n"
+			updated = updated.replaceAll(
+					"github/codeql-action/analyze@v3.*",
+					"github/codeql-action/analyze@v3"
 			);
 			updated = updated.replace(
 					"uses: mathieudutour/github-tag-action@v6.0\n",

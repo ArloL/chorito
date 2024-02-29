@@ -506,4 +506,33 @@ public class GitHubActionChoreTest {
 		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
 	}
 
+	@Test
+	public void testCodeQlRemovalOfSpecificVersions() {
+		Path workflow = extension.root()
+				.resolve(".github/workflows/codeql-analysis.yaml");
+		FilesSilent.writeString(workflow, """
+				jobs:
+				  analyze:
+				  - uses: github/codeql-action/init@v3.24.4
+				  - uses: github/codeql-action/autobuild@v3.24.5
+				  - uses: github/codeql-action/analyze@v3.25.6
+				""");
+
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.hasGitHubRemote(true)
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new GitHubActionChore().doit(context);
+
+		assertThat(FilesSilent.readString(workflow)).isEqualTo("""
+				jobs:
+				  analyze:
+				  - uses: github/codeql-action/init@v3
+				  - uses: github/codeql-action/autobuild@v3
+				  - uses: github/codeql-action/analyze@v3
+				""");
+	}
+
 }
