@@ -188,7 +188,7 @@ public class GitHubActionChoreTest {
 			""";
 
 	private String removeVersions(String input) {
-		return input.replaceAll("@v[0-9.]+\n", "@\n");
+		return input.replaceAll("@[a-z0-9.]+\n", "@\n");
 	}
 
 	@RegisterExtension
