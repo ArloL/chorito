@@ -34,7 +34,7 @@
 		<revision>0.0.1-SNAPSHOT</revision>
 		<platform>unknown</platform>
 		<start-class>io.github.arlol.chorito.Main</start-class>
-		<ec4j.version>0.2.1</ec4j.version>
+		<ec4j.version>2.2.2</ec4j.version>
 	</properties>
 
 	<profiles>
