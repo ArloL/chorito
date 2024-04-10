@@ -92,12 +92,12 @@ public class DependabotChore implements Chore {
 				.map(path -> getRootRelativePath(context.root(), path))
 				.distinct()
 				.forEach(rootRelativePath -> {
-					result.append("""
-							  - package-ecosystem: "%s"
-							    directory: "%s"
-							    schedule:
-							      interval: "daily"
-							""".formatted(ecosystem, rootRelativePath));
+					result.append(
+							"  - package-ecosystem: \"" + ecosystem + "\""
+									+ "\n    directory: \"" + rootRelativePath
+									+ "\"" + "\n    schedule:"
+									+ "\n      interval: \"daily\"\n"
+					);
 				});
 		return result.toString();
 	}
