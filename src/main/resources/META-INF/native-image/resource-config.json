@@ -19,16 +19,10 @@
   }, {
     "pattern":"io/github/arlol/chorito/.*"
   }, {
-    "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt72b/nfc.nrm\\E"
-  }, {
-    "pattern":"java.base:\\Qjdk/internal/icu/impl/data/icudt72b/nfkc.nrm\\E"
-  }, {
-    "pattern":"org/eclipse/jgit/internal/JGitText.properties"
-  }, {
-    "pattern":"org/slf4j/impl/StaticLoggerBinder.class"
+    "pattern":"org/eclipse/jgit/internal/JGitText.*"
   }]},
   "bundles":[{
     "name":"org.eclipse.jgit.internal.JGitText",
-    "locales":["", "und"]
+    "locales":["en-DE", "und"]
   }]
 }
