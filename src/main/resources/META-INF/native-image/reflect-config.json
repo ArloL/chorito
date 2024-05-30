@@ -55,6 +55,12 @@
   "name":"jdk.internal.misc.Unsafe"
 },
 {
+  "name":"org.ec4j.linters.TextLinter"
+},
+{
+  "name":"org.ec4j.linters.XmlLinter"
+},
+{
   "name":"org.eclipse.jgit.internal.JGitText",
   "allPublicFields":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
@@ -94,6 +100,9 @@
 {
   "name":"org.eclipse.jgit.util.sha1.SHA1$Sha1Implementation",
   "methods":[{"name":"values","parameterTypes":[] }]
+},
+{
+  "name":"org.slf4j.simple.SimpleServiceProvider"
 },
 {
   "name":"sun.security.provider.NativePRNG",
