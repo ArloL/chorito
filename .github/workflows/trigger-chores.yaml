@@ -52,7 +52,6 @@ jobs:
         - ArloL/chorito
         - ArloL/dotfiles
         - ArloL/eclipse-projects
-        - ArloL/gitfx
         - ArloL/mvnx
         - ArloL/newlinechecker
         - ArloL/wait-for-ports
