@@ -32,8 +32,10 @@ public class MavenWrapperChore implements Chore {
 			# KIND, either express or implied.  See the License for the
 			# specific language governing permissions and limitations
 			# under the License.
-			distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.6/apache-maven-3.9.6-bin.zip
-			wrapperUrl=https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.2.0/maven-wrapper-3.2.0.jar
+			wrapperVersion=3.3.2
+			distributionType=bin
+			distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.8/apache-maven-3.9.8-bin.zip
+			wrapperUrl=https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.3.2/maven-wrapper-3.3.2.jar
 			""";
 
 	@Override
@@ -45,12 +47,13 @@ public class MavenWrapperChore implements Chore {
 		}
 		Path wrapper = context.resolve("mvnw");
 		if (!FilesSilent.exists(wrapper)) {
-			LOG.info("Running mvn wrapper:wrapper");
+			LOG.info("Running mvn wrapper:3.3.2:wrapper");
 			context.newProcessBuilder(
 					"mvn",
 					"-N",
-					"wrapper:wrapper",
-					"-Dmaven=3.9.6"
+					"wrapper:3.3.2:wrapper",
+					"-Dmaven=3.9.8",
+					"-Dtype=bin"
 			).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
 		}
 		if (!FilesSilent
@@ -62,12 +65,13 @@ public class MavenWrapperChore implements Chore {
 		if (FilesSilent.exists(path)) {
 			String content = FilesSilent.readString(path);
 			if (!DEFAULT_PROPERTIES.equals(content)) {
-				LOG.info("Running ./mvnw wrapper:wrapper");
+				LOG.info("Running ./mvnw wrapper:3.3.2:wrapper");
 				context.newProcessBuilder(
 						"./mvnw",
 						"-N",
-						"wrapper:wrapper",
-						"-Dmaven=3.9.6"
+						"wrapper:3.3.2:wrapper",
+						"-Dmaven=3.9.8",
+						"-Dtype=bin"
 				).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
 			}
 		}
