@@ -9,11 +9,13 @@ import io.github.arlol.chorito.tools.FilesSilent;
 
 public class GitIgnoreChore implements Chore {
 
-	private static String DEFAULT_POM_XML = """
+	private static String GITIGNORE_PREFIX = """
 			# Created by chorito https://github.com/ArloL/chorito
+			""";
 
-			# Created by https://www.toptal.com/developers/gitignore/api/eclipse,intellij,maven,visualstudiocode
-			# Edit at https://www.toptal.com/developers/gitignore?templates=eclipse,intellij,maven,visualstudiocode
+	private static String GITIGNORE_ECLIPSE = """
+			# Created by https://www.toptal.com/developers/gitignore/api/eclipse
+			# Edit at https://www.toptal.com/developers/gitignore?templates=eclipse
 
 			### Eclipse ###
 			.metadata
@@ -80,6 +82,13 @@ public class GitIgnoreChore implements Chore {
 			### Eclipse Patch ###
 			# Spring Boot Tooling
 			.sts4-cache/
+
+			# End of https://www.toptal.com/developers/gitignore/api/eclipse
+			""";
+
+	private static String GITIGNORE_INTELLIJ = """
+			# Created by https://www.toptal.com/developers/gitignore/api/intellij
+			# Edit at https://www.toptal.com/developers/gitignore?templates=intellij
 
 			### Intellij ###
 			# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
@@ -194,6 +203,18 @@ public class GitIgnoreChore implements Chore {
 			# https://plugins.jetbrains.com/plugin/8053-azure-toolkit-for-intellij
 			.idea/**/azureSettings.xml
 
+			# End of https://www.toptal.com/developers/gitignore/api/intellij
+
+			.idea/encodings.xml
+			.idea/jarRepositories.xml
+			.idea/misc.xml
+			.idea/vcs.xml
+			""";
+
+	private static String GITIGNORE_MAVEN = """
+			# Created by https://www.toptal.com/developers/gitignore/api/maven
+			# Edit at https://www.toptal.com/developers/gitignore?templates=maven
+
 			### Maven ###
 			target/
 			pom.xml.tag
@@ -212,6 +233,15 @@ public class GitIgnoreChore implements Chore {
 			.project
 			# JDT-specific (Eclipse Java Development Tools)
 			.classpath
+
+			# End of https://www.toptal.com/developers/gitignore/api/maven
+
+			.flattened-pom.xml
+			""";
+
+	private static String GITIGNORE_VSCODE = """
+			# Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode
+			# Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode
 
 			### VisualStudioCode ###
 			.vscode/*
@@ -232,43 +262,85 @@ public class GitIgnoreChore implements Chore {
 			.history
 			.ionide
 
-			# End of https://www.toptal.com/developers/gitignore/api/eclipse,intellij,maven,visualstudiocode
+			# End of https://www.toptal.com/developers/gitignore/api/visualstudiocode
+			""";
 
-			.flattened-pom.xml
-
-			.idea/encodings.xml
-			.idea/jarRepositories.xml
-			.idea/misc.xml
-			.idea/vcs.xml
-
+	private static String GITIGNORE_SUFFIX = """
 			# End of chorito. Add your ignores after this line and they will be preserved.""";
+
+	private static String GITIGNORE_GRADLE = """
+			### Gradle ###
+			.gradle
+			**/build/
+			!src/**/build/
+
+			# Ignore Gradle GUI config
+			gradle-app.setting
+
+			# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+			!gradle-wrapper.jar
+
+			# Avoid ignore Gradle wrappper properties
+			!gradle-wrapper.properties
+
+			# Cache of project
+			.gradletasknamecache
+
+			# Eclipse Gradle plugin generated files
+			# Eclipse Core
+			.project
+			# JDT-specific (Eclipse Java Development Tools)
+			.classpath
+
+			### Gradle Patch ###
+			# Java heap dump
+			*.hprof
+			""";
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		Path gitignore = context.resolve(".gitignore");
-		if (FilesSilent.exists(context.resolve("pom.xml"))) {
-			if (!FilesSilent.exists(gitignore)) {
-				FilesSilent.writeString(gitignore, DEFAULT_POM_XML);
-			}
-			List<String> currentGitignore = FilesSilent.readAllLines(gitignore);
-			if (currentGitignore.isEmpty() || !currentGitignore.get(0)
-					.startsWith("# Created by chorito")) {
-				FilesSilent.writeString(gitignore, DEFAULT_POM_XML);
-				currentGitignore = FilesSilent.readAllLines(gitignore);
-			}
-			int endOfChorito = currentGitignore.indexOf(
-					"# End of chorito. Add your ignores after this line and they will be preserved."
-			) + 1;
-			currentGitignore = currentGitignore
-					.subList(endOfChorito, currentGitignore.size());
-			currentGitignore.add(0, DEFAULT_POM_XML);
-			FilesSilent.write(gitignore, currentGitignore, "\n");
 
-			Path settingsGitignore = context.resolve(".settings/.gitignore");
-			String templateGitignore = ClassPathFiles
-					.readString("eclipse-settings/.gitignore");
-			FilesSilent.writeString(settingsGitignore, templateGitignore);
+		boolean pomXmlExists = FilesSilent.exists(context.resolve("pom.xml"));
+		boolean buildGradleExists = FilesSilent
+				.exists(context.resolve("build.gradle"));
+		if (!pomXmlExists && !buildGradleExists) {
+			return context;
 		}
+		String newGitignoreContent = GITIGNORE_PREFIX;
+		newGitignoreContent += "\n" + GITIGNORE_ECLIPSE;
+		newGitignoreContent += "\n" + GITIGNORE_INTELLIJ;
+		if (pomXmlExists) {
+			newGitignoreContent += "\n" + GITIGNORE_MAVEN;
+		}
+		if (buildGradleExists) {
+			newGitignoreContent += "\n" + GITIGNORE_GRADLE;
+		}
+		newGitignoreContent += "\n" + GITIGNORE_VSCODE;
+		newGitignoreContent += "\n" + GITIGNORE_SUFFIX;
+
+		if (!FilesSilent.exists(gitignore)) {
+			FilesSilent.writeString(gitignore, newGitignoreContent);
+		}
+		List<String> currentGitignore = FilesSilent.readAllLines(gitignore);
+		if (currentGitignore.isEmpty() || !currentGitignore.get(0)
+				.startsWith("# Created by chorito")) {
+			FilesSilent.writeString(gitignore, newGitignoreContent);
+			currentGitignore = FilesSilent.readAllLines(gitignore);
+		}
+		int endOfChorito = currentGitignore.indexOf(
+				"# End of chorito. Add your ignores after this line and they will be preserved."
+		) + 1;
+		currentGitignore = currentGitignore
+				.subList(endOfChorito, currentGitignore.size());
+		currentGitignore.add(0, newGitignoreContent);
+		FilesSilent.write(gitignore, currentGitignore, "\n");
+
+		Path settingsGitignore = context.resolve(".settings/.gitignore");
+		String templateGitignore = ClassPathFiles
+				.readString("eclipse-settings/.gitignore");
+		FilesSilent.writeString(settingsGitignore, templateGitignore);
+
 		return context;
 	}
 
