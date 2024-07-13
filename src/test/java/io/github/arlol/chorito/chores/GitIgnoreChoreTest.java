@@ -16,8 +16,8 @@ public class GitIgnoreChoreTest {
 	private static String DEFAULT_POM_XML = """
 			# Created by chorito https://github.com/ArloL/chorito
 
-			# Created by https://www.toptal.com/developers/gitignore/api/eclipse,intellij,maven,visualstudiocode
-			# Edit at https://www.toptal.com/developers/gitignore?templates=eclipse,intellij,maven,visualstudiocode
+			# Created by https://www.toptal.com/developers/gitignore/api/eclipse
+			# Edit at https://www.toptal.com/developers/gitignore?templates=eclipse
 
 			### Eclipse ###
 			.metadata
@@ -84,6 +84,11 @@ public class GitIgnoreChoreTest {
 			### Eclipse Patch ###
 			# Spring Boot Tooling
 			.sts4-cache/
+
+			# End of https://www.toptal.com/developers/gitignore/api/eclipse
+
+			# Created by https://www.toptal.com/developers/gitignore/api/intellij
+			# Edit at https://www.toptal.com/developers/gitignore?templates=intellij
 
 			### Intellij ###
 			# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
@@ -198,6 +203,16 @@ public class GitIgnoreChoreTest {
 			# https://plugins.jetbrains.com/plugin/8053-azure-toolkit-for-intellij
 			.idea/**/azureSettings.xml
 
+			# End of https://www.toptal.com/developers/gitignore/api/intellij
+
+			.idea/encodings.xml
+			.idea/jarRepositories.xml
+			.idea/misc.xml
+			.idea/vcs.xml
+
+			# Created by https://www.toptal.com/developers/gitignore/api/maven
+			# Edit at https://www.toptal.com/developers/gitignore?templates=maven
+
 			### Maven ###
 			target/
 			pom.xml.tag
@@ -216,6 +231,13 @@ public class GitIgnoreChoreTest {
 			.project
 			# JDT-specific (Eclipse Java Development Tools)
 			.classpath
+
+			# End of https://www.toptal.com/developers/gitignore/api/maven
+
+			.flattened-pom.xml
+
+			# Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode
+			# Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode
 
 			### VisualStudioCode ###
 			.vscode/*
@@ -236,14 +258,7 @@ public class GitIgnoreChoreTest {
 			.history
 			.ionide
 
-			# End of https://www.toptal.com/developers/gitignore/api/eclipse,intellij,maven,visualstudiocode
-
-			.flattened-pom.xml
-
-			.idea/encodings.xml
-			.idea/jarRepositories.xml
-			.idea/misc.xml
-			.idea/vcs.xml
+			# End of https://www.toptal.com/developers/gitignore/api/visualstudiocode
 
 			# End of chorito. Add your ignores after this line and they will be preserved.
 			""";
