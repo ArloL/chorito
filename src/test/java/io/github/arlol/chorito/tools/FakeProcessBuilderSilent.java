@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.joining;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
@@ -27,6 +28,12 @@ public class FakeProcessBuilderSilent extends ProcessBuilderSilent {
 	}
 
 	public static Function<String[], ProcessBuilderSilent> factory(
+			Consumer<ProcessBuilderSilent>... consumers
+	) {
+		return (command) -> new FakeProcessBuilderSilent(command, consumers);
+	}
+
+	public static Function<String[], ProcessBuilderSilent> factory(
 			Runnable... runnables
 	) {
 		return (command) -> new FakeProcessBuilderSilent(command, runnables);
@@ -34,10 +41,22 @@ public class FakeProcessBuilderSilent extends ProcessBuilderSilent {
 
 	private final String command;
 	private final Runnable[] runnables;
+	private final Consumer<ProcessBuilderSilent>[] consumers;
 
 	public FakeProcessBuilderSilent(String[] command, Runnable... runnables) {
 		super(null);
 		this.runnables = runnables;
+		this.consumers = new Consumer[0];
+		this.command = Arrays.stream(command).collect(joining(" "));
+	}
+
+	public FakeProcessBuilderSilent(
+			String[] command,
+			Consumer<ProcessBuilderSilent>... consumers
+	) {
+		super(null);
+		this.runnables = new Runnable[0];
+		this.consumers = consumers;
 		this.command = Arrays.stream(command).collect(joining(" "));
 	}
 
@@ -50,6 +69,7 @@ public class FakeProcessBuilderSilent extends ProcessBuilderSilent {
 	public FakeProcessSilent start() {
 		LOG.info("Would have called {}", command);
 		Arrays.stream(runnables).forEach(Runnable::run);
+		Arrays.stream(consumers).forEach(consumer -> consumer.accept(this));
 		return new FakeProcessSilent();
 	}
 
