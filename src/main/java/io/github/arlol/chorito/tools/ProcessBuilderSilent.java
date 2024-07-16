@@ -2,6 +2,7 @@ package io.github.arlol.chorito.tools;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -42,6 +43,7 @@ public class ProcessBuilderSilent {
 	}
 
 	private final ProcessBuilder processBuilder;
+	private Path directory;
 
 	protected ProcessBuilderSilent(ProcessBuilder processBuilder) {
 		this.processBuilder = processBuilder;
@@ -56,8 +58,20 @@ public class ProcessBuilderSilent {
 		return this;
 	}
 
+	public ProcessBuilderSilent directory(Path directory) {
+		this.directory = directory;
+		return this;
+	}
+
+	public Path directory() {
+		return directory;
+	}
+
 	public ProcessSilent start() {
 		try {
+			if (directory != null) {
+				processBuilder.directory(directory.toFile());
+			}
 			return new ProcessSilent(processBuilder.start());
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
