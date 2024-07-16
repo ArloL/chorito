@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.github.arlol.chorito.tools.FakeProcessBuilderSilent;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.ProcessBuilderSilent;
 
 public class GradleWrapperChoreTest {
 
@@ -30,6 +31,7 @@ public class GradleWrapperChoreTest {
 								.factory(this::fakeGradleWrapper)
 				)
 				.build();
+		FilesSilent.touch(context.resolve("gradlew"));
 		Path gradleProperties = context
 				.resolve("gradle/wrapper/gradle-wrapper.properties");
 		FilesSilent.writeString(
@@ -48,14 +50,44 @@ public class GradleWrapperChoreTest {
 		assertTrue(FilesSilent.exists(gradleProperties));
 	}
 
-	private void fakeGradleWrapper() {
-		var context = extension.choreContext();
-		FilesSilent.touch(context.resolve("gradlew"));
-		FilesSilent.touch(context.resolve("gradlew.bat"));
-		FilesSilent.touch(
-				context.resolve("gradle/wrapper/gradle-wrapper.properties")
+	@Test
+	public void testNestedGradlew() throws Exception {
+		var context = extension.choreContext()
+				.toBuilder()
+				.processBuilderFactory(
+						FakeProcessBuilderSilent
+								.factory(this::fakeGradleWrapper)
+				)
+				.build();
+		FilesSilent.touch(context.resolve("nested/gradlew"));
+		Path gradleProperties = context
+				.resolve("nested/gradle/wrapper/gradle-wrapper.properties");
+		FilesSilent.writeString(
+				gradleProperties,
+				"""
+						distributionBase=GRADLE_USER_HOME
+						distributionPath=wrapper/dists
+						distributionUrl=https\\://services.gradle.org/distributions/gradle-8.9-bin.zip
+						networkTimeout=10000
+						validateDistributionUrl=true
+						zipStoreBase=GRADLE_USER_HOME
+						zipStorePath=wrapper/dists
+						"""
 		);
-		FilesSilent.touch(context.resolve("gradle/wrapper/gradle-wrapper.jar"));
+		new GradleWrapperChore().doit(context.refresh());
+		assertTrue(FilesSilent.exists(gradleProperties));
+		assertTrue(FilesSilent.exists(context.resolve("nested/gradlew.bat")));
+	}
+
+	private void fakeGradleWrapper(ProcessBuilderSilent processBuilderSilent) {
+		Path directory = processBuilderSilent.directory();
+		FilesSilent.touch(directory.resolve("gradlew"));
+		FilesSilent.touch(directory.resolve("gradlew.bat"));
+		FilesSilent.touch(
+				directory.resolve("gradle/wrapper/gradle-wrapper.properties")
+		);
+		FilesSilent
+				.touch(directory.resolve("gradle/wrapper/gradle-wrapper.jar"));
 	}
 
 }

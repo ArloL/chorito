@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ExecutableFlagger;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.MyPaths;
 
 public class GradleWrapperChore implements Chore {
 
@@ -28,35 +29,48 @@ public class GradleWrapperChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		LOG.info("Running GradleWrapperChore");
-		Path wrapper = context.resolve("gradlew");
-		if (FilesSilent.exists(wrapper)) {
-			ExecutableFlagger.makeExecutableIfPossible(wrapper);
-		}
-		Path path = context.resolve("gradle/wrapper/gradle-wrapper.properties");
-		if (FilesSilent.exists(path)) {
-			String content = FilesSilent.readString(path);
-			if (!DEFAULT_PROPERTIES.equals(content)) {
-				LOG.info("Running ./gradlew wrapper");
-				context.newProcessBuilder(
-						"./gradlew",
-						"wrapper",
-						"--gradle-version",
-						"8.9",
-						"--distribution-type",
-						"all",
-						"--no-daemon"
-				).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
-				context.newProcessBuilder(
-						"./gradlew",
-						"wrapper",
-						"--gradle-version",
-						"8.9",
-						"--distribution-type",
-						"all",
-						"--no-daemon"
-				).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
-			}
-		}
+		context.textFiles()
+				.stream()
+				.filter(file -> file.endsWith("gradlew"))
+				.peek(ExecutableFlagger::makeExecutableIfPossible)
+				.map(MyPaths::getParent)
+				.forEach(gradlewDir -> {
+					Path path = gradlewDir.resolve(
+							"gradle/wrapper/gradle-wrapper.properties"
+					);
+					if (FilesSilent.exists(path)) {
+						String content = FilesSilent.readString(path);
+						if (!DEFAULT_PROPERTIES.equals(content)) {
+							LOG.info("Running ./gradlew wrapper");
+							context.newProcessBuilder(
+									"./gradlew",
+									"wrapper",
+									"--gradle-version",
+									"8.9",
+									"--distribution-type",
+									"all",
+									"--no-daemon"
+							)
+									.directory(gradlewDir)
+									.inheritIO()
+									.start()
+									.waitFor(5, TimeUnit.MINUTES);
+							context.newProcessBuilder(
+									"./gradlew",
+									"wrapper",
+									"--gradle-version",
+									"8.9",
+									"--distribution-type",
+									"all",
+									"--no-daemon"
+							)
+									.directory(gradlewDir)
+									.inheritIO()
+									.start()
+									.waitFor(5, TimeUnit.MINUTES);
+						}
+					}
+				});
 		return context;
 	}
 
