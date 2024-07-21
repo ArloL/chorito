@@ -35,7 +35,10 @@ public class DockerfileChoreTest {
 		new DockerfileChore().doit(extension.choreContext());
 
 		assertFalse(FilesSilent.exists(wronglyNamedFile));
-		assertTrue(FilesSilent.exists(extension.root().resolve("Dockerfile")));
+		assertTrue(
+				FilesSilent
+						.exists(extension.choreContext().resolve("Dockerfile"))
+		);
 	}
 
 }
