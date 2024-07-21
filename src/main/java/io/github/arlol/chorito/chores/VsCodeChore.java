@@ -10,26 +10,26 @@ public class VsCodeChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		boolean changed = false;
-		if (FilesSilent.exists(context.resolve("pom.xml"))) {
+		boolean hasPom = context.textFiles()
+				.stream()
+				.anyMatch(file -> file.endsWith("pom.xml"));
+		boolean hasMvnw = context.textFiles()
+				.stream()
+				.anyMatch(file -> file.endsWith("mvnw"));
+		boolean hasGradlew = context.textFiles()
+				.stream()
+				.anyMatch(file -> file.endsWith("gradlew"));
+		if (hasPom || hasMvnw || hasGradlew) {
 			Path settings = context.resolve(".vscode/settings.json");
 			String templateSettings = ClassPathFiles
 					.readString("vscode-settings/settings.json");
-			if (!FilesSilent.exists(settings)) {
-				FilesSilent.writeString(settings, templateSettings);
-				changed = true;
-			}
+			FilesSilent.writeString(settings, templateSettings);
 
 			Path extensions = context.resolve(".vscode/extensions.json");
 			String templateExtensions = ClassPathFiles
 					.readString("vscode-settings/extensions.json");
-			if (!FilesSilent.exists(extensions)) {
-				FilesSilent.writeString(extensions, templateExtensions);
-				changed = true;
-			}
-		}
-		if (changed) {
-			context = context.refresh();
+			FilesSilent.writeString(extensions, templateExtensions);
+			return context.refresh();
 		}
 		return context;
 	}
