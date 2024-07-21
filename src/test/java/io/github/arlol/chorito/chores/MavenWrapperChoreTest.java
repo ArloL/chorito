@@ -1,5 +1,8 @@
 package io.github.arlol.chorito.chores;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
@@ -8,6 +11,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.github.arlol.chorito.tools.FakeProcessBuilderSilent;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.ProcessBuilderSilent;
 
 public class MavenWrapperChoreTest {
 
@@ -30,6 +34,7 @@ public class MavenWrapperChoreTest {
 
 	@Test
 	void testCreateMavenWrapper() throws Exception {
+		// given
 		var context = extension.choreContext()
 				.toBuilder()
 				.processBuilderFactory(
@@ -39,16 +44,40 @@ public class MavenWrapperChoreTest {
 		Path pom = context.resolve("pom.xml");
 		FilesSilent.touch(pom);
 
-		new MavenWrapperChore().doit(context);
+		// when
+		new MavenWrapperChore().doit(context.refresh());
+
+		// then
+		assertTrue(FilesSilent.exists(context.resolve("mvnw")));
 	}
 
-	private void fakeMavenWrapper() {
-		var context = extension.choreContext();
-		FilesSilent.touch(context.resolve("mvnw"));
-		FilesSilent.touch(context.resolve("mvnw.cmd"));
-		FilesSilent.touch(context.resolve(".mvn/wrapper/maven-wrapper.jar"));
+	@Test
+	void testNestedMavenProjects() throws Exception {
+		// given
+		var context = extension.choreContext()
+				.toBuilder()
+				.processBuilderFactory(
+						FakeProcessBuilderSilent.factory(this::fakeMavenWrapper)
+				)
+				.build();
+		FilesSilent.touch(context.resolve("pom.xml"));
+		FilesSilent.touch(context.resolve("nested/pom.xml"));
+
+		// when
+		new MavenWrapperChore().doit(context.refresh());
+
+		// then
+		assertTrue(FilesSilent.exists(context.resolve("mvnw")));
+		assertFalse(FilesSilent.exists(context.resolve("nested/mvnw")));
+	}
+
+	private void fakeMavenWrapper(ProcessBuilderSilent processBuilderSilent) {
+		Path directory = processBuilderSilent.directory();
+		FilesSilent.touch(directory.resolve("mvnw"));
+		FilesSilent.touch(directory.resolve("mvnw.cmd"));
+		FilesSilent.touch(directory.resolve(".mvn/wrapper/maven-wrapper.jar"));
 		FilesSilent.touch(
-				context.resolve(".mvn/wrapper/maven-wrapper.properties")
+				directory.resolve(".mvn/wrapper/maven-wrapper.properties")
 		);
 	}
 

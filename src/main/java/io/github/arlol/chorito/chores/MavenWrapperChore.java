@@ -46,6 +46,7 @@ public class MavenWrapperChore implements Chore {
 				.stream()
 				.filter(file -> file.endsWith("pom.xml"))
 				.map(MyPaths::getParent)
+				.filter(file -> noParentDirectoryHasFile(file, "pom.xml"))
 				.forEach(pomDir -> {
 					Path wrapper = pomDir.resolve("mvnw");
 					Path wrapperJar = pomDir
@@ -90,7 +91,17 @@ public class MavenWrapperChore implements Chore {
 						}
 					}
 				});
-		return context;
+		return context.refresh();
+	}
+
+	private boolean noParentDirectoryHasFile(Path start, String file) {
+		for (Path path = start.getParent(); path != null; path = path
+				.getParent()) {
+			if (FilesSilent.exists(path.resolve(file))) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 }
