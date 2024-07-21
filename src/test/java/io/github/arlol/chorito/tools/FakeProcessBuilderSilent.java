@@ -28,35 +28,20 @@ public class FakeProcessBuilderSilent extends ProcessBuilderSilent {
 	}
 
 	public static Function<String[], ProcessBuilderSilent> factory(
-			Consumer<ProcessBuilderSilent>... consumers
+			Consumer<ProcessBuilderSilent> consumer
 	) {
-		return (command) -> new FakeProcessBuilderSilent(command, consumers);
-	}
-
-	public static Function<String[], ProcessBuilderSilent> factory(
-			Runnable... runnables
-	) {
-		return (command) -> new FakeProcessBuilderSilent(command, runnables);
+		return (command) -> new FakeProcessBuilderSilent(command, consumer);
 	}
 
 	private final String command;
-	private final Runnable[] runnables;
-	private final Consumer<ProcessBuilderSilent>[] consumers;
-
-	public FakeProcessBuilderSilent(String[] command, Runnable... runnables) {
-		super(null);
-		this.runnables = runnables;
-		this.consumers = new Consumer[0];
-		this.command = Arrays.stream(command).collect(joining(" "));
-	}
+	private final Consumer<ProcessBuilderSilent> consumer;
 
 	public FakeProcessBuilderSilent(
 			String[] command,
-			Consumer<ProcessBuilderSilent>... consumers
+			Consumer<ProcessBuilderSilent> consumer
 	) {
 		super(null);
-		this.runnables = new Runnable[0];
-		this.consumers = consumers;
+		this.consumer = consumer;
 		this.command = Arrays.stream(command).collect(joining(" "));
 	}
 
@@ -68,8 +53,7 @@ public class FakeProcessBuilderSilent extends ProcessBuilderSilent {
 	@Override
 	public FakeProcessSilent start() {
 		LOG.info("Would have called {}", command);
-		Arrays.stream(runnables).forEach(Runnable::run);
-		Arrays.stream(consumers).forEach(consumer -> consumer.accept(this));
+		consumer.accept(this);
 		return new FakeProcessSilent();
 	}
 
