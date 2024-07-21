@@ -106,6 +106,19 @@
 							</metadataRepository>
 						</configuration>
 					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<configuration>
+							<mainClass>${start-class}</mainClass>
+							<arguments>
+								<argument>-agentlib:native-image-agent=config-merge-dir=${project.basedir}/src/main/resources/META-INF/native-image</argument>
+								<argument>-classpath</argument>
+								<classpath />
+								<argument>${start-class}</argument>
+							</arguments>
+						</configuration>
+					</plugin>
 				</plugins>
 			</build>
 		</profile>
@@ -292,7 +305,6 @@
 					<mainClass>${start-class}</mainClass>
 					<executable>${env.JAVA_HOME}/bin/java</executable>
 					<arguments>
-						<argument>-agentlib:native-image-agent=config-merge-dir=${project.basedir}/src/main/resources/META-INF/native-image</argument>
 						<argument>-classpath</argument>
 						<classpath />
 						<argument>${start-class}</argument>
