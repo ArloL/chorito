@@ -14,6 +14,7 @@ public class EclipseCompilerSettingsChoreTest {
 
 	private static final String EXPECTED_JDT_CORE_PREFS = """
 			eclipse.preferences.version=1
+			org.eclipse.jdt.core.builder.annotationPath.allLocations=disabled
 			org.eclipse.jdt.core.compiler.annotation.inheritNullAnnotations=disabled
 			org.eclipse.jdt.core.compiler.annotation.missingNonNullByDefaultAnnotation=ignore
 			org.eclipse.jdt.core.compiler.annotation.nonnull=javax.annotation.Nonnull
