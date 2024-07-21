@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ExecutableFlagger;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.MyPaths;
 
 public class MavenWrapperChore implements Chore {
 
@@ -41,40 +42,54 @@ public class MavenWrapperChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		LOG.info("Running MavenWrapperChore");
-		Path pom = context.resolve("pom.xml");
-		if (!FilesSilent.exists(pom)) {
-			return context;
-		}
-		Path wrapper = context.resolve("mvnw");
-		if (!FilesSilent.exists(wrapper)) {
-			LOG.info("Running mvn wrapper:3.3.2:wrapper");
-			context.newProcessBuilder(
-					"mvn",
-					"-N",
-					"wrapper:3.3.2:wrapper",
-					"-Dmaven=3.9.8",
-					"-Dtype=bin"
-			).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
-		}
-		if (!FilesSilent
-				.exists(context.resolve(".mvn/wrapper/maven-wrapper.jar"))) {
-			throw new IllegalStateException("No maven-wrapper.jar");
-		}
-		ExecutableFlagger.makeExecutableIfPossible(wrapper);
-		Path path = context.resolve(".mvn/wrapper/maven-wrapper.properties");
-		if (FilesSilent.exists(path)) {
-			String content = FilesSilent.readString(path);
-			if (!DEFAULT_PROPERTIES.equals(content)) {
-				LOG.info("Running ./mvnw wrapper:3.3.2:wrapper");
-				context.newProcessBuilder(
-						"./mvnw",
-						"-N",
-						"wrapper:3.3.2:wrapper",
-						"-Dmaven=3.9.8",
-						"-Dtype=bin"
-				).inheritIO().start().waitFor(5, TimeUnit.MINUTES);
-			}
-		}
+		context.textFiles()
+				.stream()
+				.filter(file -> file.endsWith("pom.xml"))
+				.map(MyPaths::getParent)
+				.forEach(pomDir -> {
+					Path wrapper = pomDir.resolve("mvnw");
+					Path wrapperJar = pomDir
+							.resolve(".mvn/wrapper/maven-wrapper.jar");
+					Path wrapperProperties = pomDir
+							.resolve(".mvn/wrapper/maven-wrapper.properties");
+					if (!FilesSilent.exists(wrapper)
+							|| !FilesSilent.exists(wrapperJar)) {
+						LOG.info("Running mvn wrapper:3.3.2:wrapper");
+						context.newProcessBuilder(
+								"mvn",
+								"-N",
+								"wrapper:3.3.2:wrapper",
+								"-Dmaven=3.9.8",
+								"-Dtype=bin"
+						)
+								.inheritIO()
+								.directory(pomDir)
+								.start()
+								.waitFor(5, TimeUnit.MINUTES);
+					}
+					if (!FilesSilent.exists(wrapperJar)) {
+						throw new IllegalStateException("No maven-wrapper.jar");
+					}
+					ExecutableFlagger.makeExecutableIfPossible(wrapper);
+					if (FilesSilent.exists(wrapperProperties)) {
+						String content = FilesSilent
+								.readString(wrapperProperties);
+						if (!DEFAULT_PROPERTIES.equals(content)) {
+							LOG.info("Running ./mvnw wrapper:3.3.2:wrapper");
+							context.newProcessBuilder(
+									"./mvnw",
+									"-N",
+									"wrapper:3.3.2:wrapper",
+									"-Dmaven=3.9.8",
+									"-Dtype=bin"
+							)
+									.inheritIO()
+									.directory(pomDir)
+									.start()
+									.waitFor(5, TimeUnit.MINUTES);
+						}
+					}
+				});
 		return context;
 	}
 
