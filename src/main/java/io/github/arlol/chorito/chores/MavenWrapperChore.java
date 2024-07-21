@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.github.arlol.chorito.filter.FileHasNoParentDirectoryWithFileFilter;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ExecutableFlagger;
 import io.github.arlol.chorito.tools.FilesSilent;
@@ -46,7 +47,10 @@ public class MavenWrapperChore implements Chore {
 				.stream()
 				.filter(file -> file.endsWith("pom.xml"))
 				.map(MyPaths::getParent)
-				.filter(file -> noParentDirectoryHasFile(file, "pom.xml"))
+				.filter(
+						file -> FileHasNoParentDirectoryWithFileFilter
+								.filter(file, "pom.xml")
+				)
 				.forEach(pomDir -> {
 					Path wrapper = pomDir.resolve("mvnw");
 					Path wrapperJar = pomDir
@@ -92,16 +96,6 @@ public class MavenWrapperChore implements Chore {
 					}
 				});
 		return context.refresh();
-	}
-
-	private boolean noParentDirectoryHasFile(Path start, String file) {
-		for (Path path = start.getParent(); path != null; path = path
-				.getParent()) {
-			if (FilesSilent.exists(path.resolve(file))) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 }
