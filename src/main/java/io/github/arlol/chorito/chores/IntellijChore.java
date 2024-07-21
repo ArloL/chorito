@@ -20,36 +20,21 @@ public class IntellijChore implements Chore {
 				.stream()
 				.anyMatch(file -> file.endsWith("gradlew"));
 		if (hasPom || hasMvnw || hasGradlew) {
-			Path externalDependencies = context
-					.resolve(".idea/externalDependencies.xml");
-			String templateExternalDependencies = ClassPathFiles
-					.readString("idea-settings/externalDependencies.xml");
-			FilesSilent.writeString(
-					externalDependencies,
-					templateExternalDependencies
-			);
-
-			Path eclipseCodeFormatter = context
-					.resolve(".idea/eclipseCodeFormatter.xml");
-			String templateEclipseCodeFormatter = ClassPathFiles
-					.readString("idea-settings/eclipseCodeFormatter.xml");
-			FilesSilent.writeString(
-					eclipseCodeFormatter,
-					templateEclipseCodeFormatter
-			);
-
-			Path saveactionsSettings = context
-					.resolve(".idea/saveactions_settings.xml");
-			String templateSaveactionsSettings = ClassPathFiles
-					.readString("idea-settings/saveactions_settings.xml");
-			FilesSilent.writeString(
-					saveactionsSettings,
-					templateSaveactionsSettings
-			);
-
+			overwriteFromTemplate(context, "eclipseCodeFormatter");
+			overwriteFromTemplate(context, "externalDependencies");
+			overwriteFromTemplate(context, "saveactions_settings");
+			overwriteFromTemplate(context, "codeStyles/codeStyleConfig");
+			overwriteFromTemplate(context, "codeStyles/Project");
 			return context.refresh();
 		}
 		return context;
+	}
+
+	private void overwriteFromTemplate(ChoreContext context, String name) {
+		Path path = context.resolve(".idea/" + name + ".xml");
+		String template = ClassPathFiles
+				.readString("idea-settings/" + name + ".xml");
+		FilesSilent.writeString(path, template);
 	}
 
 }
