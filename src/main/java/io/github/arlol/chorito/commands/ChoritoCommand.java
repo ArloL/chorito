@@ -2,41 +2,7 @@ package io.github.arlol.chorito.commands;
 
 import java.util.List;
 
-import io.github.arlol.chorito.chores.Chore;
-import io.github.arlol.chorito.chores.CodeFormatterProfileChore;
-import io.github.arlol.chorito.chores.CodeQlAnalysisChore;
-import io.github.arlol.chorito.chores.DeleteUnnecessaryFilesChore;
-import io.github.arlol.chorito.chores.DeleteUnwantedFilesChore;
-import io.github.arlol.chorito.chores.DependabotChore;
-import io.github.arlol.chorito.chores.DockerIgnoreChore;
-import io.github.arlol.chorito.chores.DockerfileChore;
-import io.github.arlol.chorito.chores.Ec4jChore;
-import io.github.arlol.chorito.chores.EclipseCompilerSettingsChore;
-import io.github.arlol.chorito.chores.EclipseFormatterPluginChore;
-import io.github.arlol.chorito.chores.EditorConfigChore;
-import io.github.arlol.chorito.chores.GitAttributesChore;
-import io.github.arlol.chorito.chores.GitHubActionChore;
-import io.github.arlol.chorito.chores.GitIgnoreChore;
-import io.github.arlol.chorito.chores.GitMasterBranchChore;
-import io.github.arlol.chorito.chores.GraalNativeImageMavenPluginMigrationChore;
-import io.github.arlol.chorito.chores.GraalNativeImagePropertiesChore;
-import io.github.arlol.chorito.chores.GradleWrapperChore;
-import io.github.arlol.chorito.chores.IntellijChore;
-import io.github.arlol.chorito.chores.JavaUpdaterChore;
-import io.github.arlol.chorito.chores.JitpackChore;
-import io.github.arlol.chorito.chores.LicenseChore;
-import io.github.arlol.chorito.chores.LifecycleMappingChore;
-import io.github.arlol.chorito.chores.MavenWrapperChore;
-import io.github.arlol.chorito.chores.ModernizerPluginChore;
-import io.github.arlol.chorito.chores.PomParentRelativePathChore;
-import io.github.arlol.chorito.chores.PomPropertiesChore;
-import io.github.arlol.chorito.chores.PomScmChore;
-import io.github.arlol.chorito.chores.ProhibitedFilenameChore;
-import io.github.arlol.chorito.chores.ReadmeChore;
-import io.github.arlol.chorito.chores.RemoveUnnecessaryExecFlagsChore;
-import io.github.arlol.chorito.chores.SpotbugsPluginChore;
-import io.github.arlol.chorito.chores.VsCodeChore;
-import io.github.arlol.chorito.chores.XmlPreambleChore;
+import io.github.arlol.chorito.chores.*;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.GitChoreContext;
 
@@ -73,6 +39,7 @@ public class ChoritoCommand {
 				new CodeFormatterProfileChore(),
 				new EclipseFormatterPluginChore(),
 				new EclipseCompilerSettingsChore(),
+				new EclipseOptimizeImportSettingsChore(),
 				new SpotbugsPluginChore(),
 				new ModernizerPluginChore(),
 				new LifecycleMappingChore(),
