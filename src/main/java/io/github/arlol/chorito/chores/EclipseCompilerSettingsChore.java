@@ -42,12 +42,16 @@ public class EclipseCompilerSettingsChore implements Chore {
 							.toMap()
 							.entrySet()
 							.stream()
-							.filter(
-									e -> e.getKey()
-											.startsWith(
-													"org.eclipse.jdt.core.compiler."
-											)
-							)
+							.filter(e -> {
+								return e.getKey()
+										.startsWith(
+												"org.eclipse.jdt.core.compiler."
+										)
+										|| e.getKey()
+												.startsWith(
+														"org.eclipse.jdt.core.builder."
+												);
+							})
 							.forEach(
 									e -> jdtCorePrefsMap
 											.put(e.getKey(), e.getValue())
