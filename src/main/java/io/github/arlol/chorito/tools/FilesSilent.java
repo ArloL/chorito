@@ -14,7 +14,9 @@ import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.PosixFilePermission;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -153,8 +155,20 @@ public abstract class FilesSilent {
 		}
 	}
 
-	public static void touch(Path path, OpenOption... options) {
-		writeString(path, "");
+	public static Path touch(Path path, OpenOption... options) {
+		try {
+			if (exists(path)) {
+				Files.setLastModifiedTime(path, FileTime.from(Instant.now()));
+				return path;
+			} else {
+				Path parent = MyPaths.getParent(path);
+				Files.createDirectories(parent);
+				return Files.createFile(path);
+			}
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+
 	}
 
 	public static InputStream newInputStream(Path path, OpenOption... options) {
