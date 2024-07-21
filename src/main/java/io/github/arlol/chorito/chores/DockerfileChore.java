@@ -16,7 +16,7 @@ public class DockerfileChore implements Chore {
 						.move(textFile, textFile.resolveSibling("Dockerfile"));
 			}
 		});
-		return context;
+		return context.refresh();
 	}
 
 }
