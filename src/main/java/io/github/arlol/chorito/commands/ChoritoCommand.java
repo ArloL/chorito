@@ -8,6 +8,7 @@ import io.github.arlol.chorito.chores.CodeQlAnalysisChore;
 import io.github.arlol.chorito.chores.DeleteUnnecessaryFilesChore;
 import io.github.arlol.chorito.chores.DeleteUnwantedFilesChore;
 import io.github.arlol.chorito.chores.DependabotChore;
+import io.github.arlol.chorito.chores.DockerIgnoreChore;
 import io.github.arlol.chorito.chores.DockerfileChore;
 import io.github.arlol.chorito.chores.Ec4jChore;
 import io.github.arlol.chorito.chores.EclipseFormatterPluginChore;
@@ -59,6 +60,7 @@ public class ChoritoCommand {
 				new MavenWrapperChore(),
 				new GradleWrapperChore(),
 				new DockerfileChore(),
+				new DockerIgnoreChore(),
 				new DependabotChore(),
 				new CodeQlAnalysisChore(),
 				new GitHubActionChore(),
