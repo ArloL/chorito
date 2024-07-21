@@ -10,13 +10,16 @@ public class IntellijChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
+		boolean hasPom = context.textFiles()
+				.stream()
+				.anyMatch(file -> file.endsWith("pom.xml"));
 		boolean hasMvnw = context.textFiles()
 				.stream()
 				.anyMatch(file -> file.endsWith("mvnw"));
 		boolean hasGradlew = context.textFiles()
 				.stream()
 				.anyMatch(file -> file.endsWith("gradlew"));
-		if (hasMvnw || hasGradlew) {
+		if (hasPom || hasMvnw || hasGradlew) {
 			Path externalDependencies = context
 					.resolve(".idea/externalDependencies.xml");
 			String templateExternalDependencies = ClassPathFiles
