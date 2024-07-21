@@ -11,6 +11,7 @@ import io.github.arlol.chorito.chores.DependabotChore;
 import io.github.arlol.chorito.chores.DockerIgnoreChore;
 import io.github.arlol.chorito.chores.DockerfileChore;
 import io.github.arlol.chorito.chores.Ec4jChore;
+import io.github.arlol.chorito.chores.EclipseCompilerSettingsChore;
 import io.github.arlol.chorito.chores.EclipseFormatterPluginChore;
 import io.github.arlol.chorito.chores.EditorConfigChore;
 import io.github.arlol.chorito.chores.GitAttributesChore;
@@ -71,6 +72,7 @@ public class ChoritoCommand {
 				new GraalNativeImageMavenPluginMigrationChore(),
 				new CodeFormatterProfileChore(),
 				new EclipseFormatterPluginChore(),
+				new EclipseCompilerSettingsChore(),
 				new SpotbugsPluginChore(),
 				new ModernizerPluginChore(),
 				new LifecycleMappingChore(),
