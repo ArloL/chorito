@@ -10,8 +10,13 @@ public class IntellijChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		boolean changed = false;
-		if (FilesSilent.exists(context.resolve("pom.xml"))) {
+		boolean hasMvnw = context.textFiles()
+				.stream()
+				.anyMatch(file -> file.endsWith("mvnw"));
+		boolean hasGradlew = context.textFiles()
+				.stream()
+				.anyMatch(file -> file.endsWith("gradlew"));
+		if (hasMvnw || hasGradlew) {
 			Path externalDependencies = context
 					.resolve(".idea/externalDependencies.xml");
 			String templateExternalDependencies = ClassPathFiles
@@ -29,10 +34,17 @@ public class IntellijChore implements Chore {
 					eclipseCodeFormatter,
 					templateEclipseCodeFormatter
 			);
-			changed = true;
-		}
-		if (changed) {
-			context = context.refresh();
+
+			Path saveactionsSettings = context
+					.resolve(".idea/saveactions_settings.xml");
+			String templateSaveactionsSettings = ClassPathFiles
+					.readString("idea-settings/saveactions_settings.xml");
+			FilesSilent.writeString(
+					saveactionsSettings,
+					templateSaveactionsSettings
+			);
+
+			return context.refresh();
 		}
 		return context;
 	}
