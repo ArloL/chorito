@@ -41,6 +41,15 @@ public abstract class FilesSilent {
 		}
 	}
 
+	public static boolean anyNotExists(Path... paths) {
+		for (Path path : paths) {
+			if (!exists(path)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static boolean anyExists(Path... paths) {
 		for (Path path : paths) {
 			if (exists(path)) {
