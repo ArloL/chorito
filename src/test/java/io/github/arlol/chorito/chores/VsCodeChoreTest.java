@@ -22,7 +22,7 @@ public class VsCodeChoreTest {
 	@Test
 	public void testWithNothing() {
 		// given
-		FilesSilent.touch(extension.root().resolve(".vscode/settings.json"));
+		FilesSilent.touch(extension.root().resolve(".vscode/lol.txt"));
 
 		// when
 		doit();
@@ -37,6 +37,8 @@ public class VsCodeChoreTest {
 				    ]
 				}
 				""");
+		Path settings = extension.root().resolve(".vscode/settings.json");
+		assertThat(FilesSilent.exists(settings)).isFalse();
 	}
 
 	@Test
@@ -58,6 +60,26 @@ public class VsCodeChoreTest {
 				    ]
 				}
 				""");
+		Path settings = extension.root().resolve(".vscode/settings.json");
+		assertThat(FilesSilent.exists(settings)).isTrue();
+		assertThat(settings).content()
+				.isEqualTo(
+						"""
+								{
+								    "editor.foldingImportsByDefault": true,
+								    "java.compile.nullAnalysis.mode": "automatic",
+								    "java.configuration.updateBuildConfiguration": "interactive",
+								    "java.sources.organizeImports.starThreshold": 30,
+								    "java.sources.organizeImports.staticStarThreshold": 30,
+								    "[java]": {
+								        "editor.formatOnSave": true,
+								        "editor.codeActionsOnSave": {
+								            "source.organizeImports": "always"
+								        }
+								    },
+								}
+								"""
+				);
 	}
 
 	@Test
@@ -81,6 +103,8 @@ public class VsCodeChoreTest {
 				    ]
 				}
 				""");
+		Path settings = extension.root().resolve(".vscode/settings.json");
+		assertThat(FilesSilent.exists(settings)).isFalse();
 	}
 
 }
