@@ -97,7 +97,8 @@ public abstract class FilesSilent {
 	) {
 		String string = StreamSupport.stream(lines.spliterator(), false)
 				.collect(joining(lineSeperator));
-		if (!string.isEmpty()) {
+		if (!string.isEmpty() && !string.substring(string.length() - 1)
+				.equals(lineSeperator)) {
 			string += lineSeperator;
 		}
 		writeString(path, string, options);
