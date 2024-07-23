@@ -16,102 +16,18 @@ public class GitIgnoreChoreTest {
 	private static String DEFAULT_POM_XML = """
 			# Created by chorito https://github.com/ArloL/chorito
 
-			# Created by https://www.toptal.com/developers/gitignore/api/eclipse
-			# Edit at https://www.toptal.com/developers/gitignore?templates=eclipse
-
 			### Eclipse ###
-			.metadata
-			bin/
-			tmp/
-			*.tmp
-			*.bak
-			*.swp
-			*~.nib
-			local.properties
-			# .settings/
-			.loadpath
-			.recommenders
 
-			# External tool builders
-			.externalToolBuilders/
+			/.project
 
-			# Locally stored "Eclipse launch configurations"
-			*.launch
+			### Eclipse+Java ###
 
-			# PyDev specific (Python IDE for Eclipse)
-			*.pydevproject
-
-			# CDT-specific (C/C++ Development Tooling)
-			.cproject
-
-			# CDT- autotools
-			.autotools
-
-			# Java annotation processor (APT)
-			.factorypath
-
-			# PDT-specific (PHP Development Tools)
-			.buildpath
-
-			# sbteclipse plugin
-			.target
-
-			# Tern plugin
-			.tern-project
-
-			# TeXlipse plugin
-			.texlipse
-
-			# STS (Spring Tool Suite)
-			.springBeans
-
-			# Code Recommenders
-			.recommenders/
-
-			# Annotation Processing
-			.apt_generated/
-			.apt_generated_test/
-
-			# Scala IDE specific (Scala & Java development for Eclipse)
-			.cache-main
-			.scala_dependencies
-			.worksheet
-
-			# Uncomment this line if you wish to ignore the project description file.
-			# Typically, this file would be tracked if it contains build/dependency configurations:
-			#.project
-
-			### Eclipse Patch ###
-			# Spring Boot Tooling
-			.sts4-cache/
-
-			# End of https://www.toptal.com/developers/gitignore/api/eclipse
-
-			# Created by https://www.toptal.com/developers/gitignore/api/maven
-			# Edit at https://www.toptal.com/developers/gitignore?templates=maven
+			/.classpath
 
 			### Maven ###
-			target/
-			pom.xml.tag
-			pom.xml.releaseBackup
-			pom.xml.versionsBackup
-			pom.xml.next
-			release.properties
-			dependency-reduced-pom.xml
-			buildNumber.properties
-			.mvn/timing.properties
-			# https://github.com/takari/maven-wrapper#usage-without-binary-jar
-			# .mvn/wrapper/maven-wrapper.jar
 
-			# Eclipse m2e generated files
-			# Eclipse Core
-			.project
-			# JDT-specific (Eclipse Java Development Tools)
-			.classpath
-
-			# End of https://www.toptal.com/developers/gitignore/api/maven
-
-			.flattened-pom.xml
+			/target/
+			/.flattened-pom.xml
 
 			# End of chorito. Add your ignores after this line and they will be preserved.
 			""";
@@ -119,103 +35,18 @@ public class GitIgnoreChoreTest {
 	private static String DEFAULT_BUILD_GRADLE = """
 			# Created by chorito https://github.com/ArloL/chorito
 
-			# Created by https://www.toptal.com/developers/gitignore/api/eclipse
-			# Edit at https://www.toptal.com/developers/gitignore?templates=eclipse
-
 			### Eclipse ###
-			.metadata
-			bin/
-			tmp/
-			*.tmp
-			*.bak
-			*.swp
-			*~.nib
-			local.properties
-			# .settings/
-			.loadpath
-			.recommenders
 
-			# External tool builders
-			.externalToolBuilders/
+			/.project
 
-			# Locally stored "Eclipse launch configurations"
-			*.launch
+			### Eclipse+Java ###
 
-			# PyDev specific (Python IDE for Eclipse)
-			*.pydevproject
-
-			# CDT-specific (C/C++ Development Tooling)
-			.cproject
-
-			# CDT- autotools
-			.autotools
-
-			# Java annotation processor (APT)
-			.factorypath
-
-			# PDT-specific (PHP Development Tools)
-			.buildpath
-
-			# sbteclipse plugin
-			.target
-
-			# Tern plugin
-			.tern-project
-
-			# TeXlipse plugin
-			.texlipse
-
-			# STS (Spring Tool Suite)
-			.springBeans
-
-			# Code Recommenders
-			.recommenders/
-
-			# Annotation Processing
-			.apt_generated/
-			.apt_generated_test/
-
-			# Scala IDE specific (Scala & Java development for Eclipse)
-			.cache-main
-			.scala_dependencies
-			.worksheet
-
-			# Uncomment this line if you wish to ignore the project description file.
-			# Typically, this file would be tracked if it contains build/dependency configurations:
-			#.project
-
-			### Eclipse Patch ###
-			# Spring Boot Tooling
-			.sts4-cache/
-
-			# End of https://www.toptal.com/developers/gitignore/api/eclipse
+			/.classpath
 
 			### Gradle ###
-			.gradle
-			**/build/
-			!src/**/build/
 
-			# Ignore Gradle GUI config
-			gradle-app.setting
-
-			# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
-			!gradle-wrapper.jar
-
-			# Avoid ignore Gradle wrappper properties
-			!gradle-wrapper.properties
-
-			# Cache of project
-			.gradletasknamecache
-
-			# Eclipse Gradle plugin generated files
-			# Eclipse Core
-			.project
-			# JDT-specific (Eclipse Java Development Tools)
-			.classpath
-
-			### Gradle Patch ###
-			# Java heap dump
-			*.hprof
+			/.gradle/
+			/build/
 
 			# End of chorito. Add your ignores after this line and they will be preserved.
 			""";
