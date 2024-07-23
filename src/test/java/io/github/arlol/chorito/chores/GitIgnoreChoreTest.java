@@ -236,30 +236,6 @@ public class GitIgnoreChoreTest {
 
 			.flattened-pom.xml
 
-			# Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode
-			# Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode
-
-			### VisualStudioCode ###
-			.vscode/*
-			!.vscode/settings.json
-			!.vscode/tasks.json
-			!.vscode/launch.json
-			!.vscode/extensions.json
-			!.vscode/*.code-snippets
-
-			# Local History for Visual Studio Code
-			.history/
-
-			# Built Visual Studio Code Extensions
-			*.vsix
-
-			### VisualStudioCode Patch ###
-			# Ignore all local history of files
-			.history
-			.ionide
-
-			# End of https://www.toptal.com/developers/gitignore/api/visualstudiocode
-
 			# End of chorito. Add your ignores after this line and they will be preserved.
 			""";
 
@@ -324,10 +300,18 @@ public class GitIgnoreChoreTest {
 
 		Path settingsGitignore = extension.root()
 				.resolve(".settings/.gitignore");
-		assertThat(FilesSilent.readString(settingsGitignore)).isEqualTo(
-				"*.prefs\n" + "!org.eclipse.jdt.core.prefs\n"
-						+ "!org.eclipse.jdt.ui.prefs\n" + ""
-		);
+		assertThat(settingsGitignore).content()
+				.isEqualTo(
+						"""
+								# Created by chorito https://github.com/ArloL/chorito
+
+								*.prefs
+								!org.eclipse.jdt.core.prefs
+								!org.eclipse.jdt.ui.prefs
+
+								# End of chorito. Add your ignores after this line and they will be preserved.
+								"""
+				);
 	}
 
 	@Test
@@ -338,6 +322,33 @@ public class GitIgnoreChoreTest {
 
 		assertThat(extension.root().resolve("a/nested/.gitignore")).content()
 				.isEqualTo(DEFAULT_POM_XML);
+	}
+
+	@Test
+	public void testWithNestedVscode() throws Exception {
+		FilesSilent.touch(
+				extension.root().resolve("a/nested/.vscode/settings.json")
+		);
+
+		doit();
+
+		assertThat(extension.root().resolve("a/nested/.vscode/.gitignore"))
+				.content()
+				.isEqualTo(
+						"""
+								# Created by chorito https://github.com/ArloL/chorito
+
+								*
+								!.gitignore
+								!settings.json
+								!tasks.json
+								!launch.json
+								!extensions.json
+								!*.code-snippets
+
+								# End of chorito. Add your ignores after this line and they will be preserved.
+								"""
+				);
 	}
 
 }
