@@ -330,4 +330,14 @@ public class GitIgnoreChoreTest {
 		);
 	}
 
+	@Test
+	public void testWithNestedMvnw() throws Exception {
+		FilesSilent.touch(extension.root().resolve("a/nested/mvnw"));
+
+		doit();
+
+		assertThat(extension.root().resolve("a/nested/.gitignore")).content()
+				.isEqualTo(DEFAULT_POM_XML);
+	}
+
 }
