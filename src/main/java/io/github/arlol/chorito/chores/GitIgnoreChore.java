@@ -2,10 +2,14 @@ package io.github.arlol.chorito.chores;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
+import io.github.arlol.chorito.filter.FileHasNoParentDirectoryWithFileFilter;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.MyPaths;
 
 public class GitIgnoreChore implements Chore {
 
@@ -336,10 +340,31 @@ public class GitIgnoreChore implements Chore {
 		currentGitignore.add(0, newGitignoreContent);
 		FilesSilent.write(gitignore, currentGitignore, "\n");
 
-		Path settingsGitignore = context.resolve(".settings/.gitignore");
-		String templateGitignore = ClassPathFiles
-				.readString("eclipse-settings/.gitignore");
-		FilesSilent.writeString(settingsGitignore, templateGitignore);
+		Stream.of(
+				context.textFiles()
+						.stream()
+						.filter(file -> file.endsWith("pom.xml"))
+						.map(MyPaths::getParent)
+						.filter(
+								file -> FileHasNoParentDirectoryWithFileFilter
+										.filter(file, "pom.xml")
+						),
+				context.textFiles()
+						.stream()
+						.filter(
+								file -> file.endsWith(
+										"org.eclipse.jdt.core.prefs"
+								) || file.endsWith("org.eclipse.jdt.ui.prefs")
+						)
+						.map(MyPaths::getParent)
+						.filter(file -> file.endsWith(".settings"))
+						.map(MyPaths::getParent)
+		).flatMap(Function.identity()).forEach(dir -> {
+			Path settingsGitignore = dir.resolve(".settings/.gitignore");
+			String templateGitignore = ClassPathFiles
+					.readString("eclipse-settings/.gitignore");
+			FilesSilent.writeString(settingsGitignore, templateGitignore);
+		});
 
 		return context;
 	}
