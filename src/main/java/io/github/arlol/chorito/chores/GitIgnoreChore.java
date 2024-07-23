@@ -146,33 +146,37 @@ public class GitIgnoreChore implements Chore {
 	}
 
 	private void createVscodeSettingsIgnore(ChoreContext context) {
-		Stream.of(
-				context.textFiles()
-						.stream()
-						.map(MyPaths::getParent)
-						.filter(file -> file.endsWith(".vscode"))
-						.map(MyPaths::getParent)
-		).flatMap(Function.identity()).forEach(dir -> {
-			Path settingsGitignore = dir.resolve(".vscode/.gitignore");
-			String templateGitignore = ClassPathFiles
-					.readString("vscode-settings/.gitignore");
-			updateExistingGitignore(settingsGitignore, templateGitignore);
-		});
+		context.textFiles()
+				.stream()
+				.map(MyPaths::getParent)
+				.filter(file -> file.endsWith(".vscode"))
+				.map(MyPaths::getParent)
+				.forEach(dir -> {
+					Path settingsGitignore = dir.resolve(".vscode/.gitignore");
+					String templateGitignore = ClassPathFiles
+							.readString("vscode-settings/.gitignore");
+					updateExistingGitignore(
+							settingsGitignore,
+							templateGitignore
+					);
+				});
 	}
 
 	private void createIdeaSettingsIgnore(ChoreContext context) {
-		Stream.of(
-				context.textFiles()
-						.stream()
-						.map(MyPaths::getParent)
-						.filter(file -> file.endsWith(".idea"))
-						.map(MyPaths::getParent)
-		).flatMap(Function.identity()).forEach(dir -> {
-			Path settingsGitignore = dir.resolve(".idea/.gitignore");
-			String templateGitignore = ClassPathFiles
-					.readString("idea-settings/.gitignore");
-			updateExistingGitignore(settingsGitignore, templateGitignore);
-		});
+		context.textFiles()
+				.stream()
+				.map(MyPaths::getParent)
+				.filter(file -> file.endsWith(".idea"))
+				.map(MyPaths::getParent)
+				.forEach(dir -> {
+					Path settingsGitignore = dir.resolve(".idea/.gitignore");
+					String templateGitignore = ClassPathFiles
+							.readString("idea-settings/.gitignore");
+					updateExistingGitignore(
+							settingsGitignore,
+							templateGitignore
+					);
+				});
 	}
 
 }
