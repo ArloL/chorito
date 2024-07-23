@@ -243,32 +243,6 @@ public class GitIgnoreChore implements Chore {
 			.flattened-pom.xml
 			""";
 
-	private static String GITIGNORE_VSCODE = """
-			# Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode
-			# Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode
-
-			### VisualStudioCode ###
-			.vscode/*
-			!.vscode/settings.json
-			!.vscode/tasks.json
-			!.vscode/launch.json
-			!.vscode/extensions.json
-			!.vscode/*.code-snippets
-
-			# Local History for Visual Studio Code
-			.history/
-
-			# Built Visual Studio Code Extensions
-			*.vsix
-
-			### VisualStudioCode Patch ###
-			# Ignore all local history of files
-			.history
-			.ionide
-
-			# End of https://www.toptal.com/developers/gitignore/api/visualstudiocode
-			""";
-
 	private static String GITIGNORE_SUFFIX = """
 			# End of chorito. Add your ignores after this line and they will be preserved.""";
 
@@ -305,6 +279,7 @@ public class GitIgnoreChore implements Chore {
 	public ChoreContext doit(ChoreContext context) {
 		createMavenAndGradleIgnore(context);
 		createEclipseSettingsIgnore(context);
+		createVscodeSettingsIgnore(context);
 		return context.refresh();
 	}
 
@@ -361,7 +336,6 @@ public class GitIgnoreChore implements Chore {
 			if (FilesSilent.anyChildExists(dir, "gradlew", "build.gradle")) {
 				newGitignoreContent += "\n" + GITIGNORE_GRADLE;
 			}
-			newGitignoreContent += "\n" + GITIGNORE_VSCODE;
 			newGitignoreContent += "\n" + GITIGNORE_SUFFIX;
 			updateExistingGitignore(
 					dir.resolve(".gitignore"),
@@ -394,7 +368,22 @@ public class GitIgnoreChore implements Chore {
 			Path settingsGitignore = dir.resolve(".settings/.gitignore");
 			String templateGitignore = ClassPathFiles
 					.readString("eclipse-settings/.gitignore");
-			FilesSilent.writeString(settingsGitignore, templateGitignore);
+			updateExistingGitignore(settingsGitignore, templateGitignore);
+		});
+	}
+
+	private void createVscodeSettingsIgnore(ChoreContext context) {
+		Stream.of(
+				context.textFiles()
+						.stream()
+						.map(MyPaths::getParent)
+						.filter(file -> file.endsWith(".vscode"))
+						.map(MyPaths::getParent)
+		).flatMap(Function.identity()).forEach(dir -> {
+			Path settingsGitignore = dir.resolve(".vscode/.gitignore");
+			String templateGitignore = ClassPathFiles
+					.readString("vscode-settings/.gitignore");
+			updateExistingGitignore(settingsGitignore, templateGitignore);
 		});
 	}
 
