@@ -21,11 +21,66 @@ public class VsCodeChoreTest {
 
 	@Test
 	public void testWithNothing() {
-		Path pom = extension.root().resolve("pom.xml");
-		FilesSilent.touch(pom);
-		Path extensions = extension.root().resolve(".vscode/extensions.json");
+		// given
+		FilesSilent.touch(extension.root().resolve(".vscode/settings.json"));
+
+		// when
 		doit();
+
+		// then
+		Path extensions = extension.root().resolve(".vscode/extensions.json");
 		assertThat(FilesSilent.exists(extensions)).isTrue();
+		assertThat(extensions).content().isEqualTo("""
+				{
+				    "recommendations": [
+				        "editorconfig.editorconfig"
+				    ]
+				}
+				""");
+	}
+
+	@Test
+	public void testWithPom() {
+		// given
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
+
+		// when
+		doit();
+
+		// then
+		Path extensions = extension.root().resolve(".vscode/extensions.json");
+		assertThat(FilesSilent.exists(extensions)).isTrue();
+		assertThat(extensions).content().isEqualTo("""
+				{
+				    "recommendations": [
+				        "editorconfig.editorconfig",
+				        "vscjava.vscode-java-pack"
+				    ]
+				}
+				""");
+	}
+
+	@Test
+	public void testWithExistingExtension() {
+		// given
+		Path extensions = extension.root().resolve(".vscode/extensions.json");
+		FilesSilent.writeString(extensions, """
+				{"recommendations": ["kisstkondoros.vscode-codemetrics"]}
+				""");
+
+		// when
+		doit();
+
+		// then
+		assertThat(FilesSilent.exists(extensions)).isTrue();
+		assertThat(extensions).content().isEqualTo("""
+				{
+				    "recommendations": [
+				        "editorconfig.editorconfig",
+				        "kisstkondoros.vscode-codemetrics"
+				    ]
+				}
+				""");
 	}
 
 }
