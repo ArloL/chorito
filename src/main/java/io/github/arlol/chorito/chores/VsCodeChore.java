@@ -55,16 +55,16 @@ public class VsCodeChore implements Chore {
 						.map(MyPaths::getParent)
 						.filter(file -> file.endsWith(".vscode"))
 						.map(MyPaths::getParent)
-		).flatMap(Function.identity()).forEach(pomDir -> {
-			Path settings = pomDir.resolve(".vscode/settings.json");
-			Path extensions = pomDir.resolve(".vscode/extensions.json");
+		).flatMap(Function.identity()).forEach(dir -> {
+			Path settings = dir.resolve(".vscode/settings.json");
+			Path extensions = dir.resolve(".vscode/extensions.json");
 
 			if (FilesSilent.anyNotExists(settings, extensions)) {
 				changed.set(true);
 			}
 
 			if (FilesSilent.anyChildExists(
-					pomDir,
+					dir,
 					"mvnw",
 					"pom.xml",
 					"gradlew",
@@ -78,11 +78,11 @@ public class VsCodeChore implements Chore {
 			List<String> recommendations = new ArrayList<>();
 			recommendations.add("editorconfig.editorconfig");
 
-			if (FilesSilent.anyChildExists(pomDir, "mvnw", "pom.xml")) {
+			if (FilesSilent.anyChildExists(dir, "mvnw", "pom.xml")) {
 				recommendations.add("vscjava.vscode-java-pack");
 			}
 
-			if (FilesSilent.anyChildExists(pomDir, "gradlew", "build.gradle")) {
+			if (FilesSilent.anyChildExists(dir, "gradlew", "build.gradle")) {
 				recommendations.add("vscjava.vscode-gradle");
 				recommendations.add("vscjava.vscode-java-pack");
 			}
