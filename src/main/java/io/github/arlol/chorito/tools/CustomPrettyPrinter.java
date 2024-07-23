@@ -11,8 +11,8 @@ public class CustomPrettyPrinter extends DefaultPrettyPrinter {
 	private static final long serialVersionUID = 1L;
 
 	public CustomPrettyPrinter() {
-		_arrayIndenter = new DefaultIndenter("    ", DefaultIndenter.SYS_LF);
-		_objectIndenter = new DefaultIndenter("    ", DefaultIndenter.SYS_LF);
+		_arrayIndenter = new DefaultIndenter("    ", "\n");
+		_objectIndenter = new DefaultIndenter("    ", "\n");
 	}
 
 	@Override
