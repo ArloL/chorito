@@ -72,6 +72,15 @@ public abstract class FilesSilent {
 		return Files.exists(path);
 	}
 
+	public static boolean anyChildExists(Path root, String... paths) {
+		for (String path : paths) {
+			if (exists(root.resolve(path))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static String readString(Path path) {
 		try {
 			return Files.readString(path);
