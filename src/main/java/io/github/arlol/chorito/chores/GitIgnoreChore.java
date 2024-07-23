@@ -303,26 +303,15 @@ public class GitIgnoreChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		Path gitignore = context.resolve(".gitignore");
+		createMavenAndGradleIgnore(context);
+		createEclipseSettingsIgnore(context);
+		return context.refresh();
+	}
 
-		boolean pomXmlExists = FilesSilent.exists(context.resolve("pom.xml"));
-		boolean buildGradleExists = FilesSilent
-				.exists(context.resolve("build.gradle"));
-		if (!pomXmlExists && !buildGradleExists) {
-			return context;
-		}
-		String newGitignoreContent = GITIGNORE_PREFIX;
-		newGitignoreContent += "\n" + GITIGNORE_ECLIPSE;
-		newGitignoreContent += "\n" + GITIGNORE_INTELLIJ;
-		if (pomXmlExists) {
-			newGitignoreContent += "\n" + GITIGNORE_MAVEN;
-		}
-		if (buildGradleExists) {
-			newGitignoreContent += "\n" + GITIGNORE_GRADLE;
-		}
-		newGitignoreContent += "\n" + GITIGNORE_VSCODE;
-		newGitignoreContent += "\n" + GITIGNORE_SUFFIX;
-
+	private void updateExistingGitignore(
+			Path gitignore,
+			String newGitignoreContent
+	) {
 		if (!FilesSilent.exists(gitignore)) {
 			FilesSilent.writeString(gitignore, newGitignoreContent);
 		}
@@ -339,7 +328,49 @@ public class GitIgnoreChore implements Chore {
 				.subList(endOfChorito, currentGitignore.size());
 		currentGitignore.add(0, newGitignoreContent);
 		FilesSilent.write(gitignore, currentGitignore, "\n");
+	}
 
+	private void createMavenAndGradleIgnore(ChoreContext context) {
+		Stream.of(
+				context.textFiles()
+						.stream()
+						.filter(file -> file.endsWith("pom.xml"))
+						.map(MyPaths::getParent)
+						.filter(
+								file -> FileHasNoParentDirectoryWithFileFilter
+										.filter(file, "pom.xml")
+						),
+				context.textFiles()
+						.stream()
+						.map(MyPaths::getParent)
+						.filter(
+								file -> FilesSilent.anyChildExists(
+										file,
+										"mvnw",
+										"gradlew",
+										"build.gradle"
+								)
+						)
+		).flatMap(Function.identity()).forEach(dir -> {
+			String newGitignoreContent = GITIGNORE_PREFIX;
+			newGitignoreContent += "\n" + GITIGNORE_ECLIPSE;
+			newGitignoreContent += "\n" + GITIGNORE_INTELLIJ;
+			if (FilesSilent.anyChildExists(dir, "mvnw", "pom.xml")) {
+				newGitignoreContent += "\n" + GITIGNORE_MAVEN;
+			}
+			if (FilesSilent.anyChildExists(dir, "gradlew", "build.gradle")) {
+				newGitignoreContent += "\n" + GITIGNORE_GRADLE;
+			}
+			newGitignoreContent += "\n" + GITIGNORE_VSCODE;
+			newGitignoreContent += "\n" + GITIGNORE_SUFFIX;
+			updateExistingGitignore(
+					dir.resolve(".gitignore"),
+					newGitignoreContent
+			);
+		});
+	}
+
+	private void createEclipseSettingsIgnore(ChoreContext context) {
 		Stream.of(
 				context.textFiles()
 						.stream()
@@ -365,8 +396,6 @@ public class GitIgnoreChore implements Chore {
 					.readString("eclipse-settings/.gitignore");
 			FilesSilent.writeString(settingsGitignore, templateGitignore);
 		});
-
-		return context;
 	}
 
 }
