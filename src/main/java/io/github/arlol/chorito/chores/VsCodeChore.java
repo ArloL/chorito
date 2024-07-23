@@ -52,15 +52,8 @@ public class VsCodeChore implements Chore {
 						.map(MyPaths::getParent),
 				context.textFiles()
 						.stream()
-						.filter(
-								file -> file.endsWith(".vscode/extensions.json")
-						)
 						.map(MyPaths::getParent)
-						.map(MyPaths::getParent),
-				context.textFiles()
-						.stream()
-						.filter(file -> file.endsWith(".vscode/settings.json"))
-						.map(MyPaths::getParent)
+						.filter(file -> file.endsWith(".vscode"))
 						.map(MyPaths::getParent)
 		).flatMap(Function.identity()).forEach(pomDir -> {
 			Path settings = pomDir.resolve(".vscode/settings.json");
@@ -70,9 +63,17 @@ public class VsCodeChore implements Chore {
 				changed.set(true);
 			}
 
-			String templateSettings = ClassPathFiles
-					.readString("vscode-settings/settings.json");
-			FilesSilent.writeString(settings, templateSettings);
+			if (FilesSilent.anyChildExists(
+					pomDir,
+					"mvnw",
+					"pom.xml",
+					"gradlew",
+					"build.gradle"
+			)) {
+				String templateSettings = ClassPathFiles
+						.readString("vscode-settings/settings.json");
+				FilesSilent.writeString(settings, templateSettings);
+			}
 
 			List<String> recommendations = new ArrayList<>();
 			recommendations.add("editorconfig.editorconfig");
