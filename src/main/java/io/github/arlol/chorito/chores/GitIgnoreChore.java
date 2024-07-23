@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import io.github.arlol.chorito.filter.FileHasNoParentDirectoryWithFileFilter;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
@@ -36,8 +35,13 @@ public class GitIgnoreChore implements Chore {
 			/.flattened-pom.xml
 			""";
 
-	private static String GITIGNORE_SUFFIX = """
-			# End of chorito. Add your ignores after this line and they will be preserved.""";
+	private static String GITIGNORE_MAVEN_WRAPPER = """
+			### Maven Wrapper ###
+
+			!/maven-wrapper.jar
+			!/maven-wrapper.properties
+
+			""";
 
 	private static String GITIGNORE_GRADLE = """
 			### Gradle ###
@@ -46,9 +50,23 @@ public class GitIgnoreChore implements Chore {
 			/build/
 			""";
 
+	private static String GITIGNORE_GRADLE_WRAPPER = """
+			### Gradle Wrapper ###
+
+			!/gradle-wrapper.jar
+			!/gradle-wrapper.properties
+
+			""";
+
+	private static String GITIGNORE_SUFFIX = """
+			# End of chorito. Add your ignores after this line and they will be preserved.
+			""";
+
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		createMavenAndGradleIgnore(context);
+		createMavenWrapperIgnore(context);
+		createGradleWrapperIgnore(context);
 		createEclipseSettingsIgnore(context);
 		createVscodeSettingsIgnore(context);
 		createIdeaSettingsIgnore(context);
@@ -78,43 +96,65 @@ public class GitIgnoreChore implements Chore {
 	}
 
 	private void createMavenAndGradleIgnore(ChoreContext context) {
-		Stream.of(
-				context.textFiles()
-						.stream()
-						.filter(file -> file.endsWith("pom.xml"))
-						.map(MyPaths::getParent)
-						.filter(
-								file -> FileHasNoParentDirectoryWithFileFilter
-										.filter(file, "pom.xml")
-						),
-				context.textFiles()
-						.stream()
-						.map(MyPaths::getParent)
-						.filter(
-								file -> FilesSilent.anyChildExists(
-										file,
-										"mvnw",
-										"gradlew",
-										"build.gradle"
-								)
-						)
-		).flatMap(Function.identity()).forEach(dir -> {
-			String newGitignoreContent = GITIGNORE_PREFIX;
-			newGitignoreContent += "\n" + GITIGNORE_ECLIPSE;
-			if (FilesSilent.anyChildExists(dir, "mvnw", "pom.xml")) {
-				newGitignoreContent += "\n" + GITIGNORE_ECLIPSE_JAVA;
-				newGitignoreContent += "\n" + GITIGNORE_MAVEN;
-			}
-			if (FilesSilent.anyChildExists(dir, "gradlew", "build.gradle")) {
-				newGitignoreContent += "\n" + GITIGNORE_ECLIPSE_JAVA;
-				newGitignoreContent += "\n" + GITIGNORE_GRADLE;
-			}
-			newGitignoreContent += "\n" + GITIGNORE_SUFFIX;
-			updateExistingGitignore(
-					dir.resolve(".gitignore"),
-					newGitignoreContent
-			);
-		});
+		context.textFiles()
+				.stream()
+				.filter(
+						file -> file.endsWith("pom.xml")
+								|| file.endsWith("mvnw")
+								|| file.endsWith("gradlew")
+								|| file.endsWith("build.gradle")
+				)
+				.map(MyPaths::getParent)
+				.forEach(dir -> {
+					String newGitignoreContent = GITIGNORE_PREFIX;
+					newGitignoreContent += "\n" + GITIGNORE_ECLIPSE;
+					if (FilesSilent.anyChildExists(dir, "mvnw", "pom.xml")) {
+						newGitignoreContent += "\n" + GITIGNORE_ECLIPSE_JAVA;
+						newGitignoreContent += "\n" + GITIGNORE_MAVEN;
+					}
+					if (FilesSilent
+							.anyChildExists(dir, "gradlew", "build.gradle")) {
+						newGitignoreContent += "\n" + GITIGNORE_ECLIPSE_JAVA;
+						newGitignoreContent += "\n" + GITIGNORE_GRADLE;
+					}
+					newGitignoreContent += "\n" + GITIGNORE_SUFFIX;
+					updateExistingGitignore(
+							dir.resolve(".gitignore"),
+							newGitignoreContent
+					);
+				});
+	}
+
+	private void createMavenWrapperIgnore(ChoreContext context) {
+		context.textFiles()
+				.stream()
+				.filter(file -> file.endsWith("mvnw"))
+				.map(MyPaths::getParent)
+				.forEach(dir -> {
+					String newGitignoreContent = GITIGNORE_PREFIX;
+					newGitignoreContent += "\n" + GITIGNORE_MAVEN_WRAPPER;
+					newGitignoreContent += "\n" + GITIGNORE_SUFFIX;
+					updateExistingGitignore(
+							dir.resolve(".mvn/wrapper/.gitignore"),
+							newGitignoreContent
+					);
+				});
+	}
+
+	private void createGradleWrapperIgnore(ChoreContext context) {
+		context.textFiles()
+				.stream()
+				.filter(file -> file.endsWith("gradlew"))
+				.map(MyPaths::getParent)
+				.forEach(dir -> {
+					String newGitignoreContent = GITIGNORE_PREFIX;
+					newGitignoreContent += "\n" + GITIGNORE_GRADLE_WRAPPER;
+					newGitignoreContent += "\n" + GITIGNORE_SUFFIX;
+					updateExistingGitignore(
+							dir.resolve("gradle/wrapper/.gitignore"),
+							newGitignoreContent
+					);
+				});
 	}
 
 	private void createEclipseSettingsIgnore(ChoreContext context) {
@@ -122,11 +162,7 @@ public class GitIgnoreChore implements Chore {
 				context.textFiles()
 						.stream()
 						.filter(file -> file.endsWith("pom.xml"))
-						.map(MyPaths::getParent)
-						.filter(
-								file -> FileHasNoParentDirectoryWithFileFilter
-										.filter(file, "pom.xml")
-						),
+						.map(MyPaths::getParent),
 				context.textFiles()
 						.stream()
 						.filter(
