@@ -29,6 +29,11 @@ public class EditorConfigChoreTest {
 			[*.sh]
 			end_of_line = lf
 			""";
+	private static String DEFAULT_VSCODE_EDITORCONFIG = """
+
+			[.vscode/**.json]
+			insert_final_newline = false
+			""";
 	private static String POM_EDITORCONFIG = """
 			# https://editorconfig.org
 
@@ -54,17 +59,20 @@ public class EditorConfigChoreTest {
 	@RegisterExtension
 	final FileSystemExtension extension = new FileSystemExtension();
 
-	@Test
-	public void testWithNothing() {
+	private void doit() {
 		new EditorConfigChore().doit(extension.choreContext());
 	}
 
 	@Test
+	public void testWithNothing() {
+		doit();
+	}
+
+	@Test
 	public void test() throws Exception {
+		doit();
+
 		Path editorConfig = extension.root().resolve(".editorconfig");
-
-		new EditorConfigChore().doit(extension.choreContext());
-
 		assertTrue(FilesSilent.exists(editorConfig));
 		assertThat(FilesSilent.readString(editorConfig))
 				.isEqualTo(DEFAULT_EDITORCONFIG);
@@ -78,7 +86,7 @@ public class EditorConfigChoreTest {
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(pom, "");
 
-		new EditorConfigChore().doit(extension.choreContext());
+		doit();
 
 		assertTrue(FilesSilent.exists(editorConfig));
 		assertThat(FilesSilent.readString(editorConfig))
@@ -91,11 +99,26 @@ public class EditorConfigChoreTest {
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(pom, "");
 
-		new EditorConfigChore().doit(extension.choreContext());
+		doit();
 
 		assertTrue(FilesSilent.exists(editorConfig));
 		assertThat(FilesSilent.readString(editorConfig))
 				.isEqualTo(POM_EDITORCONFIG);
+	}
+
+	@Test
+	public void testRemoveVsCode() throws Exception {
+		FilesSilent.writeString(
+				extension.root().resolve(".editorconfig"),
+				DEFAULT_EDITORCONFIG + DEFAULT_VSCODE_EDITORCONFIG
+		);
+
+		doit();
+
+		Path editorConfig = extension.root().resolve(".editorconfig");
+		assertTrue(FilesSilent.exists(editorConfig));
+		assertThat(FilesSilent.readString(editorConfig))
+				.isEqualTo(DEFAULT_EDITORCONFIG);
 	}
 
 	@Test

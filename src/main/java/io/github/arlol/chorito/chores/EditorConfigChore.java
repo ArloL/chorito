@@ -53,17 +53,10 @@ public class EditorConfigChore implements Chore {
 			FilesSilent.writeString(editorConfigPath, DEFAULT_EDITORCONFIG);
 		}
 		var content = FilesSilent.readString(editorConfigPath).trim() + "\n";
-		if (!content.contains("[.vscode/**.json]")) {
-			Path vsCodeLocation = context.resolve(".vscode");
-			if (context.textFiles().stream().anyMatch(path -> {
-				if (path.startsWith(vsCodeLocation)) {
-					return path.toString().endsWith(".json");
-				}
-				return false;
-			})) {
-				content += DEFAULT_VSCODE_EDITORCONFIG;
-			}
-		}
+
+		// remove outdated editorconfig entry for vscode
+		content = content.replace(DEFAULT_VSCODE_EDITORCONFIG, "");
+
 		if (!content.contains("[.idea/**]")) {
 			Path vsCodeLocation = context.resolve(".idea");
 			if (context.textFiles().stream().anyMatch(path -> {
