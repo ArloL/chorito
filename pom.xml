@@ -281,12 +281,6 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<addDefaultExcludes>false</addDefaultExcludes>
-				</configuration>
-			</plugin>
-			<plugin>
 				<groupId>org.gaul</groupId>
 				<artifactId>modernizer-maven-plugin</artifactId>
 				<version>2.9.0</version>
