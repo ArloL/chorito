@@ -61,12 +61,17 @@ public class GitIgnoreChore implements Chore {
 			""";
 
 	private static String GITIGNORE_ECLIPSE_SETTINGS = """
-			*.prefs
-			!org.eclipse.jdt.core.prefs
-			!org.eclipse.jdt.ui.prefs
+			### Eclipse ###
+
+			*
+			!/.gitignore
+			!/org.eclipse.jdt.core.prefs
+			!/org.eclipse.jdt.ui.prefs
 			""";
 
 	private static String GITIGNORE_IDEA_SETTINGS = """
+			### IntelliJ IDEA ###
+
 			*
 			!/.gitignore
 			!/eclipseCodeFormatter.xml
@@ -165,14 +170,19 @@ public class GitIgnoreChore implements Chore {
 		Stream.of(
 				context.textFiles()
 						.stream()
-						.filter(file -> file.endsWith("pom.xml"))
+						.filter(
+								file -> file.endsWith("pom.xml")
+										|| file.endsWith("mvnw")
+										|| file.endsWith("gradlew")
+										|| file.endsWith("build.gradle")
+						)
 						.map(MyPaths::getParent),
 				context.textFiles()
 						.stream()
 						.filter(
-								file -> file.endsWith(
-										"org.eclipse.jdt.core.prefs"
-								) || file.endsWith("org.eclipse.jdt.ui.prefs")
+								file -> MyPaths.getFileName(file)
+										.toString()
+										.startsWith("org.eclipse.")
 						)
 						.map(MyPaths::getParent)
 						.filter(file -> file.endsWith(".settings"))
