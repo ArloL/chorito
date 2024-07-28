@@ -45,7 +45,7 @@ public abstract class Jsons {
 	public static String asString(Object object) {
 		try {
 			return objectMapper().writerWithDefaultPrettyPrinter()
-					.writeValueAsString(object);
+					.writeValueAsString(object) + "\n";
 		} catch (JsonProcessingException e) {
 			throw new IllegalStateException(e);
 		}
