@@ -13,7 +13,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-public class Jsons {
+public abstract class Jsons {
+
+	private Jsons() {
+	}
 
 	public static ObjectMapper objectMapper() {
 		ObjectMapper objectMapper = new ObjectMapper();

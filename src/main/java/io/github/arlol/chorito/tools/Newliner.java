@@ -2,7 +2,7 @@ package io.github.arlol.chorito.tools;
 
 import java.nio.file.Path;
 
-public class Newliner {
+public abstract class Newliner {
 
 	public static final String CARRIAGE_RETURN = "\r";
 	public static final String CARRIAGE_RETURN_LINE_FEED = "\r\n";
@@ -11,6 +11,9 @@ public class Newliner {
 
 	public static final byte CARRIAGE_RETURN_CODE = 13;
 	public static final byte LINE_FEED_CODE = 10;
+
+	private Newliner() {
+	}
 
 	public static void makeAllNewlinesCrLf(Path path) {
 		makeAllNewlines(path, CARRIAGE_RETURN_LINE_FEED);
