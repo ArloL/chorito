@@ -14,6 +14,63 @@ import io.github.arlol.chorito.tools.FilesSilent;
 public class GitIgnoreChoreTest {
 
 	private static String DEFAULT_POM_XML = """
+			### Eclipse ###
+
+			/.project
+
+			### Eclipse+Java ###
+
+			/.classpath
+			/bin/
+
+			### IntelliJ IDEA ###
+
+			/out/
+
+			### Maven ###
+
+			/target/
+			/.flattened-pom.xml
+
+			# Add custom ignores after this line to be preserved during automated updates
+			""";
+
+	private static String DEFAULT_BUILD_GRADLE = """
+			### Eclipse ###
+
+			/.project
+
+			### Eclipse+Java ###
+
+			/.classpath
+			/bin/
+
+			### IntelliJ IDEA ###
+
+			/out/
+
+			### Gradle ###
+
+			/.gradle/
+			/build/
+
+			# Add custom ignores after this line to be preserved during automated updates
+			""";
+
+	private static String DEFAULT_IDEA = """
+			*
+			!/.gitignore
+			!/eclipseCodeFormatter.xml
+			!/externalDependencies.xml
+			!/saveactions_settings.xml
+			!/codeStyles
+			!/codeStyles/codeStyleConfig.xml
+			!/codeStyles/Project.xml
+
+			# Add custom ignores after this line to be preserved during automated updates
+			""";
+
+	private static String OLD_POM_XML = """
 			# Created by chorito https://github.com/ArloL/chorito
 
 			### Eclipse ###
@@ -34,46 +91,7 @@ public class GitIgnoreChoreTest {
 			/target/
 			/.flattened-pom.xml
 
-			# End of chorito. Add your ignores after this line and they will be preserved.
-			""";
-
-	private static String DEFAULT_BUILD_GRADLE = """
-			# Created by chorito https://github.com/ArloL/chorito
-
-			### Eclipse ###
-
-			/.project
-
-			### Eclipse+Java ###
-
-			/.classpath
-			/bin/
-
-			### IntelliJ IDEA ###
-
-			/out/
-
-			### Gradle ###
-
-			/.gradle/
-			/build/
-
-			# End of chorito. Add your ignores after this line and they will be preserved.
-			""";
-
-	private static String DEFAULT_IDEA = """
-			# Created by chorito https://github.com/ArloL/chorito
-
-			*
-			!/.gitignore
-			!/eclipseCodeFormatter.xml
-			!/externalDependencies.xml
-			!/saveactions_settings.xml
-			!/codeStyles
-			!/codeStyles/codeStyleConfig.xml
-			!/codeStyles/Project.xml
-
-			# End of chorito. Add your ignores after this line and they will be preserved.
+			# Add custom ignores after this line to be preserved during automated updates
 			""";
 
 	@RegisterExtension
@@ -140,13 +158,11 @@ public class GitIgnoreChoreTest {
 		assertThat(settingsGitignore).content()
 				.isEqualTo(
 						"""
-								# Created by chorito https://github.com/ArloL/chorito
-
 								*.prefs
 								!org.eclipse.jdt.core.prefs
 								!org.eclipse.jdt.ui.prefs
 
-								# End of chorito. Add your ignores after this line and they will be preserved.
+								# Add custom ignores after this line to be preserved during automated updates
 								"""
 				);
 	}
@@ -173,8 +189,6 @@ public class GitIgnoreChoreTest {
 				.content()
 				.isEqualTo(
 						"""
-								# Created by chorito https://github.com/ArloL/chorito
-
 								*
 								!.gitignore
 								!settings.json
@@ -183,7 +197,7 @@ public class GitIgnoreChoreTest {
 								!extensions.json
 								!*.code-snippets
 
-								# End of chorito. Add your ignores after this line and they will be preserved.
+								# Add custom ignores after this line to be preserved during automated updates
 								"""
 				);
 	}
@@ -210,6 +224,33 @@ public class GitIgnoreChoreTest {
 		assertThat(extension.root().resolve("a/nested/.idea/.gitignore"))
 				.content()
 				.isEqualTo(DEFAULT_IDEA);
+	}
+
+	@Test
+	public void testUpdatingSuffixPrefix() throws Exception {
+		FilesSilent.touch(extension.choreContext().resolve("pom.xml"));
+		FilesSilent.writeString(
+				extension.choreContext().resolve(".gitignore"),
+				OLD_POM_XML
+		);
+
+		doit();
+
+		assertThat(extension.choreContext().resolve(".gitignore")).content()
+				.isEqualTo(DEFAULT_POM_XML);
+	}
+
+	@Test
+	public void testStability() throws Exception {
+		FilesSilent.touch(extension.choreContext().resolve("pom.xml"));
+		FilesSilent.touch(extension.choreContext().resolve("Dockerfile"));
+
+		doit();
+		// call again to see if updates are stable
+		doit();
+
+		assertThat(extension.choreContext().resolve(".gitignore")).content()
+				.isEqualTo(DEFAULT_POM_XML);
 	}
 
 }
