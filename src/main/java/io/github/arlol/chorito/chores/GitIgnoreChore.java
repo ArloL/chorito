@@ -25,6 +25,13 @@ public class GitIgnoreChore implements Chore {
 			### Eclipse+Java ###
 
 			/.classpath
+			/bin/
+			""";
+
+	private static String GITIGNORE_IDEA = """
+			### IntelliJ IDEA ###
+
+			/out/
 			""";
 
 	private static String GITIGNORE_MAVEN = """
@@ -136,11 +143,13 @@ public class GitIgnoreChore implements Chore {
 					newGitignoreContent += "\n" + GITIGNORE_ECLIPSE;
 					if (FilesSilent.anyChildExists(dir, "mvnw", "pom.xml")) {
 						newGitignoreContent += "\n" + GITIGNORE_ECLIPSE_JAVA;
+						newGitignoreContent += "\n" + GITIGNORE_IDEA;
 						newGitignoreContent += "\n" + GITIGNORE_MAVEN;
 					}
 					if (FilesSilent
 							.anyChildExists(dir, "gradlew", "build.gradle")) {
 						newGitignoreContent += "\n" + GITIGNORE_ECLIPSE_JAVA;
+						newGitignoreContent += "\n" + GITIGNORE_IDEA;
 						newGitignoreContent += "\n" + GITIGNORE_GRADLE;
 					}
 					newGitignoreContent += "\n" + GITIGNORE_SUFFIX;

@@ -23,6 +23,11 @@ public class GitIgnoreChoreTest {
 			### Eclipse+Java ###
 
 			/.classpath
+			/bin/
+
+			### IntelliJ IDEA ###
+
+			/out/
 
 			### Maven ###
 
@@ -42,6 +47,11 @@ public class GitIgnoreChoreTest {
 			### Eclipse+Java ###
 
 			/.classpath
+			/bin/
+
+			### IntelliJ IDEA ###
+
+			/out/
 
 			### Gradle ###
 
