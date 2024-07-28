@@ -177,7 +177,7 @@ public class GitIgnoreChore implements Chore {
 						.map(MyPaths::getParent)
 						.filter(file -> file.endsWith(".settings"))
 						.map(MyPaths::getParent)
-		).flatMap(Function.identity()).forEach(dir -> {
+		).flatMap(Function.identity()).distinct().forEach(dir -> {
 			updateExistingGitignore(
 					dir.resolve(".settings/.gitignore"),
 					GITIGNORE_ECLIPSE_SETTINGS

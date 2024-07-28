@@ -55,7 +55,7 @@ public class VsCodeChore implements Chore {
 						.map(MyPaths::getParent)
 						.filter(file -> file.endsWith(".vscode"))
 						.map(MyPaths::getParent)
-		).flatMap(Function.identity()).forEach(dir -> {
+		).flatMap(Function.identity()).distinct().forEach(dir -> {
 			Path settings = dir.resolve(".vscode/settings.json");
 			Path extensions = dir.resolve(".vscode/extensions.json");
 
