@@ -18,6 +18,7 @@ public class GitIgnoreChoreTest {
 
 			*
 			!/.gitignore
+			!/code-formatter-profile.xml
 			!/org.eclipse.jdt.core.prefs
 			!/org.eclipse.jdt.ui.prefs
 
@@ -175,6 +176,7 @@ public class GitIgnoreChoreTest {
 
 								*
 								!/.gitignore
+								!/code-formatter-profile.xml
 								!/org.eclipse.jdt.core.prefs
 								!/org.eclipse.jdt.ui.prefs
 
