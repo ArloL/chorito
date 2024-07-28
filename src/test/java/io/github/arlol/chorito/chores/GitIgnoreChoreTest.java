@@ -13,6 +13,17 @@ import io.github.arlol.chorito.tools.FilesSilent;
 
 public class GitIgnoreChoreTest {
 
+	private static final String DEFAULT_ECLIPSE_SETTINGS = """
+			### Eclipse ###
+
+			*
+			!/.gitignore
+			!/org.eclipse.jdt.core.prefs
+			!/org.eclipse.jdt.ui.prefs
+
+			# Add custom ignores after this line to be preserved during automated updates
+			""";
+
 	private static String DEFAULT_POM_XML = """
 			### Eclipse ###
 
@@ -58,6 +69,8 @@ public class GitIgnoreChoreTest {
 			""";
 
 	private static String DEFAULT_IDEA = """
+			### IntelliJ IDEA ###
+
 			*
 			!/.gitignore
 			!/eclipseCodeFormatter.xml
@@ -158,9 +171,12 @@ public class GitIgnoreChoreTest {
 		assertThat(settingsGitignore).content()
 				.isEqualTo(
 						"""
-								*.prefs
-								!org.eclipse.jdt.core.prefs
-								!org.eclipse.jdt.ui.prefs
+								### Eclipse ###
+
+								*
+								!/.gitignore
+								!/org.eclipse.jdt.core.prefs
+								!/org.eclipse.jdt.ui.prefs
 
 								# Add custom ignores after this line to be preserved during automated updates
 								"""
@@ -251,6 +267,23 @@ public class GitIgnoreChoreTest {
 
 		assertThat(extension.choreContext().resolve(".gitignore")).content()
 				.isEqualTo(DEFAULT_POM_XML);
+	}
+
+	@Test
+	public void testEclipseSettings() throws Exception {
+		FilesSilent.touch(
+				extension.choreContext()
+						.resolve(
+								"a/nested/.settings/org.eclipse.buildship.core.prefs"
+						)
+		);
+
+		doit();
+
+		assertThat(
+				extension.choreContext()
+						.resolve("a/nested/.settings/.gitignore")
+		).content().isEqualTo(DEFAULT_ECLIPSE_SETTINGS);
 	}
 
 }
