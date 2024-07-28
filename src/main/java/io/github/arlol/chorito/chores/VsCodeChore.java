@@ -70,9 +70,8 @@ public class VsCodeChore implements Chore {
 					"gradlew",
 					"build.gradle"
 			)) {
-				String templateSettings = ClassPathFiles
-						.readString("vscode-settings/settings.json");
-				FilesSilent.writeString(settings, templateSettings);
+				String newSettingsJson = newSettingsJson(settings);
+				FilesSilent.writeString(settings, newSettingsJson);
 			}
 
 			List<String> recommendations = new ArrayList<>();
@@ -101,14 +100,27 @@ public class VsCodeChore implements Chore {
 					.sorted()
 					.forEach(jsonArray::add);
 
-			FilesSilent
-					.writeString(extensions, Jsons.asString(jsonObject) + "\n");
+			FilesSilent.writeString(extensions, Jsons.asString(jsonObject));
 
 		});
 		if (changed.get()) {
 			return context.refresh();
 		}
 		return context;
+	}
+
+	private String newSettingsJson(Path settings) {
+		JsonNode template = Jsons
+				.parse(
+						ClassPathFiles
+								.readString("vscode-settings/settings.json")
+				)
+				.orElseThrow(IllegalStateException::new);
+		if (!FilesSilent.exists(settings)) {
+			return Jsons.asString(template);
+		}
+		Jsons.parse(settings).ifPresent(node -> Jsons.merge(template, node));
+		return Jsons.asString(Jsons.sortFields(template));
 	}
 
 	private List<String> readRecommendations(Optional<JsonNode> element) {
