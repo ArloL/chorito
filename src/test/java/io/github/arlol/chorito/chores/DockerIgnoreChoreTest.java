@@ -13,6 +13,31 @@ import io.github.arlol.chorito.tools.FilesSilent;
 public class DockerIgnoreChoreTest {
 
 	private static final String DEFAULT_MAVEN = """
+			### Docker ###
+
+			Dockerfile
+			.dockerignore
+
+			### Maven ###
+
+			/target/
+
+			# Add custom ignores after this line to be preserved during automated updates
+			""";
+	private static final String DEFAULT_GRADLE = """
+			### Docker ###
+
+			Dockerfile
+			.dockerignore
+
+			### Gradle ###
+
+			/build/
+			/.gradle/
+
+			# Add custom ignores after this line to be preserved during automated updates
+			""";
+	private static final String OLD_MAVEN = """
 			# Created by chorito https://github.com/ArloL/chorito
 
 			### Docker ###
@@ -26,28 +51,17 @@ public class DockerIgnoreChoreTest {
 
 			# End of chorito. Add your ignores after this line and they will be preserved.
 			""";
-	private static final String DEFAULT_GRADLE = """
-			# Created by chorito https://github.com/ArloL/chorito
-
-			### Docker ###
-
-			Dockerfile
-			.dockerignore
-
-			### Gradle ###
-
-			/build/
-			/.gradle/
-
-			# End of chorito. Add your ignores after this line and they will be preserved.
-			""";
 
 	@RegisterExtension
 	final FileSystemExtension extension = new FileSystemExtension();
 
+	private void doit() {
+		new DockerIgnoreChore().doit(extension.choreContext());
+	}
+
 	@Test
 	public void testWithNothing() {
-		new DockerIgnoreChore().doit(extension.choreContext());
+		doit();
 	}
 
 	@Test
@@ -55,7 +69,7 @@ public class DockerIgnoreChoreTest {
 		FilesSilent.touch(extension.choreContext().resolve("pom.xml"));
 		FilesSilent.touch(extension.choreContext().resolve("Dockerfile"));
 
-		new DockerIgnoreChore().doit(extension.choreContext());
+		doit();
 
 		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
 		assertThat(dockerIgnore).content().isEqualTo(DEFAULT_MAVEN);
@@ -66,7 +80,7 @@ public class DockerIgnoreChoreTest {
 		FilesSilent.touch(extension.choreContext().resolve("build.gradle"));
 		FilesSilent.touch(extension.choreContext().resolve("Dockerfile"));
 
-		new DockerIgnoreChore().doit(extension.choreContext());
+		doit();
 
 		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
 		assertThat(dockerIgnore).content().isEqualTo(DEFAULT_GRADLE);
@@ -78,7 +92,7 @@ public class DockerIgnoreChoreTest {
 		FilesSilent
 				.touch(extension.choreContext().resolve("docker-compose.yml"));
 
-		new DockerIgnoreChore().doit(extension.choreContext());
+		doit();
 
 		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
 		assertThat(dockerIgnore).content().contains("docker-compose.yml");
@@ -90,7 +104,7 @@ public class DockerIgnoreChoreTest {
 		FilesSilent
 				.touch(extension.choreContext().resolve("docker-compose.yaml"));
 
-		new DockerIgnoreChore().doit(extension.choreContext());
+		doit();
 
 		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
 		assertThat(dockerIgnore).content().contains("docker-compose.yaml");
@@ -101,7 +115,7 @@ public class DockerIgnoreChoreTest {
 		FilesSilent.touch(extension.choreContext().resolve("Dockerfile"));
 		FilesSilent.touch(extension.choreContext().resolve("compose.yml"));
 
-		new DockerIgnoreChore().doit(extension.choreContext());
+		doit();
 
 		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
 		assertThat(dockerIgnore).content().contains("compose.yml");
@@ -112,7 +126,7 @@ public class DockerIgnoreChoreTest {
 		FilesSilent.touch(extension.choreContext().resolve("Dockerfile"));
 		FilesSilent.touch(extension.choreContext().resolve("compose.yaml"));
 
-		new DockerIgnoreChore().doit(extension.choreContext());
+		doit();
 
 		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
 		assertThat(dockerIgnore).content().contains("compose.yaml");
@@ -123,7 +137,7 @@ public class DockerIgnoreChoreTest {
 		FilesSilent.touch(extension.choreContext().resolve("Dockerfile"));
 		FilesSilent.touch(extension.choreContext().resolve("package.json"));
 
-		new DockerIgnoreChore().doit(extension.choreContext());
+		doit();
 
 		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
 		assertThat(dockerIgnore).content().contains("/node_modules/");
@@ -134,10 +148,36 @@ public class DockerIgnoreChoreTest {
 		FilesSilent.touch(extension.choreContext().resolve("build.gradle"));
 		FilesSilent.touch(extension.choreContext().resolve(".dockerignore"));
 
-		new DockerIgnoreChore().doit(extension.choreContext());
+		doit();
 
 		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
 		assertThat(dockerIgnore).content().isEqualTo(DEFAULT_GRADLE);
+	}
+
+	@Test
+	public void testUpdatingSuffixPrefix() throws Exception {
+		FilesSilent.touch(extension.choreContext().resolve("pom.xml"));
+		FilesSilent.writeString(
+				extension.choreContext().resolve(".dockerignore"),
+				OLD_MAVEN
+		);
+
+		doit();
+
+		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
+		assertThat(dockerIgnore).content().isEqualTo(DEFAULT_MAVEN);
+	}
+
+	@Test
+	public void testStability() throws Exception {
+		FilesSilent.touch(extension.choreContext().resolve("pom.xml"));
+		FilesSilent.touch(extension.choreContext().resolve("Dockerfile"));
+
+		doit();
+		doit();
+
+		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
+		assertThat(dockerIgnore).content().isEqualTo(DEFAULT_MAVEN);
 	}
 
 }
