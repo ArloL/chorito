@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -32,7 +33,7 @@ public class LicenseChoreTest {
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
@@ -54,7 +55,7 @@ public class LicenseChoreTest {
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
@@ -75,7 +76,7 @@ public class LicenseChoreTest {
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
@@ -95,7 +96,7 @@ public class LicenseChoreTest {
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
@@ -115,7 +116,7 @@ public class LicenseChoreTest {
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
@@ -135,7 +136,7 @@ public class LicenseChoreTest {
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
@@ -158,7 +159,7 @@ public class LicenseChoreTest {
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 

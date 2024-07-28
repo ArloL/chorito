@@ -21,7 +21,7 @@ public class DependabotChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/ArloL/chorito.git"))
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.build();
 		new DependabotChore().doit(context);
 	}
