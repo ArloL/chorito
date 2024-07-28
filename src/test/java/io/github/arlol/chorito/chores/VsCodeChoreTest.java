@@ -67,12 +67,12 @@ public class VsCodeChoreTest {
 						"""
 								{
 								    "[java]": {
+								        "editor.foldingImportsByDefault": true,
 								        "editor.formatOnSave": true,
 								        "editor.codeActionsOnSave": {
 								            "source.organizeImports": "always",
 								        },
 								    },
-								    "editor.foldingImportsByDefault": true,
 								    "java.compile.nullAnalysis.mode": "automatic",
 								    "java.configuration.updateBuildConfiguration": "interactive",
 								    "java.sources.organizeImports.starThreshold": 30,
@@ -127,12 +127,12 @@ public class VsCodeChoreTest {
 						"""
 								{
 								    "[java]": {
+								        "editor.foldingImportsByDefault": true,
 								        "editor.formatOnSave": true,
 								        "editor.codeActionsOnSave": {
 								            "source.organizeImports": "always",
 								        },
 								    },
-								    "editor.foldingImportsByDefault": true,
 								    "java.compile.nullAnalysis.mode": "automatic",
 								    "java.configuration.updateBuildConfiguration": "interactive",
 								    "java.format.settings.url": ".vscode/java-formatter.xml",
