@@ -13,9 +13,9 @@ public abstract class ExistingFileUpdater {
 	}
 
 	public static void update(Path target, String content) {
-		content += "\n" + NEW_SUFFIX + "\n";
+		content += "\n" + NEW_SUFFIX;
 		if (!FilesSilent.exists(target)) {
-			FilesSilent.writeString(target, content);
+			FilesSilent.writeString(target, content + "\n");
 			return;
 		}
 		List<String> current = FilesSilent.readAllLines(target);
@@ -24,13 +24,12 @@ public abstract class ExistingFileUpdater {
 			endOfChorito = current.indexOf(NEW_SUFFIX);
 		}
 		if (endOfChorito == -1) {
-			FilesSilent.writeString(target, content);
+			FilesSilent.writeString(target, content + "\n");
 			return;
 		}
 		current = current.subList(endOfChorito + 1, current.size());
 		current.add(0, content);
 		FilesSilent.write(target, current, "\n");
-
 	}
 
 }
