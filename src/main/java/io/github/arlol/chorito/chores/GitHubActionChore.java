@@ -9,6 +9,7 @@ import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.ExecutableFlagger;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.GitHubActionsWorkflowFile;
+import io.github.arlol.chorito.tools.MyPaths;
 import io.github.arlol.chorito.tools.RandomCronBuilder;
 import io.github.arlol.chorito.tools.Renamer;
 
@@ -184,7 +185,13 @@ public class GitHubActionChore implements Chore {
 				context.randomGenerator()
 		);
 		String randomDayOfMonth = randomCronBuilder.randomDayOfMonth();
-		if (context.hasGitHubRemote()) {
+		if (context.remotes()
+				.stream()
+				.anyMatch(s -> s.startsWith("https://github.com"))
+				|| context.textFiles()
+						.stream()
+						.map(MyPaths::getParent)
+						.anyMatch(path -> path.endsWith(".github"))) {
 			Path choresYaml = context.resolve(".github/workflows/chores.yaml");
 			String currentChores = ClassPathFiles
 					.readString("github-settings/workflows/chores.yaml");

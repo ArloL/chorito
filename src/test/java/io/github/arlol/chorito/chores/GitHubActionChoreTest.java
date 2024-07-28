@@ -3,6 +3,7 @@ package io.github.arlol.chorito.chores;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -286,7 +287,7 @@ public class GitHubActionChoreTest {
 
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.build();
 
 		new GitHubActionChore().doit(context);
@@ -312,7 +313,7 @@ public class GitHubActionChoreTest {
 
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.build();
 
 		new GitHubActionChore().doit(context);
@@ -339,7 +340,7 @@ public class GitHubActionChoreTest {
 
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -357,7 +358,7 @@ public class GitHubActionChoreTest {
 
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -375,7 +376,7 @@ public class GitHubActionChoreTest {
 
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -396,7 +397,7 @@ public class GitHubActionChoreTest {
 
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -419,7 +420,7 @@ public class GitHubActionChoreTest {
 
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -441,7 +442,7 @@ public class GitHubActionChoreTest {
 
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -472,7 +473,7 @@ public class GitHubActionChoreTest {
 
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -495,7 +496,7 @@ public class GitHubActionChoreTest {
 
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -520,7 +521,7 @@ public class GitHubActionChoreTest {
 
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 

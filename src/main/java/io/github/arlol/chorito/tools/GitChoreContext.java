@@ -34,7 +34,6 @@ public class GitChoreContext {
 		List<Path> textFiles = new ArrayList<>();
 		List<Path> files = new ArrayList<>();
 		List<String> remotes = new ArrayList<>();
-		boolean hasGitHubRemote = false;
 
 		try (Repository repository = new FileRepositoryBuilder()
 				.setMustExist(true)
@@ -50,9 +49,6 @@ public class GitChoreContext {
 						"url"
 				);
 				remotes.add(remoteUrl);
-				if (remoteUrl.startsWith("https://github.com")) {
-					hasGitHubRemote = true;
-				}
 			}
 
 			treeWalk.addTree(
@@ -91,10 +87,7 @@ public class GitChoreContext {
 			throw new UncheckedIOException(e);
 		}
 
-		return builder.textFiles(textFiles)
-				.files(files)
-				.remotes(remotes)
-				.hasGitHubRemote(hasGitHubRemote);
+		return builder.textFiles(textFiles).files(files).remotes(remotes);
 	}
 
 	@SuppressFBWarnings(

@@ -16,7 +16,13 @@ public class CodeQlAnalysisChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		// it only makes sense to add it to github repositories
-		if (!context.hasGitHubRemote()) {
+		if (context.remotes()
+				.stream()
+				.noneMatch(s -> s.startsWith("https://github.com"))
+				&& context.textFiles()
+						.stream()
+						.map(MyPaths::getParent)
+						.noneMatch(path -> path.endsWith(".github"))) {
 			return context;
 		}
 

@@ -49,7 +49,6 @@ public class PomScmChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/ArloL/chorito.git"))
-				.hasGitHubRemote(true)
 				.build();
 
 		new PomScmChore().doit(context);

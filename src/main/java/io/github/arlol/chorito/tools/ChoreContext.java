@@ -25,7 +25,6 @@ public class ChoreContext {
 		private List<Path> textFiles = emptyList();
 		private List<Path> files = emptyList();
 		private List<String> remotes = emptyList();
-		private boolean hasGitHubRemote = false;
 		private RandomGenerator randomGenerator = new Random();
 		private Clock clock = Clock.systemDefaultZone();
 		private Function<String[], ProcessBuilderSilent> processBuilderFactory = ProcessBuilderSilent
@@ -48,7 +47,6 @@ public class ChoreContext {
 			this.textFiles = choreContext.textFiles();
 			this.files = choreContext.files();
 			this.remotes = choreContext.remotes();
-			this.hasGitHubRemote = choreContext.hasGitHubRemote();
 			this.randomGenerator = choreContext.randomGenerator();
 			this.clock = choreContext.clock();
 			this.processBuilderFactory = choreContext.processBuilderFactory();
@@ -70,10 +68,6 @@ public class ChoreContext {
 
 		public List<String> remotes() {
 			return List.copyOf(remotes);
-		}
-
-		public boolean hasGitHubRemote() {
-			return hasGitHubRemote;
 		}
 
 		public RandomGenerator randomGenerator() {
@@ -108,11 +102,6 @@ public class ChoreContext {
 			return this;
 		}
 
-		public Builder hasGitHubRemote(boolean hasGitHubRemote) {
-			this.hasGitHubRemote = hasGitHubRemote;
-			return this;
-		}
-
 		public Builder randomGenerator(RandomGenerator randomGenerator) {
 			this.randomGenerator = randomGenerator;
 			return this;
@@ -136,7 +125,6 @@ public class ChoreContext {
 					textFiles,
 					files,
 					remotes,
-					hasGitHubRemote,
 					randomGenerator,
 					clock,
 					processBuilderFactory,
@@ -151,7 +139,6 @@ public class ChoreContext {
 	private final List<Path> textFiles;
 	private final List<Path> files;
 	private final List<String> remotes;
-	private final boolean hasGitHubRemote;
 	private final RandomGenerator randomGenerator;
 	private final Clock clock;
 	private final Function<String[], ProcessBuilderSilent> processBuilderFactory;
@@ -163,7 +150,6 @@ public class ChoreContext {
 			List<Path> textFiles,
 			List<Path> files,
 			List<String> remotes,
-			boolean hasGitHubRemote,
 			RandomGenerator randomGenerator,
 			Clock clock,
 			Function<String[], ProcessBuilderSilent> processBuilderFactory,
@@ -174,7 +160,6 @@ public class ChoreContext {
 		this.textFiles = List.copyOf(textFiles);
 		this.files = List.copyOf(files);
 		this.remotes = List.copyOf(remotes);
-		this.hasGitHubRemote = hasGitHubRemote;
 		this.randomGenerator = randomGenerator;
 		this.clock = clock;
 		this.processBuilderFactory = processBuilderFactory;
@@ -200,10 +185,6 @@ public class ChoreContext {
 
 	public List<String> remotes() {
 		return List.copyOf(remotes);
-	}
-
-	public boolean hasGitHubRemote() {
-		return hasGitHubRemote;
 	}
 
 	public RandomGenerator randomGenerator() {

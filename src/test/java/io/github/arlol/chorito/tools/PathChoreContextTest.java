@@ -1,7 +1,6 @@
 package io.github.arlol.chorito.tools;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,12 +10,6 @@ public class PathChoreContextTest {
 
 	@RegisterExtension
 	final FileSystemExtension extension = new FileSystemExtension();
-
-	@Test
-	void testHasGitHubRemote() throws Exception {
-		boolean hasGitHubRemote = extension.choreContext().hasGitHubRemote();
-		assertFalse(hasGitHubRemote);
-	}
 
 	@Test
 	void testTextFiles() throws Exception {

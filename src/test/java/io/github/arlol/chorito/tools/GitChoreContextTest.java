@@ -1,6 +1,6 @@
 package io.github.arlol.chorito.tools;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
@@ -8,10 +8,8 @@ public class GitChoreContextTest {
 
 	@Test
 	void testHasGitHubRemote() throws Exception {
-		boolean hasGitHubRemote = GitChoreContext.newBuilder(".")
-				.build()
-				.hasGitHubRemote();
-		assertTrue(hasGitHubRemote);
+		assertThat(GitChoreContext.newBuilder(".").build().remotes())
+				.isNotEmpty();
 	}
 
 }

@@ -18,42 +18,40 @@ public class DependabotChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		if (context.hasGitHubRemote()) {
-
-			String content = """
-					version: 2
-					updates:
-					""";
-			content += getEcosystemIfFileExists(context, "pom.xml", "maven");
-			content += getEcosystemIfFileExists(
-					context,
-					"Gemfile.lock",
-					"bundler"
-			);
-			content += DEFAULT_GITHUB_ACTIONS_DEPENDABOT;
-			content += getEcosystemIfFileNameMatches(
-					context,
-					"(?i).*dockerfile",
-					"docker"
-			);
-			content += getEcosystemIfFileExists(context, "Pipfile", "pip");
-			content += getEcosystemIfFileExists(context, "package.json", "npm");
-			content += getEcosystemIfFileExists(
-					context,
-					"build.gradle",
-					"gradle"
-			);
-			content += getEcosystemIfFileExists(
-					context,
-					".terraform.lock.hcl",
-					"terraform"
-			);
-
-			FilesSilent.writeString(
-					context.resolve(".github/dependabot.yml"),
-					content
-			);
+		if (context.remotes()
+				.stream()
+				.noneMatch(s -> s.startsWith("https://github.com"))
+				&& context.textFiles()
+						.stream()
+						.map(MyPaths::getParent)
+						.noneMatch(path -> path.endsWith(".github"))) {
+			return context;
 		}
+		String content = """
+				version: 2
+				updates:
+				""";
+		content += getEcosystemIfFileExists(context, "pom.xml", "maven");
+		content += getEcosystemIfFileExists(context, "Gemfile.lock", "bundler");
+		content += DEFAULT_GITHUB_ACTIONS_DEPENDABOT;
+		content += getEcosystemIfFileNameMatches(
+				context,
+				"(?i).*dockerfile",
+				"docker"
+		);
+		content += getEcosystemIfFileExists(context, "Pipfile", "pip");
+		content += getEcosystemIfFileExists(context, "package.json", "npm");
+		content += getEcosystemIfFileExists(context, "build.gradle", "gradle");
+		content += getEcosystemIfFileExists(
+				context,
+				".terraform.lock.hcl",
+				"terraform"
+		);
+
+		FilesSilent.writeString(
+				context.resolve(".github/dependabot.yml"),
+				content
+		);
 		return context;
 	}
 

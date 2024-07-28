@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -34,7 +35,7 @@ public class CodeQlAnalysisChoreTest {
 
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -58,7 +59,7 @@ public class CodeQlAnalysisChoreTest {
 
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -87,7 +88,7 @@ public class CodeQlAnalysisChoreTest {
 
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
-				.hasGitHubRemote(true)
+				.remotes(List.of("https://github.com/example/example"))
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
