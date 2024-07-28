@@ -44,7 +44,7 @@ public class DockerIgnoreChore implements Chore {
 				)
 				.map(MyPaths::getParent)
 				.forEach(dir -> {
-					String newContent = DOCKERIGNORE_DEFAULT;
+					var newContent = new StringBuilder(DOCKERIGNORE_DEFAULT);
 					for (String compose : List.of(
 							"compose.yaml",
 							"compose.yml",
@@ -52,22 +52,28 @@ public class DockerIgnoreChore implements Chore {
 							"docker-compose.yaml"
 					)) {
 						if (FilesSilent.exists(dir.resolve(compose))) {
-							newContent += compose + "\n";
+							newContent.append(compose);
+							newContent.append("\n");
 						}
 					}
 					if (FilesSilent.anyChildExists(dir, "mvnw", "pom.xml")) {
-						newContent += "\n" + DOCKERIGNORE_MAVEN;
+						newContent.append("\n");
+						newContent.append(DOCKERIGNORE_MAVEN);
 					}
 					if (FilesSilent
 							.anyChildExists(dir, "gradlew", "build.gradle")) {
-						newContent += "\n" + DOCKERIGNORE_GRADLE;
+						newContent.append("\n");
+						newContent.append(DOCKERIGNORE_GRADLE);
 					}
 					if (FilesSilent.anyChildExists(dir, "package.json")) {
-						newContent += "\n" + DOCKERIGNORE_NODE;
+						newContent.append("\n");
+						newContent.append(DOCKERIGNORE_NODE);
 					}
 
-					ExistingFileUpdater
-							.update(dir.resolve(".dockerignore"), newContent);
+					ExistingFileUpdater.update(
+							dir.resolve(".dockerignore"),
+							newContent.toString()
+					);
 				});
 		return context;
 	}
