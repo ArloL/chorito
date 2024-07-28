@@ -16,8 +16,12 @@ public class DockerIgnoreChoreTest {
 	private static final String DEFAULT_MAVEN = """
 			# Created by chorito https://github.com/ArloL/chorito
 
+			### Docker ###
+
 			Dockerfile
 			.dockerignore
+
+			### Maven ###
 
 			target/
 
@@ -26,8 +30,12 @@ public class DockerIgnoreChoreTest {
 	private static final String DEFAULT_GRADLE = """
 			# Created by chorito https://github.com/ArloL/chorito
 
+			### Docker ###
+
 			Dockerfile
 			.dockerignore
+
+			### Gradle ###
 
 			build/
 			.gradle/
@@ -67,6 +75,52 @@ public class DockerIgnoreChoreTest {
 		assertTrue(FilesSilent.exists(dockerIgnore));
 		assertThat(FilesSilent.readString(dockerIgnore))
 				.isEqualTo(DEFAULT_GRADLE);
+	}
+
+	@Test
+	public void testDockerComposeYml() throws Exception {
+		FilesSilent.touch(extension.choreContext().resolve("Dockerfile"));
+		FilesSilent
+				.touch(extension.choreContext().resolve("docker-compose.yml"));
+
+		new DockerIgnoreChore().doit(extension.choreContext());
+
+		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
+		assertThat(dockerIgnore).content().contains("docker-compose.yml");
+	}
+
+	@Test
+	public void testDockerComposeYaml() throws Exception {
+		FilesSilent.touch(extension.choreContext().resolve("Dockerfile"));
+		FilesSilent
+				.touch(extension.choreContext().resolve("docker-compose.yaml"));
+
+		new DockerIgnoreChore().doit(extension.choreContext());
+
+		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
+		assertThat(dockerIgnore).content().contains("docker-compose.yaml");
+	}
+
+	@Test
+	public void testComposeYml() throws Exception {
+		FilesSilent.touch(extension.choreContext().resolve("Dockerfile"));
+		FilesSilent.touch(extension.choreContext().resolve("compose.yml"));
+
+		new DockerIgnoreChore().doit(extension.choreContext());
+
+		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
+		assertThat(dockerIgnore).content().contains("compose.yml");
+	}
+
+	@Test
+	public void testComposeYaml() throws Exception {
+		FilesSilent.touch(extension.choreContext().resolve("Dockerfile"));
+		FilesSilent.touch(extension.choreContext().resolve("compose.yaml"));
+
+		new DockerIgnoreChore().doit(extension.choreContext());
+
+		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
+		assertThat(dockerIgnore).content().contains("compose.yaml");
 	}
 
 }

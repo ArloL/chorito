@@ -16,15 +16,21 @@ public class DockerIgnoreChore implements Chore {
 			# End of chorito. Add your ignores after this line and they will be preserved.""";
 
 	private static String DOCKERIGNORE_DEFAULT = """
+			### Docker ###
+
 			Dockerfile
 			.dockerignore
 			""";
 
 	private static String DOCKERIGNORE_MAVEN = """
+			### Maven ###
+
 			target/
 			""";
 
 	private static String DOCKERIGNORE_GRADLE = """
+			### Gradle ###
+
 			build/
 			.gradle/
 			""";
@@ -42,6 +48,16 @@ public class DockerIgnoreChore implements Chore {
 
 					String newDockerignoreContent = DOCKERIGNORE_PREFIX;
 					newDockerignoreContent += "\n" + DOCKERIGNORE_DEFAULT;
+					for (String compose : List.of(
+							"compose.yaml",
+							"compose.yml",
+							"docker-compose.yml",
+							"docker-compose.yaml"
+					)) {
+						if (FilesSilent.exists(dockerDir.resolve(compose))) {
+							newDockerignoreContent += compose + "\n";
+						}
+					}
 					if (FilesSilent.exists(pomXml)) {
 						newDockerignoreContent += "\n" + DOCKERIGNORE_MAVEN;
 					}
