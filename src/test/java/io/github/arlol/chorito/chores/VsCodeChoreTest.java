@@ -34,7 +34,7 @@ public class VsCodeChoreTest {
 				{
 				    "recommendations": [
 				        "editorconfig.editorconfig"
-				    ]
+				    ],
 				}
 				""");
 		Path settings = extension.root().resolve(".vscode/settings.json");
@@ -57,7 +57,7 @@ public class VsCodeChoreTest {
 				    "recommendations": [
 				        "editorconfig.editorconfig",
 				        "vscjava.vscode-java-pack"
-				    ]
+				    ],
 				}
 				""");
 		Path settings = extension.root().resolve(".vscode/settings.json");
@@ -74,8 +74,8 @@ public class VsCodeChoreTest {
 								    "[java]": {
 								        "editor.formatOnSave": true,
 								        "editor.codeActionsOnSave": {
-								            "source.organizeImports": "always"
-								        }
+								            "source.organizeImports": "always",
+								        },
 								    },
 								}
 								"""
@@ -100,11 +100,47 @@ public class VsCodeChoreTest {
 				    "recommendations": [
 				        "editorconfig.editorconfig",
 				        "kisstkondoros.vscode-codemetrics"
-				    ]
+				    ],
 				}
 				""");
 		Path settings = extension.root().resolve(".vscode/settings.json");
 		assertThat(FilesSilent.exists(settings)).isFalse();
+	}
+
+	@Test
+	public void testWithExistingSettings() {
+		// given
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
+		Path settings = extension.root().resolve(".vscode/settings.json");
+		FilesSilent.writeString(settings, """
+				{
+					"java.format.settings.url": ".vscode/java-formatter.xml",
+				}
+				""");
+
+		// when
+		doit();
+
+		// then
+		assertThat(settings).content()
+				.isEqualTo(
+						"""
+								{
+								    "[java]": {
+								        "editor.formatOnSave": true,
+								        "editor.codeActionsOnSave": {
+								            "source.organizeImports": "always",
+								        },
+								    },
+								    "editor.foldingImportsByDefault": true,
+								    "java.compile.nullAnalysis.mode": "automatic",
+								    "java.configuration.updateBuildConfiguration": "interactive",
+								    "java.format.settings.url": ".vscode/java-formatter.xml",
+								    "java.sources.organizeImports.starThreshold": 30,
+								    "java.sources.organizeImports.staticStarThreshold": 30,
+								}
+								"""
+				);
 	}
 
 }
