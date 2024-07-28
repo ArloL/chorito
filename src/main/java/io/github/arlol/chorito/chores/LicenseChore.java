@@ -40,7 +40,9 @@ public class LicenseChore implements Chore {
 		if (FilesSilent.exists(licenseMd)) {
 			FilesSilent.move(licenseMd, license);
 		}
-		if (context.hasGitHubRemote()) {
+		if (context.remotes()
+				.stream()
+				.anyMatch(s -> s.startsWith("https://github.com"))) {
 			checkPom(context);
 			final String currentYear = ""
 					+ Year.now(context.clock()).getValue();
