@@ -65,6 +65,7 @@ public class GitIgnoreChore implements Chore {
 
 			*
 			!/.gitignore
+			!/code-formatter-profile.xml
 			!/org.eclipse.jdt.core.prefs
 			!/org.eclipse.jdt.ui.prefs
 			""";
