@@ -1,7 +1,6 @@
 package io.github.arlol.chorito.chores;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 
@@ -23,7 +22,7 @@ public class DockerIgnoreChoreTest {
 
 			### Maven ###
 
-			target/
+			/target/
 
 			# End of chorito. Add your ignores after this line and they will be preserved.
 			""";
@@ -37,8 +36,8 @@ public class DockerIgnoreChoreTest {
 
 			### Gradle ###
 
-			build/
-			.gradle/
+			/build/
+			/.gradle/
 
 			# End of chorito. Add your ignores after this line and they will be preserved.
 			""";
@@ -59,9 +58,7 @@ public class DockerIgnoreChoreTest {
 		new DockerIgnoreChore().doit(extension.choreContext());
 
 		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
-		assertTrue(FilesSilent.exists(dockerIgnore));
-		assertThat(FilesSilent.readString(dockerIgnore))
-				.isEqualTo(DEFAULT_MAVEN);
+		assertThat(dockerIgnore).content().isEqualTo(DEFAULT_MAVEN);
 	}
 
 	@Test
@@ -72,9 +69,7 @@ public class DockerIgnoreChoreTest {
 		new DockerIgnoreChore().doit(extension.choreContext());
 
 		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
-		assertTrue(FilesSilent.exists(dockerIgnore));
-		assertThat(FilesSilent.readString(dockerIgnore))
-				.isEqualTo(DEFAULT_GRADLE);
+		assertThat(dockerIgnore).content().isEqualTo(DEFAULT_GRADLE);
 	}
 
 	@Test
@@ -121,6 +116,28 @@ public class DockerIgnoreChoreTest {
 
 		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
 		assertThat(dockerIgnore).content().contains("compose.yaml");
+	}
+
+	@Test
+	public void testPackageJson() throws Exception {
+		FilesSilent.touch(extension.choreContext().resolve("Dockerfile"));
+		FilesSilent.touch(extension.choreContext().resolve("package.json"));
+
+		new DockerIgnoreChore().doit(extension.choreContext());
+
+		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
+		assertThat(dockerIgnore).content().contains("/node_modules/");
+	}
+
+	@Test
+	public void testDockerignoreOnly() throws Exception {
+		FilesSilent.touch(extension.choreContext().resolve("build.gradle"));
+		FilesSilent.touch(extension.choreContext().resolve(".dockerignore"));
+
+		new DockerIgnoreChore().doit(extension.choreContext());
+
+		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
+		assertThat(dockerIgnore).content().isEqualTo(DEFAULT_GRADLE);
 	}
 
 }
