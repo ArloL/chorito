@@ -66,17 +66,17 @@ public class VsCodeChoreTest {
 				.isEqualTo(
 						"""
 								{
-								    "editor.foldingImportsByDefault": true,
-								    "java.compile.nullAnalysis.mode": "automatic",
-								    "java.configuration.updateBuildConfiguration": "interactive",
-								    "java.sources.organizeImports.starThreshold": 30,
-								    "java.sources.organizeImports.staticStarThreshold": 30,
 								    "[java]": {
 								        "editor.formatOnSave": true,
 								        "editor.codeActionsOnSave": {
 								            "source.organizeImports": "always",
 								        },
 								    },
+								    "editor.foldingImportsByDefault": true,
+								    "java.compile.nullAnalysis.mode": "automatic",
+								    "java.configuration.updateBuildConfiguration": "interactive",
+								    "java.sources.organizeImports.starThreshold": 30,
+								    "java.sources.organizeImports.staticStarThreshold": 30,
 								}
 								"""
 				);
