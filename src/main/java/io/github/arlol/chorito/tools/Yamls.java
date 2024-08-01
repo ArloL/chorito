@@ -3,6 +3,7 @@ package io.github.arlol.chorito.tools;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.snakeyaml.engine.v2.api.DumpSettings;
@@ -23,7 +24,7 @@ import org.snakeyaml.engine.v2.serializer.Serializer;
 
 public abstract class Yamls {
 
-	private Yamls() {
+	public Yamls() {
 	}
 
 	public static Optional<SequenceNode> getKeyAsSequence(
@@ -33,14 +34,14 @@ public abstract class Yamls {
 		return nodeAsSequence(getKeyAsNode(map, key));
 	}
 
-	private static Optional<ScalarNode> getKeyAsScalar(
+	public static Optional<ScalarNode> getKeyAsScalar(
 			MappingNode map,
 			String key
 	) {
 		return getKeyAsScalar(Optional.of(map), key);
 	}
 
-	private static Optional<ScalarNode> getKeyAsScalar(
+	public static Optional<ScalarNode> getKeyAsScalar(
 			Optional<MappingNode> map,
 			String key
 	) {
@@ -51,14 +52,14 @@ public abstract class Yamls {
 		return getKeyAsNode(Optional.of(map), key);
 	}
 
-	private static Optional<Node> getKeyAsNode(
+	public static Optional<Node> getKeyAsNode(
 			Optional<MappingNode> map,
 			String key
 	) {
 		return getKeyAsTuple(map, key).map(NodeTuple::getValueNode);
 	}
 
-	private static Optional<NodeTuple> getKeyAsTuple(
+	public static Optional<NodeTuple> getKeyAsTuple(
 			Optional<MappingNode> map,
 			String key
 	) {
@@ -79,11 +80,11 @@ public abstract class Yamls {
 		return nodeAsScalar(node).map(ScalarNode::getValue);
 	}
 
-	private static ScalarNode nodeAsScalar(Node node) {
+	public static ScalarNode nodeAsScalar(Node node) {
 		return nodeAsScalar(Optional.of(node)).orElseThrow();
 	}
 
-	private static Optional<ScalarNode> nodeAsScalar(Optional<Node> node) {
+	public static Optional<ScalarNode> nodeAsScalar(Optional<Node> node) {
 		return node.filter(n -> n instanceof ScalarNode)
 				.map(n -> (ScalarNode) n);
 	}
@@ -97,7 +98,7 @@ public abstract class Yamls {
 				.map(n -> (MappingNode) n);
 	}
 
-	private static Optional<SequenceNode> nodeAsSequence(Optional<Node> node) {
+	public static Optional<SequenceNode> nodeAsSequence(Optional<Node> node) {
 		return node.filter(n -> n instanceof SequenceNode)
 				.map(n -> (SequenceNode) n);
 	}
@@ -181,6 +182,65 @@ public abstract class Yamls {
 			return string;
 		}
 		return string + "\n";
+	}
+
+	public static Optional<MappingNode> getKeyAsMap(
+			MappingNode map,
+			String key
+	) {
+		return getKeyAsMap(Optional.of(map), key);
+	}
+
+	public static Optional<MappingNode> getKeyAsMap(
+			Optional<MappingNode> map,
+			String key
+	) {
+		return nodeAsMap(getKeyAsNode(map, key));
+	}
+
+	public static String scalarValue(Node node) {
+		return scalarValue(Optional.of(node)).orElseThrow();
+	}
+
+	public static Consumer<? super MappingNode> copyValue(
+			Optional<MappingNode> template
+	) {
+		return node -> template
+				.ifPresent(value -> node.setValue(value.getValue()));
+	}
+
+	public static void setKey(
+			Optional<MappingNode> map,
+			String key,
+			Node node
+	) {
+		List<NodeTuple> newValue = map.map(MappingNode::getValue)
+				.map(List::stream)
+				.orElse(Stream.empty())
+				.map(t -> {
+					if (t.getKeyNode() instanceof ScalarNode keyNode
+							&& key.equals(keyNode.getValue())) {
+						return new NodeTuple(t.getKeyNode(), node);
+					}
+					return t;
+				})
+				.toList();
+		map.ifPresent(mn -> mn.setValue(newValue));
+	}
+
+	public static void removeKey(Optional<MappingNode> map, String key) {
+		List<NodeTuple> newValue = map.map(MappingNode::getValue)
+				.map(List::stream)
+				.orElse(Stream.empty())
+				.filter(t -> {
+					if (t.getKeyNode() instanceof ScalarNode keyNode
+							&& key.equals(keyNode.getValue())) {
+						return false;
+					}
+					return true;
+				})
+				.toList();
+		map.ifPresent(mn -> mn.setValue(newValue));
 	}
 
 }
