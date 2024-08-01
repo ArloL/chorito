@@ -169,4 +169,86 @@ public class DependabotChoreTest {
 				""");
 	}
 
+	@Test
+	public void testGitHubActionsComposite() throws Exception {
+		String compositeAction = """
+				name: hello
+
+				inputs:
+				  name:
+				    required: true
+				    type: string
+
+				runs:
+				  using: composite
+				  steps:
+				    - shell: bash
+				      run: |
+				        echo "Hello ${{ inputs.name }}"
+				""";
+		FilesSilent.writeString(
+				extension.root().resolve(".github/actions/hello/actions.yml"),
+				compositeAction
+		);
+		FilesSilent.writeString(
+				extension.root().resolve(".github/actions/bye/actions.yaml"),
+				compositeAction
+		);
+
+		doit();
+
+		Path dependabot = extension.root().resolve(".github/dependabot.yml");
+		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
+				version: 2
+				updates:
+				  - package-ecosystem: "github-actions"
+				    directory: "/"
+				    schedule:
+				      interval: "daily"
+				  - package-ecosystem: "github-actions"
+				    directory: "/.github/actions/hello/"
+				    schedule:
+				      interval: "daily"
+				  - package-ecosystem: "github-actions"
+				    directory: "/.github/actions/bye/"
+				    schedule:
+				      interval: "daily"
+				""");
+	}
+
+	@Test
+	public void testGitHubActionsNode() throws Exception {
+		String nodeAction = """
+				name: 'Hello World'
+				description: 'Greet someone and record the time'
+				inputs:
+				  who-to-greet:  # id of input
+				    description: 'Who to greet'
+				    required: true
+				    default: 'World'
+				outputs:
+				  time: # id of output
+				    description: 'The time we greeted you'
+				runs:
+				  using: 'node20'
+				  main: 'index.js'
+				""";
+		FilesSilent.writeString(
+				extension.root().resolve(".github/actions/hello/actions.yml"),
+				nodeAction
+		);
+
+		doit();
+
+		Path dependabot = extension.root().resolve(".github/dependabot.yml");
+		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
+				version: 2
+				updates:
+				  - package-ecosystem: "github-actions"
+				    directory: "/"
+				    schedule:
+				      interval: "daily"
+				""");
+	}
+
 }
