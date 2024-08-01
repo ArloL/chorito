@@ -11,13 +11,11 @@ import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.GitHubActionsWorkflowFile;
 import io.github.arlol.chorito.tools.MyPaths;
 import io.github.arlol.chorito.tools.RandomCronBuilder;
-import io.github.arlol.chorito.tools.Renamer;
 
 public class GitHubActionChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		ensureYamlFileExtension(context);
 		updateChoresWorkflow(context);
 		updateGraalVmVersion(context);
 		removeCustomGithubPackagesMavenSettings(context);
@@ -164,20 +162,6 @@ public class GitHubActionChore implements Chore {
 			);
 			FilesSilent.writeString(path, updated);
 		});
-	}
-
-	private void ensureYamlFileExtension(ChoreContext context) {
-		Path workflowsLocation = context.resolve(".github/workflows");
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yml");
-			}
-			return false;
-		})
-				.map(context::resolve)
-				.forEach(
-						path -> Renamer.replaceInFilename(path, ".yml", ".yaml")
-				);
 	}
 
 	private void updateChoresWorkflow(ChoreContext context) {
