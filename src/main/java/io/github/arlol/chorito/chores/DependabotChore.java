@@ -11,11 +11,9 @@ import io.github.arlol.chorito.tools.MyPaths;
 public class DependabotChore implements Chore {
 
 	DependabotConfigFile dependabotConfigFile;
-	ChoreContext context;
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		this.context = context;
 		if (context.remotes()
 				.stream()
 				.noneMatch(s -> s.startsWith("https://github.com"))
@@ -35,23 +33,23 @@ public class DependabotChore implements Chore {
 			dependabotConfigFile = new DependabotConfigFile();
 		}
 
-		addEcosystemIfFileExists("pom.xml", "maven");
-		addEcosystemIfFileExists("Gemfile.lock", "bundler");
+		addEcosystemIfFileExists("pom.xml", "maven", context);
+		addEcosystemIfFileExists("Gemfile.lock", "bundler", context);
 		dependabotConfigFile.addEcosystemInDirectory("github-actions", "/");
-		addEcosystemIfFileNameMatches("(?i).*dockerfile", "docker");
-		addEcosystemIfFileExists("Pipfile", "pip");
-		addEcosystemIfFileExists("package.json", "npm");
-		addEcosystemIfFileExists("build.gradle", "gradle");
-		addEcosystemIfFileExists(".terraform.lock.hcl", "terraform");
-		addCompositeGitHubActions();
+		addEcosystemIfFileNameMatches("(?i).*dockerfile", "docker", context);
+		addEcosystemIfFileExists("Pipfile", "pip", context);
+		addEcosystemIfFileExists("package.json", "npm", context);
+		addEcosystemIfFileExists("build.gradle", "gradle", context);
+		addEcosystemIfFileExists(".terraform.lock.hcl", "terraform", context);
+		addCompositeGitHubActions(context);
 
 		FilesSilent.writeString(dependabotYml, dependabotConfigFile.asString());
 
 		return context;
 	}
 
-	private void addCompositeGitHubActions() {
-		addEcosystemIfFilterMatches(path -> {
+	private void addCompositeGitHubActions(ChoreContext context) {
+		addEcosystemIfFilterMatches(context, path -> {
 			if (path.endsWith("action.yml") || path.endsWith("action.yaml")) {
 				return FilesSilent.readString(path)
 						.contains("using: composite");
@@ -60,17 +58,22 @@ public class DependabotChore implements Chore {
 		}, "github-actions");
 	}
 
-	private void addEcosystemIfFileExists(String fileName, String ecosystem) {
-		addEcosystemIfFilterMatches(path -> {
+	private void addEcosystemIfFileExists(
+			String fileName,
+			String ecosystem,
+			ChoreContext context
+	) {
+		addEcosystemIfFilterMatches(context, path -> {
 			return path.endsWith(fileName);
 		}, ecosystem);
 	}
 
 	private void addEcosystemIfFileNameMatches(
 			String fileNamePattern,
-			String ecosystem
+			String ecosystem,
+			ChoreContext context
 	) {
-		addEcosystemIfFilterMatches(path -> {
+		addEcosystemIfFilterMatches(context, path -> {
 			return MyPaths.getFileName(path)
 					.toString()
 					.matches(fileNamePattern);
@@ -78,6 +81,7 @@ public class DependabotChore implements Chore {
 	}
 
 	private void addEcosystemIfFilterMatches(
+			ChoreContext context,
 			Predicate<? super Path> predicate,
 			String ecosystem
 	) {
