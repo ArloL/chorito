@@ -44,14 +44,14 @@ public class DependabotChoreTest {
 		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
 				version: 2
 				updates:
-				  - package-ecosystem: "github-actions"
-				    directory: "/"
-				    schedule:
-				      interval: "daily"
-				  - package-ecosystem: "npm"
-				    directory: "/test-projects/vite-project/"
-				    schedule:
-				      interval: "daily"
+				- package-ecosystem: "github-actions"
+				  directory: "/"
+				  schedule:
+				    interval: "daily"
+				- package-ecosystem: "npm"
+				  directory: "/test-projects/vite-project/"
+				  schedule:
+				    interval: "daily"
 				""");
 	}
 
@@ -69,18 +69,18 @@ public class DependabotChoreTest {
 		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
 				version: 2
 				updates:
-				  - package-ecosystem: "github-actions"
-				    directory: "/"
-				    schedule:
-				      interval: "daily"
-				  - package-ecosystem: "npm"
-				    directory: "/"
-				    schedule:
-				      interval: "daily"
-				  - package-ecosystem: "npm"
-				    directory: "/test-projects/vite-project/"
-				    schedule:
-				      interval: "daily"
+				- package-ecosystem: "github-actions"
+				  directory: "/"
+				  schedule:
+				    interval: "daily"
+				- package-ecosystem: "npm"
+				  directory: "/"
+				  schedule:
+				    interval: "daily"
+				- package-ecosystem: "npm"
+				  directory: "/test-projects/vite-project/"
+				  schedule:
+				    interval: "daily"
 				""");
 	}
 
@@ -94,14 +94,14 @@ public class DependabotChoreTest {
 		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
 				version: 2
 				updates:
-				  - package-ecosystem: "github-actions"
-				    directory: "/"
-				    schedule:
-				      interval: "daily"
-				  - package-ecosystem: "terraform"
-				    directory: "/"
-				    schedule:
-				      interval: "daily"
+				- package-ecosystem: "github-actions"
+				  directory: "/"
+				  schedule:
+				    interval: "daily"
+				- package-ecosystem: "terraform"
+				  directory: "/"
+				  schedule:
+				    interval: "daily"
 				""");
 	}
 
@@ -115,14 +115,14 @@ public class DependabotChoreTest {
 		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
 				version: 2
 				updates:
-				  - package-ecosystem: "github-actions"
-				    directory: "/"
-				    schedule:
-				      interval: "daily"
-				  - package-ecosystem: "docker"
-				    directory: "/"
-				    schedule:
-				      interval: "daily"
+				- package-ecosystem: "github-actions"
+				  directory: "/"
+				  schedule:
+				    interval: "daily"
+				- package-ecosystem: "docker"
+				  directory: "/"
+				  schedule:
+				    interval: "daily"
 				""");
 	}
 
@@ -136,14 +136,14 @@ public class DependabotChoreTest {
 		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
 				version: 2
 				updates:
-				  - package-ecosystem: "github-actions"
-				    directory: "/"
-				    schedule:
-				      interval: "daily"
-				  - package-ecosystem: "docker"
-				    directory: "/"
-				    schedule:
-				      interval: "daily"
+				- package-ecosystem: "github-actions"
+				  directory: "/"
+				  schedule:
+				    interval: "daily"
+				- package-ecosystem: "docker"
+				  directory: "/"
+				  schedule:
+				    interval: "daily"
 				""");
 	}
 
@@ -154,7 +154,7 @@ public class DependabotChoreTest {
 				version: 2
 				updates:
 				  - package-ecosystem: "github-actions"
-				  	open-pull-requests-limit: 1
+				    open-pull-requests-limit: 1
 				    directory: "/"
 				    schedule:
 				      interval: "weekly"
@@ -165,11 +165,11 @@ public class DependabotChoreTest {
 		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
 				version: 2
 				updates:
-				  - package-ecosystem: "github-actions"
-				  	open-pull-requests-limit: 1
-				    directory: "/"
-				    schedule:
-				      interval: "weekly"
+				- package-ecosystem: "github-actions"
+				  open-pull-requests-limit: 1
+				  directory: "/"
+				  schedule:
+				    interval: "weekly"
 				""");
 	}
 
@@ -205,18 +205,18 @@ public class DependabotChoreTest {
 		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
 				version: 2
 				updates:
-				  - package-ecosystem: "github-actions"
-				    directory: "/"
-				    schedule:
-				      interval: "daily"
-				  - package-ecosystem: "github-actions"
-				    directory: "/.github/actions/hello/"
-				    schedule:
-				      interval: "daily"
-				  - package-ecosystem: "github-actions"
-				    directory: "/.github/actions/bye/"
-				    schedule:
-				      interval: "daily"
+				- package-ecosystem: "github-actions"
+				  directory: "/"
+				  schedule:
+				    interval: "daily"
+				- package-ecosystem: "github-actions"
+				  directory: "/.github/actions/hello/"
+				  schedule:
+				    interval: "daily"
+				- package-ecosystem: "github-actions"
+				  directory: "/.github/actions/bye/"
+				  schedule:
+				    interval: "daily"
 				""");
 	}
 
@@ -248,10 +248,10 @@ public class DependabotChoreTest {
 		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
 				version: 2
 				updates:
-				  - package-ecosystem: "github-actions"
-				    directory: "/"
-				    schedule:
-				      interval: "daily"
+				- package-ecosystem: "github-actions"
+				  directory: "/"
+				  schedule:
+				    interval: "daily"
 				""");
 	}
 
