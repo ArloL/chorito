@@ -255,4 +255,37 @@ public class DependabotChoreTest {
 				""");
 	}
 
+	@Test
+	public void testMaintainSettingsWithTrailingSlash() throws Exception {
+		// given
+		FilesSilent.touch(extension.root().resolve("subdir/pom.xml"));
+		Path dependabot = extension.root().resolve(".github/dependabot.yml");
+		FilesSilent.writeString(dependabot, """
+				version: 2
+				updates:
+				  - package-ecosystem: "maven"
+				    open-pull-requests-limit: 1
+				    directory: "/subdir"
+				    schedule:
+				      interval: "monthly"
+				""");
+
+		// when
+		doit();
+
+		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
+				version: 2
+				updates:
+				- package-ecosystem: "maven"
+				  open-pull-requests-limit: 1
+				  directory: "/subdir"
+				  schedule:
+				    interval: "monthly"
+				- package-ecosystem: "github-actions"
+				  directory: "/"
+				  schedule:
+				    interval: "daily"
+				""");
+	}
+
 }
