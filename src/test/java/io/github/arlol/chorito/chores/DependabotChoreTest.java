@@ -148,24 +148,28 @@ public class DependabotChoreTest {
 	}
 
 	@Test
-	public void testMultipleDockerfiles() throws Exception {
-		FilesSilent.touch(extension.root().resolve("random.dockerfile"));
-		FilesSilent.touch(extension.root().resolve("another.dockerfile"));
+	public void testKeepExistingSettings() throws Exception {
+		Path dependabot = extension.root().resolve(".github/dependabot.yml");
+		FilesSilent.writeString(dependabot, """
+				version: 2
+				updates:
+				  - package-ecosystem: "github-actions"
+				  	open-pull-requests-limit: 1
+				    directory: "/"
+				    schedule:
+				      interval: "weekly"
+				""");
 
 		doit();
 
-		Path dependabot = extension.root().resolve(".github/dependabot.yml");
 		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
 				version: 2
 				updates:
 				  - package-ecosystem: "github-actions"
+				  	open-pull-requests-limit: 1
 				    directory: "/"
 				    schedule:
-				      interval: "daily"
-				  - package-ecosystem: "docker"
-				    directory: "/"
-				    schedule:
-				      interval: "daily"
+				      interval: "weekly"
 				""");
 	}
 
