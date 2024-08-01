@@ -1,6 +1,5 @@
 package io.github.arlol.chorito.tools;
 
-import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -9,7 +8,6 @@ import java.util.stream.Stream;
 
 import org.snakeyaml.engine.v2.api.DumpSettings;
 import org.snakeyaml.engine.v2.api.LoadSettings;
-import org.snakeyaml.engine.v2.api.StreamDataWriter;
 import org.snakeyaml.engine.v2.common.FlowStyle;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
 import org.snakeyaml.engine.v2.composer.Composer;
@@ -185,7 +183,7 @@ public class GitHubActionsWorkflowFile {
 				.setSplitLines(false)
 				.build();
 
-		StreamToStringWriter writer = new StreamToStringWriter();
+		YamlStreamToStringWriter writer = new YamlStreamToStringWriter();
 		Serializer serializer = new Serializer(
 				dumpSettings,
 				new Emitter(dumpSettings, writer)
@@ -345,9 +343,5 @@ public class GitHubActionsWorkflowFile {
 				new SequenceNode(Tag.SEQ, nodes, FlowStyle.BLOCK)
 		);
 	}
-
-}
-
-class StreamToStringWriter extends StringWriter implements StreamDataWriter {
 
 }
