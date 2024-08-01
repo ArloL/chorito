@@ -58,7 +58,7 @@ public class DependabotChore implements Chore {
 
 	private String getCompositeGitHubActions(ChoreContext context) {
 		return getEcosystemIfFilterMatches(context, path -> {
-			if (path.endsWith("actions.yml") || path.endsWith("actions.yaml")) {
+			if (path.endsWith("action.yml") || path.endsWith("action.yaml")) {
 				return FilesSilent.readString(path)
 						.contains("using: composite");
 			}

@@ -187,11 +187,11 @@ public class DependabotChoreTest {
 				        echo "Hello ${{ inputs.name }}"
 				""";
 		FilesSilent.writeString(
-				extension.root().resolve(".github/actions/hello/actions.yml"),
+				extension.root().resolve(".github/actions/hello/action.yml"),
 				compositeAction
 		);
 		FilesSilent.writeString(
-				extension.root().resolve(".github/actions/bye/actions.yaml"),
+				extension.root().resolve(".github/actions/bye/action.yaml"),
 				compositeAction
 		);
 
