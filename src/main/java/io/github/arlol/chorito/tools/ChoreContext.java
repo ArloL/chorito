@@ -144,6 +144,7 @@ public class ChoreContext {
 	private final Function<String[], ProcessBuilderSilent> processBuilderFactory;
 	private final BuilderRefresh builderRefresh;
 	private final Consumer<Path> deleteIgnoredFiles;
+	private boolean dirty;
 
 	public ChoreContext(
 			Path root,
@@ -215,11 +216,16 @@ public class ChoreContext {
 		return builderRefresh.refresh(toBuilder()).build();
 	}
 
-	public ChoreContext refresh(boolean changed) {
-		if (changed) {
-			return builderRefresh.refresh(toBuilder()).build();
-		}
-		return this;
+	public void setDirty() {
+		setDirty(true);
+	}
+
+	public void setDirty(boolean dirty) {
+		this.dirty = dirty;
+	}
+
+	public boolean isDirty() {
+		return this.dirty;
 	}
 
 	public void deleteIgnoredFiles() {
