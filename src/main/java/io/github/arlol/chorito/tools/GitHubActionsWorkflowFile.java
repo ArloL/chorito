@@ -1,10 +1,18 @@
 package io.github.arlol.chorito.tools;
 
+import static io.github.arlol.chorito.tools.Yamls.copyValue;
+import static io.github.arlol.chorito.tools.Yamls.getKeyAsMap;
+import static io.github.arlol.chorito.tools.Yamls.getKeyAsNode;
+import static io.github.arlol.chorito.tools.Yamls.getKeyAsSequence;
+import static io.github.arlol.chorito.tools.Yamls.getKeyAsTuple;
+import static io.github.arlol.chorito.tools.Yamls.nodeAsMap;
+import static io.github.arlol.chorito.tools.Yamls.removeKey;
+import static io.github.arlol.chorito.tools.Yamls.scalarValue;
+import static io.github.arlol.chorito.tools.Yamls.setKey;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import org.snakeyaml.engine.v2.api.DumpSettings;
 import org.snakeyaml.engine.v2.api.LoadSettings;
@@ -23,141 +31,6 @@ import org.snakeyaml.engine.v2.scanner.StreamReader;
 import org.snakeyaml.engine.v2.serializer.Serializer;
 
 public class GitHubActionsWorkflowFile {
-
-	private static Optional<MappingNode> getKeyAsMap(
-			MappingNode map,
-			String key
-	) {
-		return getKeyAsMap(Optional.of(map), key);
-	}
-
-	private static Optional<MappingNode> getKeyAsMap(
-			Optional<MappingNode> map,
-			String key
-	) {
-		return nodeAsMap(getKeyAsNode(map, key));
-	}
-
-	private static Optional<SequenceNode> getKeyAsSequence(
-			Optional<MappingNode> map,
-			String key
-	) {
-		return nodeAsSequence(getKeyAsNode(map, key));
-	}
-
-	public static Optional<ScalarNode> getKeyAsScalar(
-			MappingNode map,
-			String key
-	) {
-		return getKeyAsScalar(Optional.of(map), key);
-	}
-
-	private static Optional<ScalarNode> getKeyAsScalar(
-			Optional<MappingNode> map,
-			String key
-	) {
-		return nodeAsScalar(getKeyAsNode(map, key));
-	}
-
-	private static Optional<Node> getKeyAsNode(MappingNode map, String key) {
-		return getKeyAsNode(Optional.of(map), key);
-	}
-
-	private static Optional<Node> getKeyAsNode(
-			Optional<MappingNode> map,
-			String key
-	) {
-		return getKeyAsTuple(map, key).map(NodeTuple::getValueNode);
-	}
-
-	private static Optional<NodeTuple> getKeyAsTuple(
-			Optional<MappingNode> map,
-			String key
-	) {
-		return map.map(MappingNode::getValue)
-				.map(List::stream)
-				.orElse(Stream.empty())
-				.filter(t -> {
-					if (t.getKeyNode() instanceof ScalarNode keyNode
-							&& key.equals(keyNode.getValue())) {
-						return true;
-					}
-					return false;
-				})
-				.findFirst();
-	}
-
-	private static String scalarValue(Node node) {
-		return scalarValue(Optional.of(node)).orElseThrow();
-	}
-
-	private static Optional<String> scalarValue(Optional<Node> node) {
-		return nodeAsScalar(node).map(ScalarNode::getValue);
-	}
-
-	public static ScalarNode nodeAsScalar(Node node) {
-		return nodeAsScalar(Optional.of(node)).orElseThrow();
-	}
-
-	private static Optional<ScalarNode> nodeAsScalar(Optional<Node> node) {
-		return node.filter(n -> n instanceof ScalarNode)
-				.map(n -> (ScalarNode) n);
-	}
-
-	private static MappingNode nodeAsMap(Node node) {
-		return nodeAsMap(Optional.of(node)).orElseThrow();
-	}
-
-	private static Optional<MappingNode> nodeAsMap(Optional<Node> node) {
-		return node.filter(n -> n instanceof MappingNode)
-				.map(n -> (MappingNode) n);
-	}
-
-	private static Optional<SequenceNode> nodeAsSequence(Optional<Node> node) {
-		return node.filter(n -> n instanceof SequenceNode)
-				.map(n -> (SequenceNode) n);
-	}
-
-	private static Consumer<? super MappingNode> copyValue(
-			Optional<MappingNode> template
-	) {
-		return node -> template
-				.ifPresent(value -> node.setValue(value.getValue()));
-	}
-
-	private static void setKey(
-			Optional<MappingNode> map,
-			String key,
-			Node node
-	) {
-		List<NodeTuple> newValue = map.map(MappingNode::getValue)
-				.map(List::stream)
-				.orElse(Stream.empty())
-				.map(t -> {
-					if (t.getKeyNode() instanceof ScalarNode keyNode
-							&& key.equals(keyNode.getValue())) {
-						return new NodeTuple(t.getKeyNode(), node);
-					}
-					return t;
-				})
-				.toList();
-		map.ifPresent(mn -> mn.setValue(newValue));
-	}
-
-	private static void removeKey(Optional<MappingNode> map, String key) {
-		List<NodeTuple> newValue = map.map(MappingNode::getValue)
-				.map(List::stream)
-				.orElse(Stream.empty())
-				.filter(t -> {
-					if (t.getKeyNode() instanceof ScalarNode keyNode
-							&& key.equals(keyNode.getValue())) {
-						return false;
-					}
-					return true;
-				})
-				.toList();
-		map.ifPresent(mn -> mn.setValue(newValue));
-	}
 
 	private Optional<Node> root;
 
