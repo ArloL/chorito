@@ -43,6 +43,8 @@ public class DependabotConfigFile {
 			String packageEcosystem,
 			String directory
 	) {
+		var directoryWithoutTrailingSlash = directory
+				.substring(0, directory.length() - 1);
 		return getUpdates().map(SequenceNode::getValue)
 				.orElse(List.of())
 				.stream()
@@ -51,9 +53,13 @@ public class DependabotConfigFile {
 					return scalarValue(getKeyAsNode(step, "package-ecosystem"))
 							.filter(value -> packageEcosystem.equals(value))
 							.isPresent()
-							&& scalarValue(getKeyAsNode(step, "directory"))
-									.filter(value -> directory.equals(value))
-									.isPresent();
+							&& scalarValue(
+									getKeyAsNode(step, "directory")
+							).filter(
+									value -> directory.equals(value)
+											|| directoryWithoutTrailingSlash
+													.equals(value)
+							).isPresent();
 				});
 	}
 
@@ -69,9 +75,7 @@ public class DependabotConfigFile {
 		);
 		var updates = getUpdates();
 		updates.map(SequenceNode::getValue)
-				.ifPresentOrElse(list -> list.add(newMap(nodes)), () -> {
-
-				});
+				.ifPresent(list -> list.add(newMap(nodes)));
 
 	}
 
