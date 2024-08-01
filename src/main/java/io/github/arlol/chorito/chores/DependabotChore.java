@@ -10,7 +10,7 @@ import io.github.arlol.chorito.tools.MyPaths;
 
 public class DependabotChore implements Chore {
 
-	DependabotConfigFile dependabotConfigFile;
+	DependabotConfigFile dependabotConfigFile = new DependabotConfigFile();
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
