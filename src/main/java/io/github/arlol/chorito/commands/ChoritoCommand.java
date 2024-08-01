@@ -55,6 +55,9 @@ public class ChoritoCommand {
 		ChoreContext currentContext = GitChoreContext.newBuilder(root).build();
 		for (Chore chore : chores) {
 			currentContext = chore.doit(currentContext);
+			if (currentContext.isDirty()) {
+				currentContext = currentContext.refresh();
+			}
 		}
 		currentContext = currentContext.refresh();
 		currentContext.deleteIgnoredFiles();
