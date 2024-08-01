@@ -215,6 +215,13 @@ public class ChoreContext {
 		return builderRefresh.refresh(toBuilder()).build();
 	}
 
+	public ChoreContext refresh(boolean changed) {
+		if (changed) {
+			return builderRefresh.refresh(toBuilder()).build();
+		}
+		return this;
+	}
+
 	public void deleteIgnoredFiles() {
 		deleteIgnoredFiles.accept(root);
 	}
