@@ -17,6 +17,10 @@ public class JavaUpdaterChoreTest {
 
 	@Test
 	public void testWithNothing() {
+		doit();
+	}
+
+	private void doit() {
 		new JavaUpdaterChore().doit(extension.choreContext());
 	}
 
@@ -30,9 +34,9 @@ public class JavaUpdaterChoreTest {
 				org.eclipse.jdt.core.compiler.codegen.targetPlatform=11
 				""");
 
-		new JavaUpdaterChore().doit(extension.choreContext());
+		doit();
 
-		assertThat(FilesSilent.readString(prefs)).isEqualTo("""
+		assertThat(prefs).content().isEqualTo("""
 				org.eclipse.jdt.core.compiler.codegen.targetPlatform=21
 				org.eclipse.jdt.core.compiler.compliance=21
 				org.eclipse.jdt.core.compiler.source=21
@@ -44,10 +48,9 @@ public class JavaUpdaterChoreTest {
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(pom, "<java.version>11</java.version>");
 
-		new JavaUpdaterChore().doit(extension.choreContext());
+		doit();
 
-		assertThat(FilesSilent.readString(pom))
-				.isEqualTo("<java.version>21</java.version>");
+		assertThat(pom).content().isEqualTo("<java.version>21</java.version>");
 	}
 
 	@Test
@@ -55,10 +58,9 @@ public class JavaUpdaterChoreTest {
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(workflow, "  JAVA_VERSION: 11");
 
-		new JavaUpdaterChore().doit(extension.choreContext());
+		doit();
 
-		assertThat(FilesSilent.readString(workflow))
-				.isEqualTo("  JAVA_VERSION: 21\n");
+		assertThat(workflow).content().isEqualTo("  JAVA_VERSION: 21\n");
 	}
 
 	@Test
@@ -66,9 +68,9 @@ public class JavaUpdaterChoreTest {
 		Path jitpack = extension.root().resolve("jitpack.yml");
 		FilesSilent.writeString(jitpack, "- openjdk8");
 
-		new JavaUpdaterChore().doit(extension.choreContext());
+		doit();
 
-		assertThat(FilesSilent.readString(jitpack)).isEqualTo("- openjdk21\n");
+		assertThat(jitpack).content().isEqualTo("- openjdk21\n");
 	}
 
 	@Test
@@ -76,9 +78,28 @@ public class JavaUpdaterChoreTest {
 		Path jitpack = extension.root().resolve("jitpack.yml");
 		FilesSilent.writeString(jitpack, "- openjdk11");
 
-		new JavaUpdaterChore().doit(extension.choreContext());
+		doit();
 
-		assertThat(FilesSilent.readString(jitpack)).isEqualTo("- openjdk21\n");
+		assertThat(jitpack).content().isEqualTo("- openjdk21\n");
+	}
+
+	@Test
+	public void testPomWithoutJavaVersionXml() throws Exception {
+		Path pom = extension.root().resolve("pom.xml");
+		FilesSilent.writeString(
+				pom,
+				"<project><properties></properties</project>"
+		);
+
+		doit();
+
+		assertThat(pom).content().isEqualToIgnoringNewLines("""
+				<project>
+				<properties>
+				<java.version>21</java.version>
+				</properties>
+				</project>
+				""");
 	}
 
 }

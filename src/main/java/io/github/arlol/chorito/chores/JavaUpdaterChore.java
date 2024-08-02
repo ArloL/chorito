@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.parser.Parser;
+import org.jsoup.select.Elements;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
@@ -49,14 +50,18 @@ public class JavaUpdaterChore implements Chore {
 		if (FilesSilent.exists(pomXml)) {
 			Document doc = JsoupSilent
 					.parse(pomXml, "UTF-8", "", Parser.xmlParser());
-			doc.getElementsByTag("java.version")
-					.stream()
-					.filter(e -> e.text().equals("11"))
-					.forEach(e -> e.text("21"));
-			doc.getElementsByTag("java.version")
-					.stream()
-					.filter(e -> e.text().equals("17"))
-					.forEach(e -> e.text("21"));
+			Elements javaVersionElements = doc.getElementsByTag("java.version");
+			if (javaVersionElements.isEmpty()) {
+				doc.selectFirst("project > properties")
+						.append("<java.version>21</java.version>");
+			} else {
+				javaVersionElements.stream()
+						.filter(e -> e.text().equals("11"))
+						.forEach(e -> e.text("21"));
+				javaVersionElements.stream()
+						.filter(e -> e.text().equals("17"))
+						.forEach(e -> e.text("21"));
+			}
 			FilesSilent.writeString(pomXml, doc.outerHtml());
 		}
 	}
