@@ -57,7 +57,6 @@ public class GitIgnoreChore implements Chore {
 
 			!/gradle-wrapper.jar
 			!/gradle-wrapper.properties
-
 			""";
 
 	private static String GITIGNORE_ECLIPSE_SETTINGS = """
