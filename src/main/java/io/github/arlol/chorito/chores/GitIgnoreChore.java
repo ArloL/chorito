@@ -42,7 +42,6 @@ public class GitIgnoreChore implements Chore {
 
 			!/maven-wrapper.jar
 			!/maven-wrapper.properties
-
 			""";
 
 	private static String GITIGNORE_GRADLE = """
