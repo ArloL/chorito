@@ -53,7 +53,7 @@ public class JavaUpdaterChore implements Chore {
 			Elements javaVersionElements = doc.getElementsByTag("java.version");
 			if (javaVersionElements.isEmpty()) {
 				doc.selectFirst("project > properties")
-						.append("<java.version>21</java.version>");
+						.append("	<java.version>21</java.version>\n	");
 			} else {
 				javaVersionElements.stream()
 						.filter(e -> e.text().equals("11"))
