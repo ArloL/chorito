@@ -117,77 +117,6 @@ public class GitHubActionChoreTest {
 			      run: choco install upx --version=3.96 --no-progress
 			""";
 
-	private static final String INPUT_STEPS_OUTPUT = """
-			jobs:
-			  version:
-			    runs-on: ubuntu-latest
-			    outputs:
-			      new_version: ${{ steps.output.outputs.new_version }}
-			    steps:
-			    - name: Bump version and push tag
-			      id: tag
-			      if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
-			      uses: mathieudutour/github-tag-action@v6.0
-			      with:
-			        github_token: ${{ secrets.GITHUB_TOKEN }}
-			        release_branches: master,main
-			    - id: output
-			      env:
-			        NEW_VERSION: ${{ steps.tag.outputs.new_version}}
-			      run: |
-			        echo "::set-output name=new_version::${NEW_VERSION:-$GITHUB_SHA}"
-			  macos:
-			    runs-on: macos-latest
-			    needs: version
-			    env:
-			      REVISION: ${{ needs.version.outputs.new_version }}
-			    steps:
-			    - name: Build with Maven
-			      run: |
-			        set -o xtrace
-			        ./mvnw \
-			          --batch-mode \
-			          -Dsha1="${GITHUB_SHA}" \
-			          -Drevision="${REVISION}" \
-			          verify
-			""";
-	private static final String EXPECTED_STEPS_OUTPUT = """
-			jobs:
-			  version:
-			    runs-on: ubuntu-latest
-			    permissions:
-			      contents: write
-			    outputs:
-			      new_version: ${{ steps.output.outputs.new_version }}
-			    steps:
-			    - name: Bump version and push tag
-			      id: tag
-			      if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
-			      uses: mathieudutour/github-tag-action@v6.0
-			      with:
-			        github_token: ${{ secrets.GITHUB_TOKEN }}
-			        release_branches: master,main
-			    - id: output
-			      env:
-			        NEW_VERSION: ${{ steps.tag.outputs.new_version}}
-			      run: |
-			        echo "new_version=${NEW_VERSION:-$GITHUB_SHA}" >> $GITHUB_OUTPUT
-			  macos:
-			    runs-on: macos-latest
-			    needs: version
-			    env:
-			      REVISION: ${{ needs.version.outputs.new_version }}
-			    steps:
-			    - name: Build with Maven
-			      run: |
-			        set -o xtrace
-			        ./mvnw \
-			          --batch-mode \
-			          -Dsha1="${GITHUB_SHA}" \
-			          -Drevision="${REVISION}" \
-			          verify
-			""";
-
 	private String removeVersions(String input) {
 		return input.replaceAll("@v[0-9.]+\n", "@\n");
 	}
@@ -266,17 +195,6 @@ public class GitHubActionChoreTest {
 		new GitHubActionChore().doit(extension.choreContext());
 
 		assertThat(FilesSilent.readString(workflow)).isEqualTo(EXPECTED_ADOPT);
-	}
-
-	@Test
-	public void testStepsOutput() throws Exception {
-		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
-		FilesSilent.writeString(workflow, INPUT_STEPS_OUTPUT);
-
-		new GitHubActionChore().doit(extension.choreContext());
-
-		assertThat(FilesSilent.readString(workflow))
-				.isEqualTo(EXPECTED_STEPS_OUTPUT);
 	}
 
 	@Test

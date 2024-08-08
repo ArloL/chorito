@@ -30,6 +30,7 @@ public class GitHubActionChore implements Chore {
 		migrateActionsUploadReleaseAsset(context);
 		updateGraalSteps(context);
 		updateDebugSteps(context);
+		updateVersionSteps(context);
 		updatePermissions(context);
 		return context;
 	}
@@ -112,6 +113,28 @@ public class GitHubActionChore implements Chore {
 			);
 			if (workflow.hasJob("debug")) {
 				workflow.setJob("debug", debugJob);
+			}
+			FilesSilent.writeString(path, workflow.asString());
+		});
+	}
+
+	private void updateVersionSteps(ChoreContext context) {
+		var currentMain = new GitHubActionsWorkflowFile(
+				ClassPathFiles.readString("github-settings/workflows/main.yaml")
+		);
+		var debugJob = currentMain.getJob("version");
+		Path workflowsLocation = context.resolve(".github/workflows");
+		context.textFiles().stream().filter(path -> {
+			if (path.startsWith(workflowsLocation)) {
+				return path.toString().endsWith(".yaml");
+			}
+			return false;
+		}).map(context::resolve).forEach(path -> {
+			var workflow = new GitHubActionsWorkflowFile(
+					FilesSilent.readString(path)
+			);
+			if (workflow.hasJob("version")) {
+				workflow.setJob("version", debugJob);
 			}
 			FilesSilent.writeString(path, workflow.asString());
 		});
