@@ -86,18 +86,22 @@ public class JavaUpdaterChoreTest {
 	@Test
 	public void testPomWithoutJavaVersionXml() throws Exception {
 		Path pom = extension.root().resolve("pom.xml");
-		FilesSilent.writeString(
-				pom,
-				"<project><properties></properties</project>"
-		);
+		FilesSilent.writeString(pom, """
+				<project>
+					<properties>
+						<revision>0.0.1-SNAPSHOT</revision>
+					</properties>
+				</project>
+				""");
 
 		doit();
 
-		assertThat(pom).content().isEqualToIgnoringNewLines("""
+		assertThat(pom).content().isEqualTo("""
 				<project>
-				<properties>
-				<java.version>21</java.version>
-				</properties>
+					<properties>
+						<revision>0.0.1-SNAPSHOT</revision>
+						<java.version>21</java.version>
+					</properties>
 				</project>
 				""");
 	}
