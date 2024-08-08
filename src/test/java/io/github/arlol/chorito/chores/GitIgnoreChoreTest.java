@@ -32,8 +32,9 @@ public class GitIgnoreChoreTest {
 
 			### Eclipse+Java ###
 
-			/.classpath
 			/bin/
+			/.classpath
+			/.factorypath
 
 			### IntelliJ IDEA ###
 
@@ -54,8 +55,9 @@ public class GitIgnoreChoreTest {
 
 			### Eclipse+Java ###
 
-			/.classpath
 			/bin/
+			/.classpath
+			/.factorypath
 
 			### IntelliJ IDEA ###
 
@@ -93,8 +95,9 @@ public class GitIgnoreChoreTest {
 
 			### Eclipse+Java ###
 
-			/.classpath
 			/bin/
+			/.classpath
+			/.factorypath
 
 			### IntelliJ IDEA ###
 
