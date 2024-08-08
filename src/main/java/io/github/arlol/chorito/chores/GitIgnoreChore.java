@@ -20,8 +20,9 @@ public class GitIgnoreChore implements Chore {
 	private static String GITIGNORE_ECLIPSE_JAVA = """
 			### Eclipse+Java ###
 
-			/.classpath
 			/bin/
+			/.classpath
+			/.factorypath
 			""";
 
 	private static String GITIGNORE_IDEA = """
