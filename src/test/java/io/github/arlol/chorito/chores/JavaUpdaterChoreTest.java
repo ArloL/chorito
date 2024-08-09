@@ -106,4 +106,23 @@ public class JavaUpdaterChoreTest {
 				""");
 	}
 
+	@Test
+	public void testPomWithoutProperties() throws Exception {
+		Path pom = extension.root().resolve("pom.xml");
+		FilesSilent.writeString(pom, """
+				<project>
+				</project>
+				""");
+
+		doit();
+
+		assertThat(pom).content().isEqualTo("""
+				<project>
+					<properties>
+						<java.version>21</java.version>
+					</properties>
+				</project>
+				""");
+	}
+
 }

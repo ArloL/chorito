@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
 
@@ -52,8 +53,17 @@ public class JavaUpdaterChore implements Chore {
 					.parse(pomXml, "UTF-8", "", Parser.xmlParser());
 			Elements javaVersionElements = doc.getElementsByTag("java.version");
 			if (javaVersionElements.isEmpty()) {
-				doc.selectFirst("project > properties")
-						.append("	<java.version>21</java.version>\n	");
+				Element properties = doc.selectFirst("project > properties");
+				if (properties != null) {
+					properties.append("	<java.version>21</java.version>\n	");
+				} else {
+					doc.selectFirst("project").append("""
+								<properties>
+									<java.version>21</java.version>
+								</properties>
+							""");
+				}
+
 			} else {
 				javaVersionElements.stream()
 						.filter(e -> e.text().equals("11"))
