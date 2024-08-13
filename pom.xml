@@ -298,7 +298,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>3.4.0</version>
+				<version>3.4.1</version>
 				<configuration>
 					<mainClass>${start-class}</mainClass>
 					<executable>${env.JAVA_HOME}/bin/java</executable>
