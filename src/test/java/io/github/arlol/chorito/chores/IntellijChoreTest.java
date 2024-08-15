@@ -37,4 +37,51 @@ public class IntellijChoreTest {
 		assertThat(codeStyleConfig).isNotEmptyFile();
 	}
 
+	@Test
+	public void testPreserveCodestyles() throws Exception {
+
+		// given
+		Path codeStylesProjectXml = extension.root()
+				.resolve(".idea/codeStyles/Project.xml");
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
+		FilesSilent.writeString(
+				codeStylesProjectXml,
+				"""
+						<?xml version="1.0" encoding="UTF-8"?>
+						<component name="ProjectCodeStyleConfiguration">
+						  <code_scheme name="Project" version="173">
+						    <JavaCodeStyleSettings>
+						      <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="10" />
+						      <option name="IMPORT_LAYOUT_TABLE">
+						        <value>
+						          <package name="" withSubpackages="true" static="false" />
+						        </value>
+						      </option>
+						    </JavaCodeStyleSettings>
+						  </code_scheme>
+						</component>"""
+		);
+
+		doit();
+
+		assertThat(codeStylesProjectXml).content()
+				.isEqualTo(
+						"""
+								<?xml version="1.0" encoding="UTF-8"?>
+								<component name="ProjectCodeStyleConfiguration">
+								  <code_scheme name="Project" version="174">
+								    <JavaCodeStyleSettings>
+								      <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="10" />
+								      <option name="IMPORT_LAYOUT_TABLE">
+								        <value>
+								          <package name="" withSubpackages="true" static="false" />
+								        </value>
+								      </option>
+								      <option name="NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND" value="30" />
+								    </JavaCodeStyleSettings>
+								  </code_scheme>
+								</component>"""
+				);
+	}
+
 }
