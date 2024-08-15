@@ -4,7 +4,6 @@ import java.io.StringReader;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
@@ -16,10 +15,14 @@ public class EclipseCompilerSettingsChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		AtomicBoolean changed = new AtomicBoolean();
 		context.textFiles()
 				.stream()
-				.filter(file -> file.endsWith("pom.xml"))
+				.filter(
+						file -> file.endsWith("pom.xml")
+								|| file.endsWith("build.gradle")
+								|| file.endsWith("gradlew")
+								|| file.endsWith("mvnw")
+				)
 				.map(MyPaths::getParent)
 				.forEach(pomDir -> {
 					String templateJdtCorePrefs = ClassPathFiles.readString(
@@ -30,7 +33,7 @@ public class EclipseCompilerSettingsChore implements Chore {
 							.resolve(".settings/org.eclipse.jdt.core.prefs");
 					if (!FilesSilent.exists(jdtCorePrefs)) {
 						FilesSilent.touch(jdtCorePrefs);
-						changed.set(true);
+						context.setDirty();
 					}
 
 					Map<String, String> jdtCorePrefsMap = new PropertiesSilent()
@@ -77,9 +80,6 @@ public class EclipseCompilerSettingsChore implements Chore {
 						FilesSilent.write(jdtCorePrefs, propertyList, "\n");
 					}
 				});
-		if (changed.get()) {
-			return context.refresh();
-		}
 		return context;
 	}
 
