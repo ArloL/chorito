@@ -19,7 +19,12 @@ public class EclipseOptimizeImportSettingsChore implements Chore {
 		AtomicBoolean changed = new AtomicBoolean();
 		context.textFiles()
 				.stream()
-				.filter(file -> file.endsWith("pom.xml"))
+				.filter(
+						file -> file.endsWith("pom.xml")
+								|| file.endsWith("build.gradle")
+								|| file.endsWith("gradlew")
+								|| file.endsWith("mvnw")
+				)
 				.map(MyPaths::getParent)
 				.forEach(pomDir -> {
 					String templateJdtUiPrefs = ClassPathFiles.readString(
