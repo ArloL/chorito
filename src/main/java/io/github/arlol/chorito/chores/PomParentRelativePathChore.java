@@ -5,8 +5,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 
 import io.github.arlol.chorito.tools.ChoreContext;
-import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.DirectoryStreams;
+import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
 public class PomParentRelativePathChore implements Chore {
@@ -20,7 +20,7 @@ public class PomParentRelativePathChore implements Chore {
 			if (parent != null) {
 				Element relativePath = parent.selectFirst("relativePath");
 				if (relativePath == null) {
-					parent.append("<relativePath />\n");
+					parent.append("\t<relativePath />\n\t");
 				}
 			}
 			FilesSilent.writeString(pom, doc.outerHtml());
