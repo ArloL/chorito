@@ -55,8 +55,10 @@ public class EclipseOptimizeImportSettingsChore implements Chore {
 											.startsWith("org.eclipse.jdt.ui.")
 							)
 							.forEach(
-									e -> jdtUiPrefsMap
-											.put(e.getKey(), e.getValue())
+									e -> jdtUiPrefsMap.putIfAbsent(
+											e.getKey(),
+											e.getValue()
+									)
 							);
 
 					// update the file only if something changed

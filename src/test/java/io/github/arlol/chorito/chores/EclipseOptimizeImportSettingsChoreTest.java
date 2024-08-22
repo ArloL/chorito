@@ -34,17 +34,39 @@ public class EclipseOptimizeImportSettingsChoreTest {
 
 	@Test
 	public void test() throws Exception {
+		// given
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.touch(pom);
 
+		// when
 		doit();
 
+		// then
 		Path jdtUiPrefs = extension.root()
 				.resolve(".settings/org.eclipse.jdt.ui.prefs");
-
-		assertThat(jdtUiPrefs).exists();
-		assertThat(jdtUiPrefs).isNotEmptyFile();
 		assertThat(jdtUiPrefs).content().isEqualTo(EXPECTED_JDT_UI_PREFS);
+	}
+
+	@Test
+	public void testPreserverSettings() throws Exception {
+		// given
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
+		Path jdtUiPrefsPath = extension.root()
+				.resolve(".settings/org.eclipse.jdt.ui.prefs");
+		String jdtUiPrefs = """
+				eclipse.preferences.version=1
+				org.eclipse.jdt.ui.ignorelowercasenames=true
+				org.eclipse.jdt.ui.importorder=\\#java;\\#javax;\\#jakarta;\\#org;\\#com;\\#io;\\#;java;javax;jakarta;org;com;io;;
+				org.eclipse.jdt.ui.ondemandthreshold=30
+				org.eclipse.jdt.ui.staticondemandthreshold=30
+				""";
+		FilesSilent.writeString(jdtUiPrefsPath, jdtUiPrefs);
+
+		// when
+		doit();
+
+		// then
+		assertThat(jdtUiPrefsPath).content().isEqualTo(jdtUiPrefs);
 	}
 
 }
