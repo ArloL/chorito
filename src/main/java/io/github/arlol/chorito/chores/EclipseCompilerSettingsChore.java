@@ -8,86 +8,69 @@ import java.util.Map;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.MyPaths;
+import io.github.arlol.chorito.tools.JavaDirectoryStream;
 import io.github.arlol.chorito.tools.PropertiesSilent;
 
 public class EclipseCompilerSettingsChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		context.textFiles()
-				.stream()
-				.filter(
-						file -> file.endsWith("pom.xml")
-								|| file.endsWith("build.gradle")
-								|| file.endsWith("gradlew")
-								|| file.endsWith("mvnw")
-				)
-				.map(MyPaths::getParent)
-				.forEach(pomDir -> {
-					String templateJdtCorePrefs = ClassPathFiles.readString(
-							"eclipse-settings/org.eclipse.jdt.core.prefs"
-					);
+		JavaDirectoryStream.javaDirectories(context).forEach(pomDir -> {
+			String templateJdtCorePrefs = ClassPathFiles
+					.readString("eclipse-settings/org.eclipse.jdt.core.prefs");
 
-					Path jdtCorePrefs = pomDir
-							.resolve(".settings/org.eclipse.jdt.core.prefs");
-					if (!FilesSilent.exists(jdtCorePrefs)) {
-						FilesSilent.touch(jdtCorePrefs);
-						context.setDirty();
-					}
+			Path jdtCorePrefs = pomDir
+					.resolve(".settings/org.eclipse.jdt.core.prefs");
+			if (!FilesSilent.exists(jdtCorePrefs)) {
+				FilesSilent.touch(jdtCorePrefs);
+				context.setDirty();
+			}
 
-					Map<String, String> jdtCorePrefsMap = new PropertiesSilent()
-							.load(jdtCorePrefs)
-							.toMap();
-					int prefsHashCodeAtStart = jdtCorePrefsMap.hashCode();
+			Map<String, String> jdtCorePrefsMap = new PropertiesSilent()
+					.load(jdtCorePrefs)
+					.toMap();
+			int prefsHashCodeAtStart = jdtCorePrefsMap.hashCode();
 
-					jdtCorePrefsMap.put("eclipse.preferences.version", "1");
+			jdtCorePrefsMap.put("eclipse.preferences.version", "1");
 
-					new PropertiesSilent()
-							.load(new StringReader(templateJdtCorePrefs))
-							.toMap()
-							.entrySet()
-							.stream()
-							.filter(e -> {
-								return e.getKey()
+			new PropertiesSilent().load(new StringReader(templateJdtCorePrefs))
+					.toMap()
+					.entrySet()
+					.stream()
+					.filter(e -> {
+						return e.getKey()
+								.startsWith("org.eclipse.jdt.core.compiler.")
+								|| e.getKey()
 										.startsWith(
-												"org.eclipse.jdt.core.compiler."
-										)
-										|| e.getKey()
-												.startsWith(
-														"org.eclipse.jdt.core.builder."
-												);
-							})
-							.forEach(e -> {
-								if ("org.eclipse.jdt.core.compiler.processAnnotations"
-										.equals(e.getKey())) {
-									jdtCorePrefsMap.putIfAbsent(
-											e.getKey(),
-											e.getValue()
-									);
-								} else {
-									jdtCorePrefsMap
-											.put(e.getKey(), e.getValue());
-								}
-							});
+												"org.eclipse.jdt.core.builder."
+										);
+					})
+					.forEach(e -> {
+						if ("org.eclipse.jdt.core.compiler.processAnnotations"
+								.equals(e.getKey())) {
+							jdtCorePrefsMap
+									.putIfAbsent(e.getKey(), e.getValue());
+						} else {
+							jdtCorePrefsMap.put(e.getKey(), e.getValue());
+						}
+					});
 
-					// update the file only if something changed
-					// otherwise this triggers a rebuild in Eclipse and
-					// Eclipse-based tools (VS Code)
-					if (jdtCorePrefsMap.hashCode() != prefsHashCodeAtStart) {
+			// update the file only if something changed
+			// otherwise this triggers a rebuild in Eclipse and
+			// Eclipse-based tools (VS Code)
+			if (jdtCorePrefsMap.hashCode() != prefsHashCodeAtStart) {
 
-						List<String> propertyList = jdtCorePrefsMap.entrySet()
-								.stream()
-								.map(
-										e -> e.getKey() + "="
-												+ e.getValue()
-														.replace(":", "\\:")
-								)
-								.toList();
+				List<String> propertyList = jdtCorePrefsMap.entrySet()
+						.stream()
+						.map(
+								e -> e.getKey() + "="
+										+ e.getValue().replace(":", "\\:")
+						)
+						.toList();
 
-						FilesSilent.write(jdtCorePrefs, propertyList, "\n");
-					}
-				});
+				FilesSilent.write(jdtCorePrefs, propertyList, "\n");
+			}
+		});
 		return context;
 	}
 
