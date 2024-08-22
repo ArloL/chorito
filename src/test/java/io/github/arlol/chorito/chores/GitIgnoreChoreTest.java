@@ -127,8 +127,8 @@ public class GitIgnoreChoreTest {
 
 	@Test
 	public void testWithPomAndNoGitignore() throws Exception {
-		Path pom = extension.root().resolve("pom.xml");
-		FilesSilent.touch(pom);
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
 
 		doit();
 
@@ -138,8 +138,8 @@ public class GitIgnoreChoreTest {
 
 	@Test
 	public void testWithPomAndExistingGitignore() throws Exception {
-		Path pom = extension.root().resolve("pom.xml");
-		FilesSilent.touch(pom);
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
 		Path gitignore = extension.root().resolve(".gitignore");
 		FilesSilent.write(gitignore, List.of("lol"), "\n");
 
@@ -150,8 +150,8 @@ public class GitIgnoreChoreTest {
 
 	@Test
 	public void testWithPomAndExistingGitignoreWithSettings() throws Exception {
-		Path pom = extension.root().resolve("pom.xml");
-		FilesSilent.touch(pom);
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
 		Path gitignore = extension.root().resolve(".gitignore");
 		FilesSilent.write(gitignore, List.of(".settings"), "\n");
 
@@ -162,8 +162,8 @@ public class GitIgnoreChoreTest {
 
 	@Test
 	public void testWithPom() throws Exception {
-		Path pom = extension.root().resolve("pom.xml");
-		FilesSilent.touch(pom);
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
 
 		doit();
 
@@ -239,7 +239,8 @@ public class GitIgnoreChoreTest {
 
 	@Test
 	public void testUpdatingSuffixPrefix() throws Exception {
-		FilesSilent.touch(extension.choreContext().resolve("pom.xml"));
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
 		FilesSilent.writeString(
 				extension.choreContext().resolve(".gitignore"),
 				OLD_POM_XML
@@ -253,6 +254,7 @@ public class GitIgnoreChoreTest {
 
 	@Test
 	public void testStability() throws Exception {
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
 		FilesSilent.touch(extension.choreContext().resolve("pom.xml"));
 		FilesSilent.touch(extension.choreContext().resolve("Dockerfile"));
 

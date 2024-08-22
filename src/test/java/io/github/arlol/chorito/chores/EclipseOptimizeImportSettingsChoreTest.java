@@ -35,6 +35,7 @@ public class EclipseOptimizeImportSettingsChoreTest {
 	@Test
 	public void test() throws Exception {
 		// given
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.touch(pom);
 

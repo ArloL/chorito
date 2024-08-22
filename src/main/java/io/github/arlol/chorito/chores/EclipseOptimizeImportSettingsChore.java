@@ -15,7 +15,7 @@ public class EclipseOptimizeImportSettingsChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		DirectoryStreams.javaDirectories(context).forEach(javaDir -> {
+		DirectoryStreams.javaDirs(context).forEach(javaDir -> {
 			String templateJdtUiPrefs = ClassPathFiles
 					.readString("eclipse-settings/org.eclipse.jdt.ui.prefs");
 

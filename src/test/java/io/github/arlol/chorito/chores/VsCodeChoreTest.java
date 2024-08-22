@@ -44,6 +44,7 @@ public class VsCodeChoreTest {
 	@Test
 	public void testWithPom() {
 		// given
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
 		FilesSilent.touch(extension.root().resolve("pom.xml"));
 
 		// when

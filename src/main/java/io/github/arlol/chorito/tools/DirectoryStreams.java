@@ -13,11 +13,11 @@ public final class DirectoryStreams {
 	private DirectoryStreams() {
 	}
 
-	public static Stream<Path> javaDirectories(ChoreContext context) {
+	public static Stream<Path> javaDirs(ChoreContext context) {
 		return Stream
 				.of(
-						mavenPoms(context).map(MyPaths::getParent),
-						javaGradleDir(context)
+						mavenPomsWithCode(context).map(MyPaths::getParent),
+						javaGradleDirsWithCode(context)
 				)
 				.flatMap(Function.identity())
 				.distinct();
@@ -27,6 +27,11 @@ public final class DirectoryStreams {
 		return context.textFiles()
 				.stream()
 				.filter(file -> file.endsWith("pom.xml"));
+	}
+
+	public static Stream<Path> mavenPomsWithCode(ChoreContext context) {
+		return mavenPoms(context)
+				.filter(pom -> withCode(context, MyPaths.getParent(pom)));
 	}
 
 	public static Stream<Path> rootMavenPoms(ChoreContext context) {
@@ -42,45 +47,27 @@ public final class DirectoryStreams {
 				});
 	}
 
-	public static Stream<Path> mavenPomsWithSourceCode(ChoreContext context) {
-		return context.textFiles()
-				.stream()
-				.filter(file -> file.endsWith("pom.xml"))
-				.filter(pom -> {
-					Document doc = JsoupSilent
-							.parse(pom, "UTF-8", "", Parser.xmlParser());
-					Element relativePath = doc
-							.selectFirst("project > parent > relativePath");
-					return relativePath == null || !relativePath.hasText();
-				})
-				.filter(pom -> {
-					var main = pom.resolveSibling("src/main/java");
-					var test = pom.resolveSibling("src/test/java");
-					return context.textFiles()
-							.stream()
-							.anyMatch(
-									file -> file.startsWith(main)
-											|| file.startsWith(test)
-							);
-				});
+	public static Stream<Path> rootMavenPomsWithCode(ChoreContext context) {
+		return rootMavenPoms(context)
+				.filter(pom -> withCode(context, MyPaths.getParent(pom)));
 	}
 
-	public static Stream<Path> rootGradleDir(ChoreContext context) {
+	public static Stream<Path> rootGradleDirs(ChoreContext context) {
 		return context.textFiles()
 				.stream()
 				.filter(file -> file.endsWith("settings.gradle"))
 				.map(MyPaths::getParent);
 	}
 
-	public static Stream<Path> rootJavaGradleDir(ChoreContext context) {
-		return rootGradleDir(context).filter(dir -> {
+	public static Stream<Path> rootJavaGradleDirs(ChoreContext context) {
+		return rootGradleDirs(context).filter(dir -> {
 			Path buildGradle = dir.resolve("build.gradle");
 			return FilesSilent.exists(buildGradle)
 					&& FilesSilent.readString(buildGradle).contains("java");
 		});
 	}
 
-	public static Stream<Path> gradleDir(ChoreContext context) {
+	public static Stream<Path> gradleDirs(ChoreContext context) {
 		return context.textFiles()
 				.stream()
 				.filter(
@@ -91,19 +78,29 @@ public final class DirectoryStreams {
 				.distinct();
 	}
 
-	public static Stream<Path> javaGradleDir(ChoreContext context) {
-		return gradleDir(context).filter(dir -> {
+	public static Stream<Path> javaGradleDirsWithCode(ChoreContext context) {
+		return gradleDirs(context).filter(dir -> {
 			Path buildGradle = dir.resolve("build.gradle");
 			return FilesSilent.exists(buildGradle)
 					&& FilesSilent.readString(buildGradle).contains("java");
-		});
+		}).filter(dir -> withCode(context, dir));
 	}
 
-	public static Stream<Path> nodeDir(ChoreContext context) {
+	public static Stream<Path> nodeDirs(ChoreContext context) {
 		return context.textFiles()
 				.stream()
 				.filter(file -> file.endsWith("package.json"))
 				.map(MyPaths::getParent);
+	}
+
+	private static boolean withCode(ChoreContext context, Path dir) {
+		var main = dir.resolve("src/main/java");
+		var test = dir.resolve("src/test/java");
+		return context.textFiles()
+				.stream()
+				.anyMatch(
+						file -> file.startsWith(main) || file.startsWith(test)
+				);
 	}
 
 }

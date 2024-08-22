@@ -19,7 +19,7 @@ public class CodeFormatterProfileChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		DirectoryStreams.javaDirectories(context).forEach(javaDir -> {
+		DirectoryStreams.javaDirs(context).forEach(javaDir -> {
 			Path profileXml = javaDir
 					.resolve(".settings/code-formatter-profile.xml");
 			String currentProfile = ClassPathFiles

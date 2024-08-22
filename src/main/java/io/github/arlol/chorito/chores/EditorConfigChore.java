@@ -75,8 +75,10 @@ public class EditorConfigChore implements Chore {
 			}
 		}
 		if (!content.contains("[**.java]")) {
-			if (DirectoryStreams.mavenPoms(context).findAny().isPresent()
-					|| DirectoryStreams.javaGradleDir(context)
+			if (DirectoryStreams.mavenPomsWithCode(context)
+					.findAny()
+					.isPresent()
+					|| DirectoryStreams.javaGradleDirsWithCode(context)
 							.findAny()
 							.isPresent()) {
 				content += DEFAULT_JAVA;

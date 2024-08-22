@@ -112,7 +112,7 @@ public class GitIgnoreChore implements Chore {
 	}
 
 	private void createMavenAndGradleIgnore(ChoreContext context) {
-		DirectoryStreams.javaDirectories(context).forEach(dir -> {
+		DirectoryStreams.javaDirs(context).forEach(dir -> {
 			String newGitignoreContent = GITIGNORE_ECLIPSE;
 			if (FilesSilent.anyChildExists(dir, "mvnw", "pom.xml")) {
 				newGitignoreContent += "\n" + GITIGNORE_ECLIPSE_JAVA;
@@ -159,7 +159,7 @@ public class GitIgnoreChore implements Chore {
 
 	private void createEclipseSettingsIgnore(ChoreContext context) {
 		Stream.of(
-				DirectoryStreams.javaDirectories(context),
+				DirectoryStreams.javaDirs(context),
 				context.textFiles()
 						.stream()
 						.filter(

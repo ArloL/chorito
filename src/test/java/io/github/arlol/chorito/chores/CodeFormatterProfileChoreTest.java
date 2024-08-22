@@ -30,8 +30,8 @@ public class CodeFormatterProfileChoreTest {
 
 	@Test
 	public void testWithPomAndNoGitignore() throws Exception {
-		Path pom = extension.root().resolve("pom.xml");
-		FilesSilent.touch(pom);
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
 
 		doit();
 

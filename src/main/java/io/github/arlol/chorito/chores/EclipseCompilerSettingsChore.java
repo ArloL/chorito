@@ -15,7 +15,7 @@ public class EclipseCompilerSettingsChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		DirectoryStreams.javaDirectories(context).forEach(javaDir -> {
+		DirectoryStreams.javaDirs(context).forEach(javaDir -> {
 			String templateJdtCorePrefs = ClassPathFiles
 					.readString("eclipse-settings/org.eclipse.jdt.core.prefs");
 

@@ -26,6 +26,7 @@ public class IntellijChoreTest {
 
 	@Test
 	public void test() throws Exception {
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
 		FilesSilent.touch(extension.root().resolve("pom.xml"));
 
 		doit();
@@ -43,6 +44,7 @@ public class IntellijChoreTest {
 		// given
 		Path codeStylesProjectXml = extension.root()
 				.resolve(".idea/codeStyles/Project.xml");
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
 		FilesSilent.touch(extension.root().resolve("pom.xml"));
 		FilesSilent.writeString(
 				codeStylesProjectXml,
