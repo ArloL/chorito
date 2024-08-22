@@ -51,27 +51,32 @@ public class JavaUpdaterChore implements Chore {
 		if (FilesSilent.exists(pomXml)) {
 			Document doc = JsoupSilent
 					.parse(pomXml, "UTF-8", "", Parser.xmlParser());
-			Elements javaVersionElements = doc.getElementsByTag("java.version");
-			if (javaVersionElements.isEmpty()) {
-				Element properties = doc.selectFirst("project > properties");
-				if (properties != null) {
+			Element project = doc.selectFirst("project");
+			if (project == null) {
+				return;
+			}
+			Element properties = doc.selectFirst("project > properties");
+			if (properties == null) {
+				project.append("""
+							<properties>
+								<java.version>21</java.version>
+							</properties>
+						""");
+			} else {
+				Elements javaVersionElements = properties
+						.getElementsByTag("java.version");
+				if (javaVersionElements.isEmpty()) {
 					properties.append("	<java.version>21</java.version>\n	");
 				} else {
-					doc.selectFirst("project").append("""
-								<properties>
-									<java.version>21</java.version>
-								</properties>
-							""");
+					javaVersionElements.stream()
+							.filter(e -> e.text().equals("11"))
+							.forEach(e -> e.text("21"));
+					javaVersionElements.stream()
+							.filter(e -> e.text().equals("17"))
+							.forEach(e -> e.text("21"));
 				}
-
-			} else {
-				javaVersionElements.stream()
-						.filter(e -> e.text().equals("11"))
-						.forEach(e -> e.text("21"));
-				javaVersionElements.stream()
-						.filter(e -> e.text().equals("17"))
-						.forEach(e -> e.text("21"));
 			}
+
 			FilesSilent.writeString(pomXml, doc.outerHtml());
 		}
 	}

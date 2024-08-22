@@ -46,11 +46,17 @@ public class JavaUpdaterChoreTest {
 	@Test
 	public void testPomXml() throws Exception {
 		Path pom = extension.root().resolve("pom.xml");
-		FilesSilent.writeString(pom, "<java.version>11</java.version>");
+		FilesSilent.writeString(
+				pom,
+				"<project><properties><java.version>11</java.version></properties></project>"
+		);
 
 		doit();
 
-		assertThat(pom).content().isEqualTo("<java.version>21</java.version>");
+		assertThat(pom).content()
+				.isEqualTo(
+						"<project><properties><java.version>21</java.version></properties></project>"
+				);
 	}
 
 	@Test
