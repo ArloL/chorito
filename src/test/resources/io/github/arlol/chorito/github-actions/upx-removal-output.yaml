@@ -65,6 +65,7 @@ jobs:
     needs: version
     env:
       REVISION: ${{ needs.version.outputs.new_version }}
+      BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
     steps:
     - uses: actions/checkout@v4.1.1
     - uses: graalvm/setup-graalvm@v1.1.5
@@ -98,6 +99,7 @@ jobs:
     needs: version
     env:
       REVISION: ${{ needs.version.outputs.new_version }}
+      BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
     steps:
     - uses: actions/checkout@v4.1.1
     - uses: graalvm/setup-graalvm@v1.1.5
@@ -131,6 +133,7 @@ jobs:
     needs: version
     env:
       REVISION: ${{ needs.version.outputs.new_version }}
+      BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
     steps:
     - uses: actions/checkout@v4.1.1
     - uses: graalvm/setup-graalvm@v1.1.5
