@@ -23,6 +23,15 @@ public class CustomPrettyPrinter extends DefaultPrettyPrinter {
 	}
 
 	@Override
+	public void writeEndArray(JsonGenerator g, int nrOfValues)
+			throws IOException {
+		if (nrOfValues > 0) {
+			g.writeRaw(_arrayValueSeparator);
+		}
+		super.writeEndArray(g, nrOfValues);
+	}
+
+	@Override
 	public void writeEndObject(JsonGenerator g, int nrOfEntries)
 			throws IOException {
 		if (nrOfEntries > 0) {
