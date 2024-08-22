@@ -58,10 +58,18 @@ public class EclipseCompilerSettingsChore implements Chore {
 														"org.eclipse.jdt.core.builder."
 												);
 							})
-							.forEach(
-									e -> jdtCorePrefsMap
-											.put(e.getKey(), e.getValue())
-							);
+							.forEach(e -> {
+								if ("org.eclipse.jdt.core.compiler.processAnnotations"
+										.equals(e.getKey())) {
+									jdtCorePrefsMap.putIfAbsent(
+											e.getKey(),
+											e.getValue()
+									);
+								} else {
+									jdtCorePrefsMap
+											.put(e.getKey(), e.getValue());
+								}
+							});
 
 					// update the file only if something changed
 					// otherwise this triggers a rebuild in Eclipse and
