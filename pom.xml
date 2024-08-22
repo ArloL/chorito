@@ -123,6 +123,17 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile>
+			<id>env-build-timestamp</id>
+			<activation>
+				<property>
+					<name>env.BUILD_TIMESTAMP</name>
+				</property>
+			</activation>
+			<properties>
+				<project.build.outputTimestamp>${env.BUILD_TIMESTAMP}</project.build.outputTimestamp>
+			</properties>
+		</profile>
 	</profiles>
 
 	<dependencyManagement>
