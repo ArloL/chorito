@@ -25,10 +25,9 @@
         "org.jetbrains.annotations.NotNull",
     ],
     "java.compile.nullAnalysis.nonnullbydefault": [
-        "jakarta.annotation.ParametersAreNonnullByDefault",
         "javax.annotation.ParametersAreNonnullByDefault",
+        "org.springframework.lang.NonNullApi",
         "org.eclipse.jdt.annotation.NonNullByDefault",
-        "org.springframework.lang.NonNullApi"
     ],
     "java.compile.nullAnalysis.nullable": [
         "jakarta.annotation.Nullable",
