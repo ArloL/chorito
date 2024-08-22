@@ -64,7 +64,16 @@ public class IntellijChore implements Chore {
 		document.outputSettings().prettyPrint(true).indentAmount(2);
 		String before = document.outerHtml();
 
+		Element javaCodeStyleSettings = document
+				.selectFirst("JavaCodeStyleSettings");
+
+		if (javaCodeStyleSettings == null) {
+			FilesSilent.writeString(path, templateString);
+			return;
+		}
+
 		Document template = Jsoup.parse(templateString, "", Parser.xmlParser());
+
 		for (Element templateOption : template
 				.select("JavaCodeStyleSettings > option")) {
 			Element documentOption = document.selectFirst(
@@ -72,8 +81,7 @@ public class IntellijChore implements Chore {
 							+ templateOption.attr("name") + "]"
 			);
 			if (documentOption == null) {
-				document.selectFirst("JavaCodeStyleSettings")
-						.append(templateOption.outerHtml());
+				javaCodeStyleSettings.append(templateOption.outerHtml());
 			}
 		}
 
