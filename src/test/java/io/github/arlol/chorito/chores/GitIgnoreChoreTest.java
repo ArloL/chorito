@@ -189,16 +189,6 @@ public class GitIgnoreChoreTest {
 	}
 
 	@Test
-	public void testWithNestedMvnw() throws Exception {
-		FilesSilent.touch(extension.root().resolve("a/nested/mvnw"));
-
-		doit();
-
-		assertThat(extension.root().resolve("a/nested/.gitignore")).content()
-				.isEqualTo(DEFAULT_POM_XML);
-	}
-
-	@Test
 	public void testWithNestedVscode() throws Exception {
 		FilesSilent.touch(
 				extension.root().resolve("a/nested/.vscode/settings.json")
@@ -225,7 +215,10 @@ public class GitIgnoreChoreTest {
 
 	@Test
 	public void testWithNestedBuildGradle() throws Exception {
-		FilesSilent.touch(extension.root().resolve("a/nested/build.gradle"));
+		FilesSilent.writeString(
+				extension.root().resolve("a/nested/build.gradle"),
+				"java"
+		);
 
 		doit();
 

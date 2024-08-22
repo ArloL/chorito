@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -19,10 +18,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import io.github.arlol.chorito.filter.FileHasNoParentDirectoryWithFileFilter;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.JavaDirectoryStream;
 import io.github.arlol.chorito.tools.Jsons;
 import io.github.arlol.chorito.tools.MyPaths;
 
@@ -32,24 +31,8 @@ public class VsCodeChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		AtomicBoolean changed = new AtomicBoolean();
 		Stream.of(
-				context.textFiles()
-						.stream()
-						.filter(file -> file.endsWith("pom.xml"))
-						.map(MyPaths::getParent)
-						.filter(
-								file -> FileHasNoParentDirectoryWithFileFilter
-										.filter(file, "pom.xml")
-						),
-				context.textFiles()
-						.stream()
-						.filter(file -> file.endsWith("gradlew"))
-						.map(MyPaths::getParent),
-				context.textFiles()
-						.stream()
-						.filter(file -> file.endsWith("mvnw"))
-						.map(MyPaths::getParent),
+				JavaDirectoryStream.javaDirectories(context),
 				context.textFiles()
 						.stream()
 						.map(MyPaths::getParent)
@@ -60,7 +43,7 @@ public class VsCodeChore implements Chore {
 			Path extensions = dir.resolve(".vscode/extensions.json");
 
 			if (FilesSilent.anyNotExists(settings, extensions)) {
-				changed.set(true);
+				context.setDirty();
 			}
 
 			if (FilesSilent.anyChildExists(
@@ -103,9 +86,6 @@ public class VsCodeChore implements Chore {
 			FilesSilent.writeString(extensions, Jsons.asString(jsonObject));
 
 		});
-		if (changed.get()) {
-			return context.refresh();
-		}
 		return context;
 	}
 

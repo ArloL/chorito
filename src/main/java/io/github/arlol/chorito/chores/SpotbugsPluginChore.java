@@ -1,21 +1,19 @@
 package io.github.arlol.chorito.chores;
 
-import java.nio.file.Path;
-
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.JavaDirectoryStream;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
 public class SpotbugsPluginChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		Path pomXml = context.resolve("pom.xml");
-		if (FilesSilent.exists(pomXml)) {
+		JavaDirectoryStream.mavenDirectories(context).forEach(pomXml -> {
 			Document doc = JsoupSilent
 					.parse(pomXml, "UTF-8", "", Parser.xmlParser());
 
@@ -50,7 +48,7 @@ public class SpotbugsPluginChore implements Chore {
 			}
 
 			FilesSilent.writeString(pomXml, doc.outerHtml());
-		}
+		});
 		return context;
 	}
 

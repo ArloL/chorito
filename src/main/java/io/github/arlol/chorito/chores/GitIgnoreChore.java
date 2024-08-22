@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ExistingFileUpdater;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.JavaDirectoryStream;
 import io.github.arlol.chorito.tools.MyPaths;
 
 public class GitIgnoreChore implements Chore {
@@ -111,33 +112,23 @@ public class GitIgnoreChore implements Chore {
 	}
 
 	private void createMavenAndGradleIgnore(ChoreContext context) {
-		context.textFiles()
-				.stream()
-				.filter(
-						file -> file.endsWith("pom.xml")
-								|| file.endsWith("mvnw")
-								|| file.endsWith("gradlew")
-								|| file.endsWith("build.gradle")
-				)
-				.map(MyPaths::getParent)
-				.forEach(dir -> {
-					String newGitignoreContent = GITIGNORE_ECLIPSE;
-					if (FilesSilent.anyChildExists(dir, "mvnw", "pom.xml")) {
-						newGitignoreContent += "\n" + GITIGNORE_ECLIPSE_JAVA;
-						newGitignoreContent += "\n" + GITIGNORE_IDEA;
-						newGitignoreContent += "\n" + GITIGNORE_MAVEN;
-					}
-					if (FilesSilent
-							.anyChildExists(dir, "gradlew", "build.gradle")) {
-						newGitignoreContent += "\n" + GITIGNORE_ECLIPSE_JAVA;
-						newGitignoreContent += "\n" + GITIGNORE_IDEA;
-						newGitignoreContent += "\n" + GITIGNORE_GRADLE;
-					}
-					updateExistingGitignore(
-							dir.resolve(".gitignore"),
-							newGitignoreContent
-					);
-				});
+		JavaDirectoryStream.javaDirectories(context).forEach(dir -> {
+			String newGitignoreContent = GITIGNORE_ECLIPSE;
+			if (FilesSilent.anyChildExists(dir, "mvnw", "pom.xml")) {
+				newGitignoreContent += "\n" + GITIGNORE_ECLIPSE_JAVA;
+				newGitignoreContent += "\n" + GITIGNORE_IDEA;
+				newGitignoreContent += "\n" + GITIGNORE_MAVEN;
+			}
+			if (FilesSilent.anyChildExists(dir, "gradlew", "build.gradle")) {
+				newGitignoreContent += "\n" + GITIGNORE_ECLIPSE_JAVA;
+				newGitignoreContent += "\n" + GITIGNORE_IDEA;
+				newGitignoreContent += "\n" + GITIGNORE_GRADLE;
+			}
+			updateExistingGitignore(
+					dir.resolve(".gitignore"),
+					newGitignoreContent
+			);
+		});
 	}
 
 	private void createMavenWrapperIgnore(ChoreContext context) {
@@ -168,15 +159,7 @@ public class GitIgnoreChore implements Chore {
 
 	private void createEclipseSettingsIgnore(ChoreContext context) {
 		Stream.of(
-				context.textFiles()
-						.stream()
-						.filter(
-								file -> file.endsWith("pom.xml")
-										|| file.endsWith("mvnw")
-										|| file.endsWith("gradlew")
-										|| file.endsWith("build.gradle")
-						)
-						.map(MyPaths::getParent),
+				JavaDirectoryStream.javaDirectories(context),
 				context.textFiles()
 						.stream()
 						.filter(
