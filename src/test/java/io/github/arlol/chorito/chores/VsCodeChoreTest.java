@@ -33,7 +33,7 @@ public class VsCodeChoreTest {
 		assertThat(extensions).content().isEqualTo("""
 				{
 				    "recommendations": [
-				        "editorconfig.editorconfig"
+				        "editorconfig.editorconfig",
 				    ],
 				}
 				""");
@@ -56,7 +56,7 @@ public class VsCodeChoreTest {
 				{
 				    "recommendations": [
 				        "editorconfig.editorconfig",
-				        "vscjava.vscode-java-pack"
+				        "vscjava.vscode-java-pack",
 				    ],
 				}
 				""");
@@ -99,7 +99,7 @@ public class VsCodeChoreTest {
 				{
 				    "recommendations": [
 				        "editorconfig.editorconfig",
-				        "kisstkondoros.vscode-codemetrics"
+				        "kisstkondoros.vscode-codemetrics",
 				    ],
 				}
 				""");
