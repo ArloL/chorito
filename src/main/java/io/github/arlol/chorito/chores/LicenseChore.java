@@ -85,7 +85,7 @@ public class LicenseChore implements Chore {
 	}
 
 	private void checkPom(ChoreContext context) {
-		JavaDirectoryStream.mavenPoms(context).forEach(pomXml -> {
+		JavaDirectoryStream.rootMavenPoms(context).forEach(pomXml -> {
 			if (!FilesSilent.readString(pomXml).contains("licenses")) {
 				System.out.println("Add license to pom");
 			}

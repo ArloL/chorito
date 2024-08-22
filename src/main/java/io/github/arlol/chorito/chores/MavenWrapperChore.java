@@ -43,7 +43,7 @@ public class MavenWrapperChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		LOG.info("Running MavenWrapperChore");
-		JavaDirectoryStream.mavenPoms(context)
+		JavaDirectoryStream.rootMavenPoms(context)
 				.map(MyPaths::getParent)
 				.forEach(pomDir -> {
 					Path wrapper = pomDir.resolve("mvnw");

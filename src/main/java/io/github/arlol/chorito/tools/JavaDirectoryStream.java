@@ -23,6 +23,12 @@ public final class JavaDirectoryStream {
 	public static Stream<Path> mavenPoms(ChoreContext context) {
 		return context.textFiles()
 				.stream()
+				.filter(file -> file.endsWith("pom.xml"));
+	}
+
+	public static Stream<Path> rootMavenPoms(ChoreContext context) {
+		return context.textFiles()
+				.stream()
 				.filter(file -> file.endsWith("pom.xml"))
 				.filter(pom -> {
 					Document doc = JsoupSilent
