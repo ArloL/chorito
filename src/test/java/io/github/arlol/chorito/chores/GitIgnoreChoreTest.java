@@ -212,6 +212,9 @@ public class GitIgnoreChoreTest {
 
 	@Test
 	public void testWithNestedBuildGradle() throws Exception {
+		FilesSilent.touch(
+				extension.root().resolve("a/nested/src/main/java/Main.java")
+		);
 		FilesSilent.writeString(
 				extension.root().resolve("a/nested/build.gradle"),
 				"java"
