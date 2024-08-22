@@ -11,14 +11,14 @@ import org.jsoup.select.Elements;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.JavaDirectoryStream;
+import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
 public class IntellijChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		JavaDirectoryStream.javaDirectories(context).forEach(dir -> {
+		DirectoryStreams.javaDirectories(context).forEach(dir -> {
 			overwriteFromTemplate(context, dir, "eclipseCodeFormatter");
 			overwriteFromTemplate(context, dir, "externalDependencies");
 			overwriteFromTemplate(context, dir, "saveactions_settings");

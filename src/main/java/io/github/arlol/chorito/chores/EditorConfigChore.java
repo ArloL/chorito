@@ -6,8 +6,8 @@ import java.nio.file.Path;
 import java.util.Arrays;
 
 import io.github.arlol.chorito.tools.ChoreContext;
+import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.JavaDirectoryStream;
 
 public class EditorConfigChore implements Chore {
 
@@ -70,12 +70,15 @@ public class EditorConfigChore implements Chore {
 			}
 		}
 		if (!content.contains("[pom.xml]")) {
-			if (JavaDirectoryStream.mavenPoms(context).findAny().isPresent()) {
+			if (DirectoryStreams.mavenPoms(context).findAny().isPresent()) {
 				content += DEFAULT_POM_XML;
 			}
 		}
 		if (!content.contains("[**.java]")) {
-			if (JavaDirectoryStream.mavenPoms(context).findAny().isPresent()) {
+			if (DirectoryStreams.mavenPoms(context).findAny().isPresent()
+					|| DirectoryStreams.javaGradleDir(context)
+							.findAny()
+							.isPresent()) {
 				content += DEFAULT_JAVA;
 			}
 		}

@@ -185,6 +185,18 @@ public class DockerIgnoreChoreTest {
 	}
 
 	@Test
+	public void testNestedPackageJson() throws Exception {
+		FilesSilent.touch(extension.choreContext().resolve("Dockerfile"));
+		FilesSilent
+				.touch(extension.choreContext().resolve("nested/package.json"));
+
+		doit();
+
+		Path dockerIgnore = extension.choreContext().resolve(".dockerignore");
+		assertThat(dockerIgnore).content().contains("/nested/node_modules/");
+	}
+
+	@Test
 	public void testDockerignoreOnly() throws Exception {
 		FilesSilent.touch(extension.choreContext().resolve("build.gradle"));
 		FilesSilent.touch(extension.choreContext().resolve(".dockerignore"));
