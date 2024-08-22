@@ -19,14 +19,14 @@ public class CodeFormatterProfileChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		DirectoryStreams.javaDirectories(context).forEach(pom -> {
-			Path profileXml = context
+		DirectoryStreams.javaDirectories(context).forEach(javaDir -> {
+			Path profileXml = javaDir
 					.resolve(".settings/code-formatter-profile.xml");
 			String currentProfile = ClassPathFiles
 					.readString("eclipse-settings/code-formatter-profile.xml");
 			FilesSilent.writeString(profileXml, currentProfile);
 
-			Path jdtCorePrefs = context
+			Path jdtCorePrefs = javaDir
 					.resolve(".settings/org.eclipse.jdt.core.prefs");
 
 			Map<String, String> jdtCorePrefsMap;
@@ -63,7 +63,7 @@ public class CodeFormatterProfileChore implements Chore {
 				FilesSilent.write(jdtCorePrefs, propertyList, "\n");
 			}
 
-			Path jdtUiPrefs = context
+			Path jdtUiPrefs = javaDir
 					.resolve(".settings/org.eclipse.jdt.ui.prefs");
 			String currentJdtUiPrefs = ClassPathFiles
 					.readString("eclipse-settings/org.eclipse.jdt.ui.prefs");
