@@ -13,7 +13,7 @@ public class SpotbugsPluginChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		JavaDirectoryStream.mavenDirectories(context).forEach(pomXml -> {
+		JavaDirectoryStream.mavenPomsWithSourceCode(context).forEach(pomXml -> {
 			Document doc = JsoupSilent
 					.parse(pomXml, "UTF-8", "", Parser.xmlParser());
 

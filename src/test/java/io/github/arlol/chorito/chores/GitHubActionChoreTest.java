@@ -136,7 +136,7 @@ public class GitHubActionChoreTest {
 
 		new GitHubActionChore().doit(extension.choreContext());
 
-		assertThat(FilesSilent.readString(workflow)).isEqualTo("");
+		assertThat(workflow).content().isEmpty();
 	}
 
 	@Test
@@ -151,10 +151,12 @@ public class GitHubActionChoreTest {
 
 		new GitHubActionChore().doit(extension.choreContext());
 
-		assertThat(FilesSilent.readString(workflow)).isEqualTo(
-				"jobs:\n" + "  linux:\n" + "    runs-on: ubuntu-latest\n"
-						+ "    steps:\n" + "    - run: whoami\n"
-		);
+		assertThat(workflow).content()
+				.isEqualTo(
+						"jobs:\n" + "  linux:\n"
+								+ "    runs-on: ubuntu-latest\n"
+								+ "    steps:\n" + "    - run: whoami\n"
+				);
 	}
 
 	@Test
@@ -170,10 +172,12 @@ public class GitHubActionChoreTest {
 
 		new GitHubActionChore().doit(extension.choreContext());
 
-		assertThat(FilesSilent.readString(workflow)).isEqualTo(
-				"jobs:\n" + "  windows:\n" + "    runs-on: windows-latest\n"
-						+ "    steps:\n"
-		);
+		assertThat(workflow).content()
+				.isEqualTo(
+						"jobs:\n" + "  windows:\n"
+								+ "    runs-on: windows-latest\n"
+								+ "    steps:\n"
+				);
 	}
 
 	@Test
@@ -183,8 +187,7 @@ public class GitHubActionChoreTest {
 
 		new GitHubActionChore().doit(extension.choreContext());
 
-		assertThat(FilesSilent.readString(workflow))
-				.isEqualTo(EXPECTED_GRAALSETUP_OUTPUT);
+		assertThat(workflow).content().isEqualTo(EXPECTED_GRAALSETUP_OUTPUT);
 	}
 
 	@Test
@@ -194,7 +197,7 @@ public class GitHubActionChoreTest {
 
 		new GitHubActionChore().doit(extension.choreContext());
 
-		assertThat(FilesSilent.readString(workflow)).isEqualTo(EXPECTED_ADOPT);
+		assertThat(workflow).content().isEqualTo(EXPECTED_ADOPT);
 	}
 
 	@Test
@@ -210,7 +213,7 @@ public class GitHubActionChoreTest {
 
 		new GitHubActionChore().doit(context);
 
-		assertThat(FilesSilent.readString(workflow)).startsWith("""
+		assertThat(workflow).content().startsWith("""
 				name: Chores
 
 				on:
@@ -236,7 +239,7 @@ public class GitHubActionChoreTest {
 
 		new GitHubActionChore().doit(context);
 
-		assertThat(FilesSilent.readString(workflow)).doesNotStartWith("""
+		assertThat(workflow).content().doesNotStartWith("""
 				name: Chores
 
 				on:
@@ -264,8 +267,7 @@ public class GitHubActionChoreTest {
 
 		new GitHubActionChore().doit(context);
 
-		assertThat(FilesSilent.readString(workflow))
-				.isEqualTo("- cron: '1 3 1 * *'\n");
+		assertThat(workflow).content().isEqualTo("- cron: '1 3 1 * *'\n");
 	}
 
 	@Test
@@ -282,8 +284,7 @@ public class GitHubActionChoreTest {
 
 		new GitHubActionChore().doit(context);
 
-		assertThat(FilesSilent.readString(workflow))
-				.isEqualTo("- cron: '1 3 1 * *'\n");
+		assertThat(workflow).content().isEqualTo("- cron: '1 3 1 * *'\n");
 	}
 
 	@Test
@@ -300,8 +301,7 @@ public class GitHubActionChoreTest {
 
 		new GitHubActionChore().doit(context);
 
-		assertThat(FilesSilent.readString(workflow))
-				.isEqualTo("- cron: '5 5 5 * *'\n");
+		assertThat(workflow).content().isEqualTo("- cron: '5 5 5 * *'\n");
 	}
 
 	@Test
@@ -346,7 +346,7 @@ public class GitHubActionChoreTest {
 
 		String expected = ClassPathFiles
 				.readString("github-actions/no-empty-lines-output.yaml");
-		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
+		assertThat(pom).content().isEqualTo(expected);
 	}
 
 	@Test
@@ -370,7 +370,7 @@ public class GitHubActionChoreTest {
 				.resolve("src/test/native/test-executable.sh");
 		String expected = ClassPathFiles
 				.readString("github-actions/test-executable-expected.sh");
-		assertThat(FilesSilent.readString(testExecutable)).isEqualTo(expected);
+		assertThat(testExecutable).content().isEqualTo(expected);
 	}
 
 	@Test
@@ -400,7 +400,7 @@ public class GitHubActionChoreTest {
 		String expected = ClassPathFiles.readString(
 				"github-actions/test-executable-expected-update.sh"
 		);
-		assertThat(FilesSilent.readString(testExecutable)).isEqualTo(expected);
+		assertThat(testExecutable).content().isEqualTo(expected);
 	}
 
 	@Test
@@ -422,7 +422,7 @@ public class GitHubActionChoreTest {
 
 		String expected = ClassPathFiles
 				.readString("github-actions/permission-expected.yaml");
-		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
+		assertThat(pom).content().isEqualTo(expected);
 	}
 
 	@Test
@@ -445,7 +445,7 @@ public class GitHubActionChoreTest {
 
 		new GitHubActionChore().doit(context);
 
-		assertThat(FilesSilent.readString(workflow)).isEqualTo("""
+		assertThat(workflow).content().isEqualTo("""
 				jobs:
 				  analyze:
 				  - uses: github/codeql-action/init@v3

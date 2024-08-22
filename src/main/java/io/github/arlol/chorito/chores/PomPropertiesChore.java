@@ -1,21 +1,19 @@
 package io.github.arlol.chorito.chores;
 
-import java.nio.file.Path;
-
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.JavaDirectoryStream;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
 public class PomPropertiesChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		Path pom = context.resolve("pom.xml");
-		if (FilesSilent.exists(pom)) {
+		JavaDirectoryStream.mavenPoms(context).forEach(pom -> {
 			Document doc = JsoupSilent
 					.parse(pom, "UTF-8", "", Parser.xmlParser());
 			Element properties = doc.selectFirst("project > properties");
@@ -74,7 +72,7 @@ public class PomPropertiesChore implements Chore {
 			String content = doc.outerHtml();
 			content = content.replace("${mainClass}", "${start-class}");
 			FilesSilent.writeString(pom, content);
-		}
+		});
 		return context;
 	}
 

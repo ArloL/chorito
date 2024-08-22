@@ -37,8 +37,7 @@ public class CodeFormatterProfileChoreTest {
 
 		Path codeFormatterProfile = extension.root()
 				.resolve(".settings/code-formatter-profile.xml");
-		assertThat(FilesSilent.readString(codeFormatterProfile))
-				.startsWith("<?xml");
+		assertThat(codeFormatterProfile).content().startsWith("<?xml");
 
 		Path jdtCorePrefs = extension.root()
 				.resolve(".settings/org.eclipse.jdt.core.prefs");

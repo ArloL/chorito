@@ -32,12 +32,13 @@ public class SpotbugsPluginChoreTest {
 				pom,
 				ClassPathFiles.readString("spotbugs-plugin/input.xml")
 		);
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
 
 		doit();
 
 		String expected = ClassPathFiles
 				.readString("spotbugs-plugin/expected.xml");
-		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
+		assertThat(pom).content().isEqualTo(expected);
 	}
 
 }

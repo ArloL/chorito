@@ -27,6 +27,7 @@ public class EclipseFormatterPluginChoreTest {
 
 	@Test
 	public void test() throws Exception {
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(
 				pom,
@@ -37,7 +38,7 @@ public class EclipseFormatterPluginChoreTest {
 
 		String expected = ClassPathFiles
 				.readString("eclipse-formatter-plugin/expected.xml");
-		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
+		assertThat(pom).content().isEqualTo(expected);
 	}
 
 }

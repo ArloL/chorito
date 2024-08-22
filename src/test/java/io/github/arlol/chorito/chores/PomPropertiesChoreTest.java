@@ -68,7 +68,7 @@ public class PomPropertiesChoreTest {
 
 		new PomPropertiesChore().doit(extension.choreContext());
 
-		assertThat(FilesSilent.readString(pom)).isEqualTo(EXPECTED);
+		assertThat(pom).content().isEqualTo(EXPECTED);
 	}
 
 }

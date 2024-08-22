@@ -42,7 +42,7 @@ public class JitpackChoreTest {
 		new JitpackChore().doit(extension.choreContext());
 
 		assertTrue(FilesSilent.exists(jitpack));
-		assertThat(FilesSilent.readString(jitpack)).isEqualTo(EXPECT_JITPACK);
+		assertThat(jitpack).content().isEqualTo(EXPECT_JITPACK);
 	}
 
 }

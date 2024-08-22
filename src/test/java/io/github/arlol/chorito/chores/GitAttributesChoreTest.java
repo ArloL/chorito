@@ -24,7 +24,7 @@ public class GitAttributesChoreTest {
 		Path gitignore = extension.root().resolve(".gitattributes");
 		doit();
 		assertThat(FilesSilent.exists(gitignore)).isTrue();
-		assertThat(FilesSilent.readString(gitignore)).isEqualTo("""
+		assertThat(gitignore).content().isEqualTo("""
 				*        text=auto eol=lf
 				*.bat    text      eol=crlf
 				*.cmd    text      eol=crlf
@@ -39,7 +39,7 @@ public class GitAttributesChoreTest {
 		FilesSilent.writeString(gitignore, "");
 		doit();
 		assertThat(FilesSilent.exists(gitignore)).isTrue();
-		assertThat(FilesSilent.readString(gitignore)).isEqualTo("""
+		assertThat(gitignore).content().isEqualTo("""
 				*        text=auto eol=lf
 				*.bat    text      eol=crlf
 				*.cmd    text      eol=crlf
@@ -60,16 +60,17 @@ public class GitAttributesChoreTest {
 		);
 		doit();
 		assertThat(FilesSilent.exists(gitignore)).isTrue();
-		assertThat(FilesSilent.readString(gitignore)).isEqualTo(
-				"""
-						# Declare files that will always have LF line endings on checkout.
-						*.sh text eol=lf
-						*        text=auto eol=lf
-						*.bat    text      eol=crlf
-						*.cmd    text      eol=crlf
-						*.ps1    text      eol=crlf
+		assertThat(gitignore).content()
+				.isEqualTo(
 						"""
-		);
+								# Declare files that will always have LF line endings on checkout.
+								*.sh text eol=lf
+								*        text=auto eol=lf
+								*.bat    text      eol=crlf
+								*.cmd    text      eol=crlf
+								*.ps1    text      eol=crlf
+								"""
+				);
 	}
 
 }

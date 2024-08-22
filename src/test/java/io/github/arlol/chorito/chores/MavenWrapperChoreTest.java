@@ -61,7 +61,13 @@ public class MavenWrapperChoreTest {
 				)
 				.build();
 		FilesSilent.touch(context.resolve("pom.xml"));
-		FilesSilent.touch(context.resolve("nested/pom.xml"));
+		FilesSilent.writeString(context.resolve("nested/pom.xml"), """
+				<project>
+				<parent>
+				<relativePath>..</relativePath>
+				</parent>
+				</project>
+				""");
 
 		// when
 		new MavenWrapperChore().doit(context.refresh());
