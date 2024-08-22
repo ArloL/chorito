@@ -19,7 +19,11 @@ public class XmlPreambleChore implements Chore {
 				.forEach(path -> {
 					Document doc = JsoupSilent
 							.parse(path, null, "", Parser.xmlParser());
+
+					String before = doc.outerHtml();
+
 					doc.charset(doc.outputSettings().charset());
+
 					Node xmlDeclaration = doc.firstChild();
 					if (xmlDeclaration != null) {
 						Node nextSibling = xmlDeclaration.nextSibling();
@@ -28,7 +32,11 @@ public class XmlPreambleChore implements Chore {
 							xmlDeclaration.after(new TextNode("\n"));
 						}
 					}
-					FilesSilent.writeString(path, doc.outerHtml());
+
+					String after = doc.outerHtml();
+					if (!after.contentEquals(before)) {
+						FilesSilent.writeString(path, doc.outerHtml());
+					}
 				});
 		return context;
 	}
