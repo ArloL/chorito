@@ -41,8 +41,7 @@ public class LicenseChoreTest {
 
 		Path license = extension.root().resolve("LICENSE");
 		assertTrue(FilesSilent.exists(license));
-		assertThat(FilesSilent.readString(license))
-				.isEqualTo(mitLicense("2018"));
+		assertThat(license).content().isEqualTo(mitLicense("2018"));
 	}
 
 	@Test
@@ -63,8 +62,7 @@ public class LicenseChoreTest {
 
 		assertFalse(FilesSilent.exists(licenseMd));
 		assertTrue(FilesSilent.exists(license));
-		assertThat(FilesSilent.readString(license))
-				.isEqualTo(mitLicense("2018-2019"));
+		assertThat(license).content().isEqualTo(mitLicense("2018-2019"));
 	}
 
 	@Test
@@ -83,8 +81,7 @@ public class LicenseChoreTest {
 		new LicenseChore().doit(context);
 
 		assertTrue(FilesSilent.exists(license));
-		assertThat(FilesSilent.readString(license))
-				.isEqualTo(mitLicense("2018-2019"));
+		assertThat(license).content().isEqualTo(mitLicense("2018-2019"));
 	}
 
 	@Test
@@ -103,8 +100,7 @@ public class LicenseChoreTest {
 		new LicenseChore().doit(context);
 
 		assertTrue(FilesSilent.exists(license));
-		assertThat(FilesSilent.readString(license))
-				.isEqualTo(mitLicense("2018"));
+		assertThat(license).content().isEqualTo(mitLicense("2018"));
 	}
 
 	@Test
@@ -123,8 +119,7 @@ public class LicenseChoreTest {
 		new LicenseChore().doit(context);
 
 		assertTrue(FilesSilent.exists(license));
-		assertThat(FilesSilent.readString(license))
-				.isEqualTo(mitLicense("2018-2019"));
+		assertThat(license).content().isEqualTo(mitLicense("2018-2019"));
 	}
 
 	@Test
@@ -143,8 +138,7 @@ public class LicenseChoreTest {
 		new LicenseChore().doit(context);
 
 		assertTrue(FilesSilent.exists(license));
-		assertThat(FilesSilent.readString(license))
-				.isEqualTo(mitLicense("2017-2019"));
+		assertThat(license).content().isEqualTo(mitLicense("2017-2019"));
 	}
 
 	@Test
@@ -166,7 +160,7 @@ public class LicenseChoreTest {
 		new LicenseChore().doit(context);
 
 		assertTrue(FilesSilent.exists(license));
-		assertThat(FilesSilent.readString(license))
+		assertThat(license).content()
 				.isEqualTo(mitLicense("2017-2019", "2012 Ryan Bates"));
 	}
 

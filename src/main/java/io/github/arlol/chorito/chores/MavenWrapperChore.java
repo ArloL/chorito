@@ -6,10 +6,10 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.github.arlol.chorito.filter.FileHasNoParentDirectoryWithFileFilter;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ExecutableFlagger;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.JavaDirectoryStream;
 import io.github.arlol.chorito.tools.MyPaths;
 
 public class MavenWrapperChore implements Chore {
@@ -43,14 +43,8 @@ public class MavenWrapperChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		LOG.info("Running MavenWrapperChore");
-		context.textFiles()
-				.stream()
-				.filter(file -> file.endsWith("pom.xml"))
+		JavaDirectoryStream.mavenPoms(context)
 				.map(MyPaths::getParent)
-				.filter(
-						file -> FileHasNoParentDirectoryWithFileFilter
-								.filter(file, "pom.xml")
-				)
 				.forEach(pomDir -> {
 					Path wrapper = pomDir.resolve("mvnw");
 					Path wrapperJar = pomDir
@@ -71,6 +65,7 @@ public class MavenWrapperChore implements Chore {
 								.directory(pomDir)
 								.start()
 								.waitFor(5, TimeUnit.MINUTES);
+						context.setDirty();
 					}
 					if (!FilesSilent.exists(wrapperJar)) {
 						throw new IllegalStateException("No maven-wrapper.jar");
@@ -92,10 +87,11 @@ public class MavenWrapperChore implements Chore {
 									.directory(pomDir)
 									.start()
 									.waitFor(5, TimeUnit.MINUTES);
+							context.setDirty();
 						}
 					}
 				});
-		return context.refresh();
+		return context;
 	}
 
 }

@@ -45,6 +45,7 @@ public class JavaUpdaterChoreTest {
 
 	@Test
 	public void testPomXml() throws Exception {
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(
 				pom,
@@ -91,6 +92,7 @@ public class JavaUpdaterChoreTest {
 
 	@Test
 	public void testPomWithoutJavaVersionXml() throws Exception {
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(pom, """
 				<project>
@@ -114,6 +116,7 @@ public class JavaUpdaterChoreTest {
 
 	@Test
 	public void testPomWithoutProperties() throws Exception {
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
 		Path pom = extension.root().resolve("pom.xml");
 		FilesSilent.writeString(pom, """
 				<project>

@@ -41,7 +41,7 @@ public class DependabotChoreTest {
 		doit();
 
 		Path dependabot = extension.root().resolve(".github/dependabot.yml");
-		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
+		assertThat(dependabot).content().isEqualTo("""
 				version: 2
 				updates:
 				- package-ecosystem: "github-actions"
@@ -66,7 +66,7 @@ public class DependabotChoreTest {
 		doit();
 
 		Path dependabot = extension.root().resolve(".github/dependabot.yml");
-		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
+		assertThat(dependabot).content().isEqualTo("""
 				version: 2
 				updates:
 				- package-ecosystem: "github-actions"
@@ -91,7 +91,7 @@ public class DependabotChoreTest {
 		doit();
 
 		Path dependabot = extension.root().resolve(".github/dependabot.yml");
-		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
+		assertThat(dependabot).content().isEqualTo("""
 				version: 2
 				updates:
 				- package-ecosystem: "github-actions"
@@ -112,7 +112,7 @@ public class DependabotChoreTest {
 		doit();
 
 		Path dependabot = extension.root().resolve(".github/dependabot.yml");
-		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
+		assertThat(dependabot).content().isEqualTo("""
 				version: 2
 				updates:
 				- package-ecosystem: "github-actions"
@@ -133,7 +133,7 @@ public class DependabotChoreTest {
 		doit();
 
 		Path dependabot = extension.root().resolve(".github/dependabot.yml");
-		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
+		assertThat(dependabot).content().isEqualTo("""
 				version: 2
 				updates:
 				- package-ecosystem: "github-actions"
@@ -162,7 +162,7 @@ public class DependabotChoreTest {
 
 		doit();
 
-		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
+		assertThat(dependabot).content().isEqualTo("""
 				version: 2
 				updates:
 				- package-ecosystem: "github-actions"
@@ -202,7 +202,7 @@ public class DependabotChoreTest {
 		doit();
 
 		Path dependabot = extension.root().resolve(".github/dependabot.yml");
-		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
+		assertThat(dependabot).content().isEqualTo("""
 				version: 2
 				updates:
 				- package-ecosystem: "github-actions"
@@ -245,7 +245,7 @@ public class DependabotChoreTest {
 		doit();
 
 		Path dependabot = extension.root().resolve(".github/dependabot.yml");
-		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
+		assertThat(dependabot).content().isEqualTo("""
 				version: 2
 				updates:
 				- package-ecosystem: "github-actions"
@@ -273,7 +273,7 @@ public class DependabotChoreTest {
 		// when
 		doit();
 
-		assertThat(FilesSilent.readString(dependabot)).isEqualTo("""
+		assertThat(dependabot).content().isEqualTo("""
 				version: 2
 				updates:
 				- package-ecosystem: "maven"

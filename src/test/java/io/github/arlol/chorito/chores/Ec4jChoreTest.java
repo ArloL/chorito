@@ -31,8 +31,7 @@ public class Ec4jChoreTest {
 
 		new Ec4jChore().doit(extension.choreContext());
 
-		assertThat(FilesSilent.readString(text))
-				.isEqualTo("file with a newline\n");
+		assertThat(text).content().isEqualTo("file with a newline\n");
 	}
 
 }

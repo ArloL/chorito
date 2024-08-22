@@ -74,8 +74,7 @@ public class EditorConfigChoreTest {
 
 		Path editorConfig = extension.root().resolve(".editorconfig");
 		assertTrue(FilesSilent.exists(editorConfig));
-		assertThat(FilesSilent.readString(editorConfig))
-				.isEqualTo(DEFAULT_EDITORCONFIG);
+		assertThat(editorConfig).content().isEqualTo(DEFAULT_EDITORCONFIG);
 	}
 
 	@Test
@@ -89,8 +88,7 @@ public class EditorConfigChoreTest {
 		doit();
 
 		assertTrue(FilesSilent.exists(editorConfig));
-		assertThat(FilesSilent.readString(editorConfig))
-				.isEqualTo(POM_EDITORCONFIG);
+		assertThat(editorConfig).content().isEqualTo(POM_EDITORCONFIG);
 	}
 
 	@Test
@@ -102,8 +100,7 @@ public class EditorConfigChoreTest {
 		doit();
 
 		assertTrue(FilesSilent.exists(editorConfig));
-		assertThat(FilesSilent.readString(editorConfig))
-				.isEqualTo(POM_EDITORCONFIG);
+		assertThat(editorConfig).content().isEqualTo(POM_EDITORCONFIG);
 	}
 
 	@Test
@@ -117,8 +114,7 @@ public class EditorConfigChoreTest {
 
 		Path editorConfig = extension.root().resolve(".editorconfig");
 		assertTrue(FilesSilent.exists(editorConfig));
-		assertThat(FilesSilent.readString(editorConfig))
-				.isEqualTo(DEFAULT_EDITORCONFIG);
+		assertThat(editorConfig).content().isEqualTo(DEFAULT_EDITORCONFIG);
 	}
 
 	@Test

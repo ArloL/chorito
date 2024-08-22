@@ -133,8 +133,7 @@ public class GitIgnoreChoreTest {
 		doit();
 
 		Path gitignore = extension.root().resolve(".gitignore");
-		assertThat(FilesSilent.readString(gitignore))
-				.isEqualTo(DEFAULT_POM_XML);
+		assertThat(gitignore).content().isEqualTo(DEFAULT_POM_XML);
 	}
 
 	@Test
@@ -146,8 +145,7 @@ public class GitIgnoreChoreTest {
 
 		doit();
 
-		assertThat(FilesSilent.readString(gitignore))
-				.isEqualTo(DEFAULT_POM_XML);
+		assertThat(gitignore).content().isEqualTo(DEFAULT_POM_XML);
 	}
 
 	@Test
@@ -159,8 +157,7 @@ public class GitIgnoreChoreTest {
 
 		doit();
 
-		assertThat(FilesSilent.readString(gitignore))
-				.isEqualTo(DEFAULT_POM_XML);
+		assertThat(gitignore).content().isEqualTo(DEFAULT_POM_XML);
 	}
 
 	@Test

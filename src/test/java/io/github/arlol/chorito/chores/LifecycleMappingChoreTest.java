@@ -37,7 +37,7 @@ public class LifecycleMappingChoreTest {
 
 		String expected = ClassPathFiles
 				.readString("lifecycle-mapping/expected.xml");
-		assertThat(FilesSilent.readString(pom)).isEqualTo(expected);
+		assertThat(pom).content().isEqualTo(expected);
 	}
 
 }

@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.JavaDirectoryStream;
 
 public class LicenseChore implements Chore {
 
@@ -84,13 +85,11 @@ public class LicenseChore implements Chore {
 	}
 
 	private void checkPom(ChoreContext context) {
-		Path pomXml = context.resolve("pom.xml");
-		if (!FilesSilent.exists(pomXml)) {
-			return;
-		}
-		if (!FilesSilent.readString(pomXml).contains("licenses")) {
-			System.out.println("Add license to pom");
-		}
+		JavaDirectoryStream.mavenPoms(context).forEach(pomXml -> {
+			if (!FilesSilent.readString(pomXml).contains("licenses")) {
+				System.out.println("Add license to pom");
+			}
+		});
 	}
 
 	private Optional<String> readYearRangeFromFile(String license) {

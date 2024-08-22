@@ -47,7 +47,7 @@ public class PomParentRelativePathChoreTest {
 
 		new PomParentRelativePathChore().doit(extension.choreContext());
 
-		assertThat(FilesSilent.readString(pom)).isEqualTo(EXPECTED);
+		assertThat(pom).content().isEqualTo(EXPECTED);
 	}
 
 }

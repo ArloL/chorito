@@ -27,9 +27,10 @@ public class XmlPreambleChoreTest {
 
 		new XmlPreambleChore().doit(extension.choreContext());
 
-		assertThat(FilesSilent.readString(pomXml)).startsWith(
-				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project />"
-		);
+		assertThat(pomXml).content()
+				.startsWith(
+						"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project />"
+				);
 	}
 
 	@Test
@@ -58,9 +59,10 @@ public class XmlPreambleChoreTest {
 
 		new XmlPreambleChore().doit(extension.choreContext());
 
-		assertThat(FilesSilent.readString(xml)).startsWith(
-				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE"
-		);
+		assertThat(xml).content()
+				.startsWith(
+						"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE"
+				);
 	}
 
 	@Test
@@ -81,9 +83,10 @@ public class XmlPreambleChoreTest {
 
 		new XmlPreambleChore().doit(extension.choreContext());
 
-		assertThat(FilesSilent.readString(xml)).startsWith(
-				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<settings"
-		);
+		assertThat(xml).content()
+				.startsWith(
+						"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<settings"
+				);
 	}
 
 	@Test
@@ -102,9 +105,10 @@ public class XmlPreambleChoreTest {
 
 		new XmlPreambleChore().doit(extension.choreContext());
 
-		assertThat(FilesSilent.readString(xml)).startsWith(
-				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<inkscape"
-		);
+		assertThat(xml).content()
+				.startsWith(
+						"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<inkscape"
+				);
 	}
 
 }

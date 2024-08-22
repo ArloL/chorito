@@ -11,33 +11,29 @@ import org.jsoup.select.Elements;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.JavaDirectoryStream;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
 public class IntellijChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		boolean hasPom = context.textFiles()
-				.stream()
-				.anyMatch(file -> file.endsWith("pom.xml"));
-		boolean hasMvnw = context.textFiles()
-				.stream()
-				.anyMatch(file -> file.endsWith("mvnw"));
-		boolean hasGradlew = context.textFiles()
-				.stream()
-				.anyMatch(file -> file.endsWith("gradlew"));
-		if (hasPom || hasMvnw || hasGradlew) {
-			overwriteFromTemplate(context, "eclipseCodeFormatter");
-			overwriteFromTemplate(context, "externalDependencies");
-			overwriteFromTemplate(context, "saveactions_settings");
-			overwriteFromTemplate(context, "codeStyles/codeStyleConfig");
-			overwriteProjectFromTemplate(context);
-		}
+		JavaDirectoryStream.javaDirectories(context).forEach(dir -> {
+			overwriteFromTemplate(context, dir, "eclipseCodeFormatter");
+			overwriteFromTemplate(context, dir, "externalDependencies");
+			overwriteFromTemplate(context, dir, "saveactions_settings");
+			overwriteFromTemplate(context, dir, "codeStyles/codeStyleConfig");
+			overwriteProjectFromTemplate(context, dir);
+		});
 		return context;
 	}
 
-	private void overwriteFromTemplate(ChoreContext context, String name) {
-		Path path = context.resolve(".idea/" + name + ".xml");
+	private void overwriteFromTemplate(
+			ChoreContext context,
+			Path dir,
+			String name
+	) {
+		Path path = dir.resolve(".idea/" + name + ".xml");
 		String template = ClassPathFiles
 				.readString("idea-settings/" + name + ".xml");
 		if (!FilesSilent.exists(path)) {
@@ -47,9 +43,9 @@ public class IntellijChore implements Chore {
 		}
 	}
 
-	private void overwriteProjectFromTemplate(ChoreContext context) {
+	private void overwriteProjectFromTemplate(ChoreContext context, Path dir) {
 		String fileName = "codeStyles/Project";
-		Path path = context.resolve(".idea/" + fileName + ".xml");
+		Path path = dir.resolve(".idea/" + fileName + ".xml");
 		String templateString = ClassPathFiles
 				.readString("idea-settings/" + fileName + ".xml");
 
