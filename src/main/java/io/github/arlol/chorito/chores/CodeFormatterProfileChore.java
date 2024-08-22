@@ -10,8 +10,8 @@ import org.jsoup.parser.Parser;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
+import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.JavaDirectoryStream;
 import io.github.arlol.chorito.tools.JsoupSilent;
 import io.github.arlol.chorito.tools.PropertiesSilent;
 
@@ -19,7 +19,7 @@ public class CodeFormatterProfileChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		JavaDirectoryStream.mavenPoms(context).forEach(pom -> {
+		DirectoryStreams.javaDirectories(context).forEach(pom -> {
 			Path profileXml = context
 					.resolve(".settings/code-formatter-profile.xml");
 			String currentProfile = ClassPathFiles

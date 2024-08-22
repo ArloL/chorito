@@ -8,15 +8,18 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 
-public final class JavaDirectoryStream {
+public final class DirectoryStreams {
 
-	private JavaDirectoryStream() {
+	private DirectoryStreams() {
 	}
 
 	public static Stream<Path> javaDirectories(ChoreContext context) {
-		return Stream.of(mavenPoms(context), javaBuildGradles(context))
+		return Stream
+				.of(
+						mavenPoms(context).map(MyPaths::getParent),
+						javaGradleDir(context)
+				)
 				.flatMap(Function.identity())
-				.map(MyPaths::getParent)
 				.distinct();
 	}
 
@@ -62,29 +65,45 @@ public final class JavaDirectoryStream {
 				});
 	}
 
-	public static Stream<Path> rootBuildGradles(ChoreContext context) {
+	public static Stream<Path> rootGradleDir(ChoreContext context) {
 		return context.textFiles()
 				.stream()
-				.filter(
-						file -> FilesSilent
-								.exists(file.resolveSibling("settings.gradle"))
-				);
+				.filter(file -> file.endsWith("settings.gradle"))
+				.map(MyPaths::getParent);
 	}
 
-	public static Stream<Path> rootJavaBuildGradles(ChoreContext context) {
-		return rootBuildGradles(context).filter(
-				file -> file.endsWith("build.gradle")
-						&& FilesSilent.readString(file).contains("java")
-		);
+	public static Stream<Path> rootJavaGradleDir(ChoreContext context) {
+		return rootGradleDir(context).filter(dir -> {
+			Path buildGradle = dir.resolve("build.gradle");
+			return FilesSilent.exists(buildGradle)
+					&& FilesSilent.readString(buildGradle).contains("java");
+		});
 	}
 
-	public static Stream<Path> javaBuildGradles(ChoreContext context) {
+	public static Stream<Path> gradleDir(ChoreContext context) {
 		return context.textFiles()
 				.stream()
 				.filter(
 						file -> file.endsWith("build.gradle")
-								&& FilesSilent.readString(file).contains("java")
-				);
+								|| file.endsWith("settings.gradle")
+				)
+				.map(MyPaths::getParent)
+				.distinct();
+	}
+
+	public static Stream<Path> javaGradleDir(ChoreContext context) {
+		return gradleDir(context).filter(dir -> {
+			Path buildGradle = dir.resolve("build.gradle");
+			return FilesSilent.exists(buildGradle)
+					&& FilesSilent.readString(buildGradle).contains("java");
+		});
+	}
+
+	public static Stream<Path> nodeDir(ChoreContext context) {
+		return context.textFiles()
+				.stream()
+				.filter(file -> file.endsWith("package.json"))
+				.map(MyPaths::getParent);
 	}
 
 }

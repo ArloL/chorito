@@ -11,7 +11,7 @@ import org.jsoup.select.Elements;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.JavaDirectoryStream;
+import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.JsoupSilent;
 import io.github.arlol.chorito.tools.PropertiesSilent;
 
@@ -48,7 +48,7 @@ public class JavaUpdaterChore implements Chore {
 	}
 
 	private void updatePomXmlJavaVersionProperty(ChoreContext context) {
-		JavaDirectoryStream.mavenPomsWithSourceCode(context).forEach(pomXml -> {
+		DirectoryStreams.mavenPomsWithSourceCode(context).forEach(pomXml -> {
 			Document doc = JsoupSilent
 					.parse(pomXml, "UTF-8", "", Parser.xmlParser());
 			Element project = doc.selectFirst("project");

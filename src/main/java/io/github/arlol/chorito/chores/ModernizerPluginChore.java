@@ -6,14 +6,14 @@ import org.jsoup.parser.Parser;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.JavaDirectoryStream;
+import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
 public class ModernizerPluginChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		JavaDirectoryStream.mavenPomsWithSourceCode(context).forEach(pomXml -> {
+		DirectoryStreams.mavenPomsWithSourceCode(context).forEach(pomXml -> {
 			Document doc = JsoupSilent
 					.parse(pomXml, "UTF-8", "", Parser.xmlParser());
 

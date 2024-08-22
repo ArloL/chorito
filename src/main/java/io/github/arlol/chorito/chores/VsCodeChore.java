@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.JavaDirectoryStream;
+import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.Jsons;
 import io.github.arlol.chorito.tools.MyPaths;
 
@@ -32,7 +32,7 @@ public class VsCodeChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		Stream.of(
-				JavaDirectoryStream.javaDirectories(context),
+				DirectoryStreams.javaDirectories(context),
 				context.textFiles()
 						.stream()
 						.map(MyPaths::getParent)

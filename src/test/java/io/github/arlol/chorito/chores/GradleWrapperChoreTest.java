@@ -59,7 +59,7 @@ public class GradleWrapperChoreTest {
 								.factory(this::fakeGradleWrapper)
 				)
 				.build();
-		FilesSilent.touch(context.resolve("nested/gradlew"));
+		FilesSilent.touch(context.resolve("nested/settings.gradle"));
 		Path gradleProperties = context
 				.resolve("nested/gradle/wrapper/gradle-wrapper.properties");
 		FilesSilent.writeString(
@@ -74,7 +74,11 @@ public class GradleWrapperChoreTest {
 						zipStorePath=wrapper/dists
 						"""
 		);
+
+		// when
 		new GradleWrapperChore().doit(context.refresh());
+
+		// the
 		assertTrue(FilesSilent.exists(gradleProperties));
 		assertTrue(FilesSilent.exists(context.resolve("nested/gradlew.bat")));
 	}

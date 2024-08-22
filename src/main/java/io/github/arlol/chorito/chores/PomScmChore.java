@@ -8,7 +8,7 @@ import org.jsoup.parser.Parser;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.JavaDirectoryStream;
+import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
 public class PomScmChore implements Chore {
@@ -23,7 +23,7 @@ public class PomScmChore implements Chore {
 				.collect(Collectors.reducing((a, b) -> null))
 				.ifPresent(remote -> {
 
-					JavaDirectoryStream.rootMavenPoms(context).forEach(pom -> {
+					DirectoryStreams.rootMavenPoms(context).forEach(pom -> {
 						Document doc = JsoupSilent
 								.parse(pom, "UTF-8", "", Parser.xmlParser());
 						Element scm = doc.selectFirst("project > scm");

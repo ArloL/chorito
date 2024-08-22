@@ -8,14 +8,14 @@ import org.jsoup.select.Elements;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.JavaDirectoryStream;
+import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
 public class LifecycleMappingChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		JavaDirectoryStream.mavenPoms(context).forEach(pomXml -> {
+		DirectoryStreams.mavenPoms(context).forEach(pomXml -> {
 			Document doc = JsoupSilent
 					.parse(pomXml, "UTF-8", "", Parser.xmlParser());
 

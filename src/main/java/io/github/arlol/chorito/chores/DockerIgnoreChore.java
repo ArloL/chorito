@@ -1,8 +1,13 @@
 package io.github.arlol.chorito.chores;
 
+import static java.util.stream.Collectors.joining;
+
+import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Stream;
 
 import io.github.arlol.chorito.tools.ChoreContext;
+import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.ExistingFileUpdater;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.MyPaths;
@@ -14,24 +19,6 @@ public class DockerIgnoreChore implements Chore {
 
 			Dockerfile
 			.dockerignore
-			""";
-
-	private static String DOCKERIGNORE_MAVEN = """
-			### Maven ###
-
-			/target/
-			""";
-
-	private static String DOCKERIGNORE_GRADLE = """
-			### Gradle ###
-
-			/build/
-			/.gradle/
-			""";
-	private static String DOCKERIGNORE_NODE = """
-			### node ###
-
-			/node_modules/
 			""";
 
 	@Override
@@ -56,18 +43,47 @@ public class DockerIgnoreChore implements Chore {
 							newContent.append("\n");
 						}
 					}
-					if (FilesSilent.anyChildExists(dir, "mvnw", "pom.xml")) {
-						newContent.append("\n");
-						newContent.append(DOCKERIGNORE_MAVEN);
+
+					String mavenDirs = DirectoryStreams.mavenPoms(context)
+							.map(MyPaths::getParent)
+							.filter(path -> path.startsWith(dir))
+							.map(path -> dir.relativize(path))
+							.map(Path::toString)
+							.map(path -> path.isBlank() ? "" : "/" + path)
+							.map(path -> path + "/target/")
+							.collect(joining("\n", "\n", "\n"));
+					if (!mavenDirs.isEmpty()) {
+						newContent.append("\n### Maven ###\n");
+						newContent.append(mavenDirs);
 					}
-					if (FilesSilent
-							.anyChildExists(dir, "gradlew", "build.gradle")) {
-						newContent.append("\n");
-						newContent.append(DOCKERIGNORE_GRADLE);
+
+					String gradleDirs = DirectoryStreams.gradleDir(context)
+							.filter(path -> path.startsWith(dir))
+							.map(path -> dir.relativize(path))
+							.map(Path::toString)
+							.map(path -> path.isBlank() ? "" : "/" + path)
+							.flatMap(
+									path -> Stream.of(
+											path + "/build/",
+											path + "/.gradle/"
+									)
+							)
+							.collect(joining("\n", "\n", "\n"));
+					if (!gradleDirs.isEmpty()) {
+						newContent.append("\n### Gradle ###\n");
+						newContent.append(gradleDirs);
 					}
-					if (FilesSilent.anyChildExists(dir, "package.json")) {
-						newContent.append("\n");
-						newContent.append(DOCKERIGNORE_NODE);
+
+					String nodeDirs = DirectoryStreams.nodeDir(context)
+							.filter(pom -> pom.startsWith(dir))
+							.map(path -> dir.relativize(path))
+							.map(Path::toString)
+							.map(path -> path.isBlank() ? "" : "/" + path)
+							.map(path -> path + "/node_modules/")
+							.collect(joining("\n", "\n", "\n"));
+					if (!nodeDirs.isEmpty()) {
+						newContent.append("\n### node ###\n");
+						newContent.append(nodeDirs);
 					}
 
 					ExistingFileUpdater.update(

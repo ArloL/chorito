@@ -8,18 +8,18 @@ import java.util.Map;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.JavaDirectoryStream;
+import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.PropertiesSilent;
 
 public class EclipseCompilerSettingsChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		JavaDirectoryStream.javaDirectories(context).forEach(pomDir -> {
+		DirectoryStreams.javaDirectories(context).forEach(javaDir -> {
 			String templateJdtCorePrefs = ClassPathFiles
 					.readString("eclipse-settings/org.eclipse.jdt.core.prefs");
 
-			Path jdtCorePrefs = pomDir
+			Path jdtCorePrefs = javaDir
 					.resolve(".settings/org.eclipse.jdt.core.prefs");
 			if (!FilesSilent.exists(jdtCorePrefs)) {
 				FilesSilent.touch(jdtCorePrefs);

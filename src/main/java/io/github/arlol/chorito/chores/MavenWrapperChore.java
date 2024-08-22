@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ExecutableFlagger;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.JavaDirectoryStream;
+import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.MyPaths;
 
 public class MavenWrapperChore implements Chore {
@@ -43,7 +43,7 @@ public class MavenWrapperChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		LOG.info("Running MavenWrapperChore");
-		JavaDirectoryStream.rootMavenPoms(context)
+		DirectoryStreams.rootMavenPoms(context)
 				.map(MyPaths::getParent)
 				.forEach(pomDir -> {
 					Path wrapper = pomDir.resolve("mvnw");

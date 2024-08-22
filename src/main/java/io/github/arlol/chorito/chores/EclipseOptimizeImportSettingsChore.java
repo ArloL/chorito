@@ -8,18 +8,18 @@ import java.util.Map;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.JavaDirectoryStream;
+import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.PropertiesSilent;
 
 public class EclipseOptimizeImportSettingsChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		JavaDirectoryStream.javaDirectories(context).forEach(pomDir -> {
+		DirectoryStreams.javaDirectories(context).forEach(javaDir -> {
 			String templateJdtUiPrefs = ClassPathFiles
 					.readString("eclipse-settings/org.eclipse.jdt.ui.prefs");
 
-			Path jdtUiPrefs = pomDir
+			Path jdtUiPrefs = javaDir
 					.resolve(".settings/org.eclipse.jdt.ui.prefs");
 			if (!FilesSilent.exists(jdtUiPrefs)) {
 				FilesSilent.touch(jdtUiPrefs);

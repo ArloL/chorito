@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ExistingFileUpdater;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.JavaDirectoryStream;
+import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.MyPaths;
 
 public class GitIgnoreChore implements Chore {
@@ -112,7 +112,7 @@ public class GitIgnoreChore implements Chore {
 	}
 
 	private void createMavenAndGradleIgnore(ChoreContext context) {
-		JavaDirectoryStream.javaDirectories(context).forEach(dir -> {
+		DirectoryStreams.javaDirectories(context).forEach(dir -> {
 			String newGitignoreContent = GITIGNORE_ECLIPSE;
 			if (FilesSilent.anyChildExists(dir, "mvnw", "pom.xml")) {
 				newGitignoreContent += "\n" + GITIGNORE_ECLIPSE_JAVA;
@@ -159,7 +159,7 @@ public class GitIgnoreChore implements Chore {
 
 	private void createEclipseSettingsIgnore(ChoreContext context) {
 		Stream.of(
-				JavaDirectoryStream.javaDirectories(context),
+				DirectoryStreams.javaDirectories(context),
 				context.textFiles()
 						.stream()
 						.filter(
