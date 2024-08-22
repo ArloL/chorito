@@ -23,7 +23,7 @@ public class PomScmChore implements Chore {
 				.collect(Collectors.reducing((a, b) -> null))
 				.ifPresent(remote -> {
 
-					JavaDirectoryStream.mavenPoms(context).forEach(pom -> {
+					JavaDirectoryStream.rootMavenPoms(context).forEach(pom -> {
 						Document doc = JsoupSilent
 								.parse(pom, "UTF-8", "", Parser.xmlParser());
 						Element scm = doc.selectFirst("project > scm");
