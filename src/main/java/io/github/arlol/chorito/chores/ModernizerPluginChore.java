@@ -5,15 +5,15 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 
 import io.github.arlol.chorito.tools.ChoreContext;
-import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.DirectoryStreams;
+import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
 public class ModernizerPluginChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		DirectoryStreams.mavenPomsWithSourceCode(context).forEach(pomXml -> {
+		DirectoryStreams.mavenPomsWithCode(context).forEach(pomXml -> {
 			Document doc = JsoupSilent
 					.parse(pomXml, "UTF-8", "", Parser.xmlParser());
 

@@ -57,7 +57,7 @@ public class DockerIgnoreChore implements Chore {
 						newContent.append(mavenDirs);
 					}
 
-					String gradleDirs = DirectoryStreams.gradleDir(context)
+					String gradleDirs = DirectoryStreams.gradleDirs(context)
 							.filter(path -> path.startsWith(dir))
 							.map(path -> dir.relativize(path))
 							.map(Path::toString)
@@ -74,7 +74,7 @@ public class DockerIgnoreChore implements Chore {
 						newContent.append(gradleDirs);
 					}
 
-					String nodeDirs = DirectoryStreams.nodeDir(context)
+					String nodeDirs = DirectoryStreams.nodeDirs(context)
 							.filter(pom -> pom.startsWith(dir))
 							.map(path -> dir.relativize(path))
 							.map(Path::toString)

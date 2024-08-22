@@ -29,7 +29,7 @@ public class GradleWrapperChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		LOG.info("Running GradleWrapperChore");
-		DirectoryStreams.rootGradleDir(context).forEach(gradleDir -> {
+		DirectoryStreams.rootGradleDirs(context).forEach(gradleDir -> {
 			Path wrapper = gradleDir.resolve("gradlew");
 			Path wrapperJar = gradleDir
 					.resolve("gradle/wrapper/gradle-wrapper.jar");
