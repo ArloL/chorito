@@ -62,6 +62,22 @@ public final class JavaDirectoryStream {
 				});
 	}
 
+	public static Stream<Path> rootBuildGradles(ChoreContext context) {
+		return context.textFiles()
+				.stream()
+				.filter(
+						file -> FilesSilent
+								.exists(file.resolveSibling("settings.gradle"))
+				);
+	}
+
+	public static Stream<Path> rootJavaBuildGradles(ChoreContext context) {
+		return rootBuildGradles(context).filter(
+				file -> file.endsWith("build.gradle")
+						&& FilesSilent.readString(file).contains("java")
+		);
+	}
+
 	public static Stream<Path> javaBuildGradles(ChoreContext context) {
 		return context.textFiles()
 				.stream()
