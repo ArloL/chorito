@@ -52,7 +52,7 @@ public class DockerIgnoreChore implements Chore {
 							.map(path -> path.isBlank() ? "" : "/" + path)
 							.map(path -> path + "/target/")
 							.collect(joining("\n", "\n", "\n"));
-					if (!mavenDirs.isEmpty()) {
+					if (!mavenDirs.isBlank()) {
 						newContent.append("\n### Maven ###\n");
 						newContent.append(mavenDirs);
 					}
@@ -69,7 +69,7 @@ public class DockerIgnoreChore implements Chore {
 									)
 							)
 							.collect(joining("\n", "\n", "\n"));
-					if (!gradleDirs.isEmpty()) {
+					if (!gradleDirs.isBlank()) {
 						newContent.append("\n### Gradle ###\n");
 						newContent.append(gradleDirs);
 					}
@@ -81,7 +81,7 @@ public class DockerIgnoreChore implements Chore {
 							.map(path -> path.isBlank() ? "" : "/" + path)
 							.map(path -> path + "/node_modules/")
 							.collect(joining("\n", "\n", "\n"));
-					if (!nodeDirs.isEmpty()) {
+					if (!nodeDirs.isBlank()) {
 						newContent.append("\n### node ###\n");
 						newContent.append(nodeDirs);
 					}
