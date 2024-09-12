@@ -52,6 +52,16 @@ public final class DirectoryStreams {
 				.filter(pom -> withCode(context, MyPaths.getParent(pom)));
 	}
 
+	public static Stream<Path> gradleWrapperDirs(ChoreContext context) {
+		var gradleWrapperStream = context.textFiles()
+				.stream()
+				.filter(file -> file.endsWith("gradlew"))
+				.map(MyPaths::getParent);
+		return Stream.of(gradleWrapperStream, rootGradleDirs(context))
+				.flatMap(Function.identity())
+				.distinct();
+	}
+
 	public static Stream<Path> rootGradleDirs(ChoreContext context) {
 		return context.textFiles()
 				.stream()
