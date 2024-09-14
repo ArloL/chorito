@@ -47,11 +47,11 @@ public class DependabotChoreTest {
 				- package-ecosystem: "github-actions"
 				  directory: "/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
 				- package-ecosystem: "npm"
 				  directory: "/test-projects/vite-project/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
 				""");
 	}
 
@@ -72,15 +72,15 @@ public class DependabotChoreTest {
 				- package-ecosystem: "github-actions"
 				  directory: "/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
 				- package-ecosystem: "npm"
 				  directory: "/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
 				- package-ecosystem: "npm"
 				  directory: "/test-projects/vite-project/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
 				""");
 	}
 
@@ -97,11 +97,11 @@ public class DependabotChoreTest {
 				- package-ecosystem: "github-actions"
 				  directory: "/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
 				- package-ecosystem: "terraform"
 				  directory: "/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
 				""");
 	}
 
@@ -118,11 +118,11 @@ public class DependabotChoreTest {
 				- package-ecosystem: "github-actions"
 				  directory: "/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
 				- package-ecosystem: "docker"
 				  directory: "/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
 				""");
 	}
 
@@ -139,11 +139,11 @@ public class DependabotChoreTest {
 				- package-ecosystem: "github-actions"
 				  directory: "/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
 				- package-ecosystem: "docker"
 				  directory: "/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
 				""");
 	}
 
@@ -157,7 +157,7 @@ public class DependabotChoreTest {
 				    open-pull-requests-limit: 1
 				    directory: "/"
 				    schedule:
-				      interval: "weekly"
+				      interval: "monthly"
 				""");
 
 		doit();
@@ -169,7 +169,7 @@ public class DependabotChoreTest {
 				  open-pull-requests-limit: 1
 				  directory: "/"
 				  schedule:
-				    interval: "weekly"
+				    interval: "monthly"
 				""");
 	}
 
@@ -208,15 +208,15 @@ public class DependabotChoreTest {
 				- package-ecosystem: "github-actions"
 				  directory: "/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
 				- package-ecosystem: "github-actions"
 				  directory: "/.github/actions/hello/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
 				- package-ecosystem: "github-actions"
 				  directory: "/.github/actions/bye/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
 				""");
 	}
 
@@ -251,7 +251,7 @@ public class DependabotChoreTest {
 				- package-ecosystem: "github-actions"
 				  directory: "/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
 				""");
 	}
 
@@ -284,7 +284,33 @@ public class DependabotChoreTest {
 				- package-ecosystem: "github-actions"
 				  directory: "/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
+				""");
+	}
+
+	@Test
+	public void testUpdateIntervalToMonthly() throws Exception {
+		Path dependabot = extension.root().resolve(".github/dependabot.yml");
+		FilesSilent.writeString(dependabot, """
+				version: 2
+				updates:
+				  - package-ecosystem: "github-actions"
+				    open-pull-requests-limit: 1
+				    directory: "/"
+				    schedule:
+				      interval: "daily"
+				""");
+
+		doit();
+
+		assertThat(dependabot).content().isEqualTo("""
+				version: 2
+				updates:
+				- package-ecosystem: "github-actions"
+				  open-pull-requests-limit: 1
+				  directory: "/"
+				  schedule:
+				    interval: "monthly"
 				""");
 	}
 

@@ -43,6 +43,8 @@ public class DependabotChore implements Chore {
 		addEcosystemIfFileExists(".terraform.lock.hcl", "terraform", context);
 		addCompositeGitHubActions(context);
 
+		dependabotConfigFile.changeDailyScheduleToMonthly();
+
 		FilesSilent.writeString(dependabotYml, dependabotConfigFile.asString());
 
 		return context;
