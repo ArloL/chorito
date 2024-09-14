@@ -2,15 +2,20 @@ package io.github.arlol.chorito.tools;
 
 import static io.github.arlol.chorito.tools.Yamls.getKeyAsNode;
 import static io.github.arlol.chorito.tools.Yamls.getKeyAsSequence;
+import static io.github.arlol.chorito.tools.Yamls.getYamlPath;
 import static io.github.arlol.chorito.tools.Yamls.newMap;
+import static io.github.arlol.chorito.tools.Yamls.newScalar;
 import static io.github.arlol.chorito.tools.Yamls.newSequence;
 import static io.github.arlol.chorito.tools.Yamls.newTuple;
 import static io.github.arlol.chorito.tools.Yamls.nodeAsMap;
 import static io.github.arlol.chorito.tools.Yamls.scalarValue;
+import static io.github.arlol.chorito.tools.Yamls.setKey;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
+import org.snakeyaml.engine.v2.nodes.MappingNode;
 import org.snakeyaml.engine.v2.nodes.Node;
 import org.snakeyaml.engine.v2.nodes.SequenceNode;
 
@@ -21,7 +26,7 @@ public class DependabotConfigFile {
 	public DependabotConfigFile() {
 		root = Optional.of(
 				newMap(
-						newTuple("version", 2),
+						newTuple("version", newScalar(2)),
 						newTuple("updates", newSequence())
 				)
 		);
@@ -35,8 +40,14 @@ public class DependabotConfigFile {
 		return Yamls.asString(root);
 	}
 
-	private Optional<SequenceNode> getUpdates() {
-		return getKeyAsSequence(nodeAsMap(root), "updates");
+	private List<Node> getUpdates() {
+		return getKeyAsSequence(nodeAsMap(root), "updates")
+				.map(SequenceNode::getValue)
+				.orElseThrow();
+	}
+
+	private Stream<MappingNode> getUpdatesAsMappingNode() {
+		return getUpdates().stream().map(node -> nodeAsMap(node));
 	}
 
 	public boolean hasEcosystemWithDirectory(
@@ -45,22 +56,18 @@ public class DependabotConfigFile {
 	) {
 		var directoryWithoutTrailingSlash = directory
 				.substring(0, directory.length() - 1);
-		return getUpdates().map(SequenceNode::getValue)
-				.orElse(List.of())
-				.stream()
-				.map(node -> nodeAsMap(node))
-				.anyMatch(step -> {
-					return scalarValue(getKeyAsNode(step, "package-ecosystem"))
-							.filter(value -> packageEcosystem.equals(value))
-							.isPresent()
-							&& scalarValue(
-									getKeyAsNode(step, "directory")
-							).filter(
+		return getUpdatesAsMappingNode().anyMatch(step -> {
+			return scalarValue(getKeyAsNode(step, "package-ecosystem"))
+					.filter(value -> packageEcosystem.equals(value))
+					.isPresent()
+					&& scalarValue(getKeyAsNode(step, "directory"))
+							.filter(
 									value -> directory.equals(value)
 											|| directoryWithoutTrailingSlash
 													.equals(value)
-							).isPresent();
-				});
+							)
+							.isPresent();
+		});
 	}
 
 	public void addEcosystemInDirectory(String ecosystem, String directory) {
@@ -69,14 +76,21 @@ public class DependabotConfigFile {
 		}
 
 		var nodes = List.of(
-				newTuple("package-ecosystem", ecosystem),
-				newTuple("directory", directory),
-				newTuple("schedule", newMap(newTuple("interval", "daily")))
+				newTuple("package-ecosystem", newScalar(ecosystem)),
+				newTuple("directory", newScalar(directory)),
+				newTuple(
+						"schedule",
+						newMap(newTuple("interval", newScalar("monthly")))
+				)
 		);
-		var updates = getUpdates();
-		updates.map(SequenceNode::getValue)
-				.ifPresent(list -> list.add(newMap(nodes)));
+		getUpdates().add(newMap(nodes));
+	}
 
+	public void changeDailyScheduleToMonthly() {
+		getYamlPath(root.orElseThrow(), "/updates/schedule[interval=daily]")
+				.forEach(node -> {
+					setKey(nodeAsMap(node), "interval", newScalar("monthly"));
+				});
 	}
 
 }

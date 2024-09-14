@@ -43,7 +43,7 @@ public class DependabotConfigFileTest {
 				- package-ecosystem: "gradle"
 				  directory: "/"
 				  schedule:
-				    interval: "daily"
+				    interval: "monthly"
 				""");
 	}
 

@@ -4,19 +4,20 @@ import static io.github.arlol.chorito.tools.Yamls.copyValue;
 import static io.github.arlol.chorito.tools.Yamls.getKeyAsMap;
 import static io.github.arlol.chorito.tools.Yamls.getKeyAsNode;
 import static io.github.arlol.chorito.tools.Yamls.getKeyAsSequence;
-import static io.github.arlol.chorito.tools.Yamls.getKeyAsTuple;
+import static io.github.arlol.chorito.tools.Yamls.getYamlPath;
+import static io.github.arlol.chorito.tools.Yamls.newScalar;
+import static io.github.arlol.chorito.tools.Yamls.newSequence;
 import static io.github.arlol.chorito.tools.Yamls.nodeAsMap;
 import static io.github.arlol.chorito.tools.Yamls.removeKey;
 import static io.github.arlol.chorito.tools.Yamls.scalarValue;
 import static io.github.arlol.chorito.tools.Yamls.setKey;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.snakeyaml.engine.v2.api.DumpSettings;
 import org.snakeyaml.engine.v2.api.LoadSettings;
-import org.snakeyaml.engine.v2.common.FlowStyle;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
 import org.snakeyaml.engine.v2.composer.Composer;
 import org.snakeyaml.engine.v2.emitter.Emitter;
@@ -100,18 +101,12 @@ public class GitHubActionsWorkflowFile {
 	}
 
 	public void setOnScheduleCron(String newCron) {
-		var onSchedule = getOnSchedule();
-		var firstScheduleNode = nodeAsMap(
-				onSchedule.map(SequenceNode::getValue).map(l -> l.get(0))
+		setKey(
+				nodeAsMap(getYamlPath(root.orElseThrow(), "/on/schedule/0"))
+						.getFirst(),
+				"cron",
+				newScalar(newCron, ScalarStyle.SINGLE_QUOTED)
 		);
-		var tuple = getKeyAsTuple(firstScheduleNode, "cron").orElseThrow();
-		var scalarNode = new ScalarNode(
-				Tag.STR,
-				newCron,
-				ScalarStyle.SINGLE_QUOTED
-		);
-		NodeTuple nodeTuple = new NodeTuple(tuple.getKeyNode(), scalarNode);
-		firstScheduleNode.orElseThrow().setValue(List.of(nodeTuple));
 	}
 
 	public Optional<MappingNode> getEnv() {
@@ -127,7 +122,7 @@ public class GitHubActionsWorkflowFile {
 	) {
 		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
 				.orElse(List.of())) {
-			String jobName = scalarValue(jobTuple.getKeyNode());
+			String jobName = scalarValue(jobTuple.getKeyNode()).orElseThrow();
 			var job = nodeAsMap(jobTuple.getValueNode());
 			if (template.hasJob(jobName)) {
 				var templatePermissions = getKeyAsMap(
@@ -158,7 +153,7 @@ public class GitHubActionsWorkflowFile {
 									.get(index);
 							String detailKey = scalarValue(
 									jobDetailsTuple.getKeyNode()
-							);
+							).orElseThrow();
 							if ("runs-on".equals(detailKey)) {
 								continue;
 							}
@@ -193,27 +188,23 @@ public class GitHubActionsWorkflowFile {
 							.isEmpty();
 				})
 				.toList();
-		setKey(
-				jobNode,
-				"steps",
-				new SequenceNode(Tag.SEQ, nodes, FlowStyle.BLOCK)
-		);
+		setKey(jobNode.orElseThrow(), "steps", newSequence(nodes));
 	}
 
-	public void setKeyToSequence(String yamlpath, List<String> sequence) {
-		List<String> split = Arrays.asList(yamlpath.split("\\."));
-		Optional<MappingNode> parentNode = nodeAsMap(root);
-		for (int i = 0; i < split.size() - 1; i++) {
-			String key = split.get(i);
-			parentNode = getKeyAsMap(parentNode, key);
-		}
-		List<Node> nodes = sequence.stream().map(value -> {
-			return (Node) new ScalarNode(Tag.STR, value, ScalarStyle.PLAIN);
-		}).toList();
+	public void setJobMatrixKey(String job, String key, List<String> values) {
+		List<Node> nodes = new ArrayList<>();
+		values.stream()
+				.map(value -> newScalar(value, ScalarStyle.PLAIN))
+				.forEach(scalar -> nodes.add(scalar));
 		setKey(
-				parentNode,
-				split.get(split.size() - 1),
-				new SequenceNode(Tag.SEQ, nodes, FlowStyle.BLOCK)
+				nodeAsMap(
+						Yamls.getYamlPath(
+								getJob(job).orElseThrow(),
+								"/strategy/matrix"
+						)
+				).getFirst(),
+				key,
+				newSequence(nodes)
 		);
 	}
 

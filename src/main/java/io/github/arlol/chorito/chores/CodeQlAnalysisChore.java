@@ -76,10 +76,7 @@ public class CodeQlAnalysisChore implements Chore {
 			template.removeEnv();
 		}
 
-		template.setKeyToSequence(
-				"jobs.analyze.strategy.matrix.language",
-				languages
-		);
+		template.setJobMatrixKey("analyze", "language", languages);
 
 		FilesSilent.writeString(codeqlWorkflow, template.asString());
 
