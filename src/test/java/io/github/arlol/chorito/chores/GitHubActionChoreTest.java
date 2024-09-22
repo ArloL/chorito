@@ -478,4 +478,19 @@ public class GitHubActionChoreTest {
 		assertThat(workflow).content().isEqualTo(outdatedChoresWorkflow);
 	}
 
+	@Test
+	void shouldNotUpdateVersions() throws Exception {
+		String outdatedWorkflow = ClassPathFiles
+				.readString("github-actions/outdated-main-workflow.yaml");
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(workflow, outdatedWorkflow);
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+		new GitHubActionChore().doit(context);
+		assertThat(workflow).content().isEqualTo(outdatedWorkflow);
+	}
+
 }
