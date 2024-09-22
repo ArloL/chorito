@@ -45,8 +45,10 @@ public class GitHubActionChore implements Chore {
 		var template = new GitHubActionsWorkflowFile(
 				ClassPathFiles.readString("github-settings/workflows/main.yaml")
 		);
+		String before = main.asStringWithoutVersions();
 		main.updatePermissionsFromTemplate(template);
-		if (!main.equalsIgnoringVersions(template)) {
+		String after = main.asStringWithoutVersions();
+		if (!after.equals(before)) {
 			FilesSilent.writeString(mainYaml, main.asString());
 		}
 	}
@@ -69,10 +71,12 @@ public class GitHubActionChore implements Chore {
 		var currentMain = new GitHubActionsWorkflowFile(
 				ClassPathFiles.readString("github-settings/workflows/main.yaml")
 		);
+		String before = main.asStringWithoutVersions();
 		main.setJob("macos", currentMain.getJob("macos"));
 		main.setJob("linux", currentMain.getJob("linux"));
 		main.setJob("windows", currentMain.getJob("windows"));
-		if (!main.equalsIgnoringVersions(currentMain)) {
+		String after = main.asStringWithoutVersions();
+		if (!after.equals(before)) {
 			FilesSilent.writeString(mainYaml, main.asString());
 		}
 	}
@@ -116,10 +120,12 @@ public class GitHubActionChore implements Chore {
 					FilesSilent.readString(path)
 			);
 			if (workflow.hasJob("debug")) {
+				String before = workflow.asStringWithoutVersions();
 				workflow.setJob("debug", debugJob);
-			}
-			if (!workflow.equalsIgnoringVersions(currentMain)) {
-				FilesSilent.writeString(path, workflow.asString());
+				String after = workflow.asStringWithoutVersions();
+				if (!after.equals(before)) {
+					FilesSilent.writeString(path, workflow.asString());
+				}
 			}
 		});
 	}
@@ -128,7 +134,7 @@ public class GitHubActionChore implements Chore {
 		var currentMain = new GitHubActionsWorkflowFile(
 				ClassPathFiles.readString("github-settings/workflows/main.yaml")
 		);
-		var debugJob = currentMain.getJob("version");
+		var versionJob = currentMain.getJob("version");
 		Path workflowsLocation = context.resolve(".github/workflows");
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
@@ -140,10 +146,12 @@ public class GitHubActionChore implements Chore {
 					FilesSilent.readString(path)
 			);
 			if (workflow.hasJob("version")) {
-				workflow.setJob("version", debugJob);
-			}
-			if (!workflow.equalsIgnoringVersions(currentMain)) {
-				FilesSilent.writeString(path, workflow.asString());
+				String before = workflow.asStringWithoutVersions();
+				workflow.setJob("version", versionJob);
+				String after = workflow.asStringWithoutVersions();
+				if (!after.equals(before)) {
+					FilesSilent.writeString(path, workflow.asString());
+				}
 			}
 		});
 	}
@@ -226,7 +234,8 @@ public class GitHubActionChore implements Chore {
 					.orElse(randomDayOfMonth);
 			templateWorkflow.setOnScheduleCron(cron);
 
-			if (!templateWorkflow.equalsIgnoringVersions(choresWorkflow)) {
+			if (!templateWorkflow.asStringWithoutVersions()
+					.equals(choresWorkflow.asStringWithoutVersions())) {
 				FilesSilent
 						.writeString(choresYaml, templateWorkflow.asString());
 			}
