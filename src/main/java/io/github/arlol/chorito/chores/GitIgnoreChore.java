@@ -100,11 +100,16 @@ public class GitIgnoreChore implements Chore {
 	private static String GITIGNORE_YARN = """
 			*
 			!.gitignore
-			!/releases**/*
-			!/patches**/*
-			!/plugins**/*
-			!/sdks**/*
-			!/versions**/*
+			!/releases/
+			!/releases/**/*
+			!/patches/
+			!/patches/**/*
+			!/plugins/
+			!/plugins/**/*
+			!/sdks/
+			!/sdks/**/*
+			!/versions/
+			!/versions/**/*
 			""";
 
 	@Override
