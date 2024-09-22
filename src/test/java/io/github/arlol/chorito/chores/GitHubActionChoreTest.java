@@ -204,7 +204,11 @@ public class GitHubActionChoreTest {
 	public void testChoresSetSchedule53445() throws Exception {
 		Path workflow = extension.root()
 				.resolve(".github/workflows/chores.yaml");
-		FilesSilent.writeString(workflow, "- cron: '5 3 4 4 5'");
+		FilesSilent.writeString(workflow, """
+				on:
+				  schedule:
+				  - cron: '5 3 4 4 5'
+				""");
 
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
@@ -230,7 +234,11 @@ public class GitHubActionChoreTest {
 	public void testChoresSetSchedule26155() throws Exception {
 		Path workflow = extension.root()
 				.resolve(".github/workflows/chores.yaml");
-		FilesSilent.writeString(workflow, "- cron: '26 15 * * 5'");
+		FilesSilent.writeString(workflow, """
+				on:
+				  schedule:
+				  - cron: '26 15 * * 5'
+				""");
 
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
@@ -452,6 +460,22 @@ public class GitHubActionChoreTest {
 				  - uses: github/codeql-action/autobuild@v3
 				  - uses: github/codeql-action/analyze@v3
 				""");
+	}
+
+	@Test
+	void choresWorkflowShouldNotUpdateVersions() throws Exception {
+		String outdatedChoresWorkflow = ClassPathFiles
+				.readString("github-actions/outdated-chores-workflow.yaml");
+		Path workflow = extension.root()
+				.resolve(".github/workflows/chores.yaml");
+		FilesSilent.writeString(workflow, outdatedChoresWorkflow);
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+		new GitHubActionChore().doit(context);
+		assertThat(workflow).content().isEqualTo(outdatedChoresWorkflow);
 	}
 
 }

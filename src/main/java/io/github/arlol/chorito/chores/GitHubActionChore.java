@@ -200,22 +200,28 @@ public class GitHubActionChore implements Chore {
 						.map(MyPaths::getParent)
 						.anyMatch(path -> path.endsWith(".github"))) {
 			Path choresYaml = context.resolve(".github/workflows/chores.yaml");
-			String currentChores = ClassPathFiles
-					.readString("github-settings/workflows/chores.yaml");
-			String cron;
-			if (FilesSilent.exists(choresYaml)) {
-				String content = FilesSilent.readString(choresYaml);
-				cron = readCurrentCron(content).orElse(randomDayOfMonth);
-				if (cron.equals("26 15 * * 5")) {
-					cron = randomDayOfMonth;
-				}
-			} else {
-				cron = randomDayOfMonth;
-			}
-			FilesSilent.writeString(
-					choresYaml,
-					currentChores.replace("1 6 16 * *", cron)
+
+			var templateWorkflow = new GitHubActionsWorkflowFile(
+					ClassPathFiles
+							.readString("github-settings/workflows/chores.yaml")
 			);
+
+			var choresWorkflow = templateWorkflow;
+			if (FilesSilent.exists(choresYaml)) {
+				choresWorkflow = new GitHubActionsWorkflowFile(
+						FilesSilent.readString(choresYaml)
+				);
+			}
+
+			var cron = choresWorkflow.getOnScheduleCron()
+					.filter(c -> !c.equals("26 15 * * 5"))
+					.orElse(randomDayOfMonth);
+			templateWorkflow.setOnScheduleCron(cron);
+
+			if (!templateWorkflow.equalsIgnoringVersions(choresWorkflow)) {
+				FilesSilent
+						.writeString(choresYaml, templateWorkflow.asString());
+			}
 		}
 	}
 
