@@ -46,7 +46,9 @@ public class GitHubActionChore implements Chore {
 				ClassPathFiles.readString("github-settings/workflows/main.yaml")
 		);
 		main.updatePermissionsFromTemplate(template);
-		FilesSilent.writeString(mainYaml, main.asString());
+		if (!main.equalsIgnoringVersions(template)) {
+			FilesSilent.writeString(mainYaml, main.asString());
+		}
 	}
 
 	public void updateGraalSteps(ChoreContext context) {
@@ -70,7 +72,9 @@ public class GitHubActionChore implements Chore {
 		main.setJob("macos", currentMain.getJob("macos"));
 		main.setJob("linux", currentMain.getJob("linux"));
 		main.setJob("windows", currentMain.getJob("windows"));
-		FilesSilent.writeString(mainYaml, main.asString());
+		if (!main.equalsIgnoringVersions(currentMain)) {
+			FilesSilent.writeString(mainYaml, main.asString());
+		}
 	}
 
 	private void updateTestExecutable(ChoreContext context) {
@@ -114,7 +118,9 @@ public class GitHubActionChore implements Chore {
 			if (workflow.hasJob("debug")) {
 				workflow.setJob("debug", debugJob);
 			}
-			FilesSilent.writeString(path, workflow.asString());
+			if (!workflow.equalsIgnoringVersions(currentMain)) {
+				FilesSilent.writeString(path, workflow.asString());
+			}
 		});
 	}
 
@@ -136,7 +142,9 @@ public class GitHubActionChore implements Chore {
 			if (workflow.hasJob("version")) {
 				workflow.setJob("version", debugJob);
 			}
-			FilesSilent.writeString(path, workflow.asString());
+			if (!workflow.equalsIgnoringVersions(currentMain)) {
+				FilesSilent.writeString(path, workflow.asString());
+			}
 		});
 	}
 
