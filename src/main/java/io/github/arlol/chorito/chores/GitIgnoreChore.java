@@ -5,9 +5,9 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import io.github.arlol.chorito.tools.ChoreContext;
+import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.ExistingFileUpdater;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.MyPaths;
 
 public class GitIgnoreChore implements Chore {
@@ -93,8 +93,24 @@ public class GitIgnoreChore implements Chore {
 			!*.code-snippets
 			""";
 
+	private static String GITIGNORE_PACKAGE_JSON = """
+			/node_modules/
+			""";
+
+	private static String GITIGNORE_YARN = """
+			*
+			!.gitignore
+			!/releases/
+			!/patches/
+			!/plugins/
+			!/sdks/
+			!/versions/
+			""";
+
 	@Override
 	public ChoreContext doit(ChoreContext context) {
+		createPackageJsonIgnore(context);
+		createYarnIgnore(context);
 		createMavenAndGradleIgnore(context);
 		createMavenWrapperIgnore(context);
 		createGradleWrapperIgnore(context);
@@ -109,6 +125,26 @@ public class GitIgnoreChore implements Chore {
 			String newGitignoreContent
 	) {
 		ExistingFileUpdater.update(gitignore, newGitignoreContent);
+	}
+
+	private void createPackageJsonIgnore(ChoreContext context) {
+		DirectoryStreams.packageJsonDirs(context).forEach(dir -> {
+			String newGitignoreContent = GITIGNORE_PACKAGE_JSON;
+			updateExistingGitignore(
+					dir.resolve(".gitignore"),
+					newGitignoreContent
+			);
+		});
+	}
+
+	private void createYarnIgnore(ChoreContext context) {
+		DirectoryStreams.dotYarnDirs(context).forEach(dir -> {
+			String newGitignoreContent = GITIGNORE_YARN;
+			updateExistingGitignore(
+					dir.resolve(".gitignore"),
+					newGitignoreContent
+			);
+		});
 	}
 
 	private void createMavenAndGradleIgnore(ChoreContext context) {

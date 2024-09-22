@@ -74,7 +74,7 @@ public class DockerIgnoreChore implements Chore {
 						newContent.append(gradleDirs);
 					}
 
-					String nodeDirs = DirectoryStreams.nodeDirs(context)
+					String nodeDirs = DirectoryStreams.packageJsonDirs(context)
 							.filter(pom -> pom.startsWith(dir))
 							.map(path -> dir.relativize(path))
 							.map(Path::toString)

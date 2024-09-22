@@ -8,6 +8,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 
+import io.github.arlol.chorito.filter.FileHasParentDirectoryWithNameFilter;
+
 public final class DirectoryStreams {
 
 	private DirectoryStreams() {
@@ -96,11 +98,22 @@ public final class DirectoryStreams {
 		}).filter(dir -> withCode(context, dir));
 	}
 
-	public static Stream<Path> nodeDirs(ChoreContext context) {
+	public static Stream<Path> packageJsonDirs(ChoreContext context) {
 		return context.textFiles()
 				.stream()
 				.filter(file -> file.endsWith("package.json"))
 				.map(MyPaths::getParent);
+	}
+
+	public static Stream<Path> dotYarnDirs(ChoreContext context) {
+		return context.textFiles()
+				.stream()
+				.filter(
+						file -> FileHasParentDirectoryWithNameFilter
+								.filter(file, ".yarn")
+				)
+				.map(MyPaths::getParent)
+				.distinct();
 	}
 
 	private static boolean withCode(ChoreContext context, Path dir) {
