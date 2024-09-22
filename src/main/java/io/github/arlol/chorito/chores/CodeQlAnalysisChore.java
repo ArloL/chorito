@@ -63,12 +63,16 @@ public class CodeQlAnalysisChore implements Chore {
 
 		Path codeqlWorkflow = context
 				.resolve(".github/workflows/codeql-analysis.yaml");
+		String before = "";
 		if (FilesSilent.exists(codeqlWorkflow)) {
 			var workflowFile = new GitHubActionsWorkflowFile(
 					FilesSilent.readString(codeqlWorkflow)
 			);
+			before = workflowFile.asStringWithoutVersions();
 			template.setOn(workflowFile.getOn());
 			template.setEnv(workflowFile.getEnv());
+		} else {
+			context.setDirty();
 		}
 
 		if (!languages.contains("java-kotlin")) {
@@ -78,7 +82,9 @@ public class CodeQlAnalysisChore implements Chore {
 
 		template.setJobMatrixKey("analyze", "language", languages);
 
-		FilesSilent.writeString(codeqlWorkflow, template.asString());
+		if (!template.asStringWithoutVersions().equals(before)) {
+			FilesSilent.writeString(codeqlWorkflow, template.asString());
+		}
 
 		return context;
 	}
