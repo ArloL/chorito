@@ -33,6 +33,10 @@ import org.snakeyaml.engine.v2.serializer.Serializer;
 
 public class GitHubActionsWorkflowFile {
 
+	public static String removeVersions(String input) {
+		return input.replaceAll("@v[0-9.]+\n", "@\n");
+	}
+
 	private Optional<Node> root;
 
 	public GitHubActionsWorkflowFile(String content) {
@@ -100,10 +104,21 @@ public class GitHubActionsWorkflowFile {
 		return getKeyAsSequence(getOn(), "schedule");
 	}
 
+	public Optional<String> getOnScheduleCron() {
+		return scalarValue(
+				getYamlPath(root.orElseThrow(), "/on/schedule/0/cron").stream()
+						.findFirst()
+		);
+	}
+
 	public void setOnScheduleCron(String newCron) {
 		setKey(
-				nodeAsMap(getYamlPath(root.orElseThrow(), "/on/schedule/0"))
-						.getFirst(),
+				nodeAsMap(
+						getYamlPath(root.orElseThrow(), "/on/schedule/0")
+								.stream()
+								.findFirst()
+								.orElseThrow()
+				),
 				"cron",
 				newScalar(newCron, ScalarStyle.SINGLE_QUOTED)
 		);
@@ -206,6 +221,11 @@ public class GitHubActionsWorkflowFile {
 				key,
 				newSequence(nodes)
 		);
+	}
+
+	public boolean equalsIgnoringVersions(GitHubActionsWorkflowFile other) {
+		return removeVersions(this.asString())
+				.equals(removeVersions(other.asString()));
 	}
 
 }
