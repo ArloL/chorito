@@ -15,7 +15,7 @@ public class DeleteUnwantedFilesChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		context.files().forEach(path -> {
-			String filename = MyPaths.getFileName(path).toString();
+			String filename = MyPaths.getFileNameAsString(path);
 			if (PROHIBITED_FILES.contains(filename)) {
 				FilesSilent.deleteIfExists(path);
 			}

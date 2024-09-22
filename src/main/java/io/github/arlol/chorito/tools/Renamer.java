@@ -12,12 +12,10 @@ public abstract class Renamer {
 			String target,
 			String replacement
 	) {
-		Path fileName = MyPaths.getFileName(path);
+		String fileName = MyPaths.getFileNameAsString(path);
 		FilesSilent.move(
 				path,
-				path.resolveSibling(
-						fileName.toString().replace(target, replacement)
-				)
+				path.resolveSibling(fileName.replace(target, replacement))
 		);
 	}
 

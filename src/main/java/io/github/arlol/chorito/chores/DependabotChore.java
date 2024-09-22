@@ -76,9 +76,7 @@ public class DependabotChore implements Chore {
 			ChoreContext context
 	) {
 		addEcosystemIfFilterMatches(context, path -> {
-			return MyPaths.getFileName(path)
-					.toString()
-					.matches(fileNamePattern);
+			return MyPaths.getFileNameAsString(path).matches(fileNamePattern);
 		}, ecosystem);
 	}
 
