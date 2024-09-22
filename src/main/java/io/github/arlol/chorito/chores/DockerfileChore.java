@@ -9,7 +9,7 @@ public class DockerfileChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		context.textFiles().forEach(textFile -> {
-			String filename = MyPaths.getFileName(textFile).toString();
+			String filename = MyPaths.getFileNameAsString(textFile);
 			if (filename.equalsIgnoreCase("dockerfile")
 					&& !filename.equals("Dockerfile")) {
 				FilesSilent

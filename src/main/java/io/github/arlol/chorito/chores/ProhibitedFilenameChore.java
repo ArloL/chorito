@@ -37,7 +37,7 @@ public class ProhibitedFilenameChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		context.files().forEach(path -> {
-			String filenameNoExtension = MyPaths.getFileName(path).toString();
+			String filenameNoExtension = MyPaths.getFileNameAsString(path);
 			if (filenameNoExtension.contains(".")) {
 				filenameNoExtension = filenameNoExtension
 						.substring(0, filenameNoExtension.lastIndexOf('.'));

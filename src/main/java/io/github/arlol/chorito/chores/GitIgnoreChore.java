@@ -199,8 +199,7 @@ public class GitIgnoreChore implements Chore {
 				context.textFiles()
 						.stream()
 						.filter(
-								file -> MyPaths.getFileName(file)
-										.toString()
+								file -> MyPaths.getFileNameAsString(file)
 										.startsWith("org.eclipse.")
 						)
 						.map(MyPaths::getParent)
