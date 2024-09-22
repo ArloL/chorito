@@ -45,12 +45,8 @@ public class GitHubActionChore implements Chore {
 		var template = new GitHubActionsWorkflowFile(
 				ClassPathFiles.readString("github-settings/workflows/main.yaml")
 		);
-		String before = main.asStringWithoutVersions();
 		main.updatePermissionsFromTemplate(template);
-		String after = main.asStringWithoutVersions();
-		if (!after.equals(before)) {
-			FilesSilent.writeString(mainYaml, main.asString());
-		}
+		FilesSilent.writeString(mainYaml, main.asString());
 	}
 
 	public void updateGraalSteps(ChoreContext context) {
