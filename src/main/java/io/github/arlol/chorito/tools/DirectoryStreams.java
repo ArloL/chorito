@@ -1,14 +1,13 @@
 package io.github.arlol.chorito.tools;
 
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
-
-import io.github.arlol.chorito.filter.FileHasParentDirectoryWithNameFilter;
 
 public final class DirectoryStreams {
 
@@ -108,11 +107,14 @@ public final class DirectoryStreams {
 	public static Stream<Path> dotYarnDirs(ChoreContext context) {
 		return context.textFiles()
 				.stream()
+				.map(start -> MyPaths.getParentPathWithName(start, ".yarn"))
+				.flatMap(Optional::stream)
 				.filter(
-						file -> FileHasParentDirectoryWithNameFilter
-								.filter(file, ".yarn")
+						dir -> FilesSilent.anyChildExists(
+								MyPaths.getParent(dir),
+								"package.json"
+						)
 				)
-				.map(MyPaths::getParent)
 				.distinct();
 	}
 

@@ -20,4 +20,18 @@ public abstract class MyPaths {
 		return parent;
 	}
 
+	public static Optional<Path> getParentPathWithName(
+			Path start,
+			String name
+	) {
+		for (Path path = start.getParent(); path != null; path = path
+				.getParent()) {
+			Path fileName = path.getFileName();
+			if (fileName != null && fileName.toString().equals(name)) {
+				return Optional.of(path);
+			}
+		}
+		return Optional.empty();
+	}
+
 }
