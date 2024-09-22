@@ -52,6 +52,10 @@ public class GitHubActionsWorkflowFile {
 		).getSingleNode();
 	}
 
+	public String asStringWithoutVersions() {
+		return removeVersions(asString());
+	}
+
 	public String asString() {
 		if (root.isEmpty()) {
 			return "";
@@ -221,11 +225,6 @@ public class GitHubActionsWorkflowFile {
 				key,
 				newSequence(nodes)
 		);
-	}
-
-	public boolean equalsIgnoringVersions(GitHubActionsWorkflowFile other) {
-		return removeVersions(this.asString())
-				.equals(removeVersions(other.asString()));
 	}
 
 }
