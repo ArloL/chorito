@@ -30,19 +30,17 @@ public class CodeQlAnalysisChore implements Chore {
 
 		if (context.textFiles()
 				.stream()
-				.anyMatch(p -> MyPaths.getFileName(p).endsWith("pom.xml"))) {
+				.anyMatch(path -> path.endsWith("pom.xml"))) {
 			languages.add("java-kotlin");
 		}
 		if (context.textFiles()
 				.stream()
-				.anyMatch(
-						p -> MyPaths.getFileName(p).endsWith("package.json")
-				)) {
+				.anyMatch(path -> path.endsWith("package.json"))) {
 			languages.add("javascript-typescript");
 		}
 		if (context.textFiles()
 				.stream()
-				.anyMatch(p -> MyPaths.getFileName(p).endsWith("Pipfile"))) {
+				.anyMatch(path -> path.endsWith("Pipfile"))) {
 			languages.add("python");
 		}
 
