@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.TreeMap;
 
 import com.fasterxml.jackson.core.JsonFactoryBuilder;
+import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.core.util.Separators;
@@ -30,6 +31,7 @@ public abstract class Jsons {
 				.build();
 		ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
 		objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+		objectMapper.enable(Feature.ALLOW_COMMENTS);
 		objectMapper.setDefaultPrettyPrinter(prettyPrinter());
 		return objectMapper;
 	}
