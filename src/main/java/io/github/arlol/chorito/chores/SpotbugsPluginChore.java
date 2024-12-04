@@ -31,7 +31,7 @@ public class SpotbugsPluginChore implements Chore {
 						"\n			<plugin>\n"
 								+ "				<groupId>com.github.spotbugs</groupId>\n"
 								+ "				<artifactId>spotbugs-maven-plugin</artifactId>\n"
-								+ "				<version>4.8.2.0</version>\n"
+								+ "				<version>4.8.6.6</version>\n"
 								+ "				<configuration>\n"
 								+ "					<effort>Max</effort>\n"
 								+ "					<threshold>Low</threshold>\n"
