@@ -34,7 +34,7 @@ public class EclipseFormatterPluginChore implements Chore {
 						"\n			<plugin>\n"
 								+ "				<groupId>net.revelc.code.formatter</groupId>\n"
 								+ "				<artifactId>formatter-maven-plugin</artifactId>\n"
-								+ "				<version>2.23.0</version>\n"
+								+ "				<version>2.24.1</version>\n"
 								+ "				<configuration>\n"
 								+ "					<configFile>${project.basedir}/.settings/code-formatter-profile.xml</configFile>\n"
 								+ "				</configuration>\n"
