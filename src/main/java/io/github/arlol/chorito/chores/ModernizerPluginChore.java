@@ -31,7 +31,7 @@ public class ModernizerPluginChore implements Chore {
 						"\n" + "			<plugin>\n"
 								+ "				<groupId>org.gaul</groupId>\n"
 								+ "				<artifactId>modernizer-maven-plugin</artifactId>\n"
-								+ "				<version>2.7.0</version>\n"
+								+ "				<version>2.9.0</version>\n"
 								+ "				<configuration>\n"
 								+ "					<javaVersion>${java.version}</javaVersion>\n"
 								+ "				</configuration>\n"
