@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -129,7 +128,7 @@ public class GitChoreContext {
 	}
 
 	public static Builder newBuilder(String rootString) {
-		Path root = Paths.get(rootString).toAbsolutePath().normalize();
+		Path root = Path.of(rootString).toAbsolutePath().normalize();
 		return refresh(
 				new Builder(
 						root,
