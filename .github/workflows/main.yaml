@@ -67,7 +67,7 @@ jobs:
       BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
     steps:
     - uses: actions/checkout@v4.2.2
-    - uses: graalvm/setup-graalvm@v1.2.6
+    - uses: graalvm/setup-graalvm@v1.2.8
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: graalvm
@@ -101,7 +101,7 @@ jobs:
       BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
     steps:
     - uses: actions/checkout@v4.2.2
-    - uses: graalvm/setup-graalvm@v1.2.6
+    - uses: graalvm/setup-graalvm@v1.2.8
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: graalvm
@@ -135,7 +135,7 @@ jobs:
       BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
     steps:
     - uses: actions/checkout@v4.2.2
-    - uses: graalvm/setup-graalvm@v1.2.6
+    - uses: graalvm/setup-graalvm@v1.2.8
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: graalvm
