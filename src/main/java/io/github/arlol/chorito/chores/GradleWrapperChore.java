@@ -19,7 +19,7 @@ public class GradleWrapperChore implements Chore {
 	private static String DEFAULT_PROPERTIES = """
 			distributionBase=GRADLE_USER_HOME
 			distributionPath=wrapper/dists
-			distributionUrl=https\\://services.gradle.org/distributions/gradle-8.11.1-all.zip
+			distributionUrl=https\\://services.gradle.org/distributions/gradle-8.12.1-all.zip
 			networkTimeout=10000
 			validateDistributionUrl=true
 			zipStoreBase=GRADLE_USER_HOME
@@ -43,7 +43,7 @@ public class GradleWrapperChore implements Chore {
 						"./gradlew",
 						"wrapper",
 						"--gradle-version",
-						"8.11.1",
+						"8.12.1",
 						"--distribution-type",
 						"all",
 						"--no-daemon"
@@ -62,7 +62,7 @@ public class GradleWrapperChore implements Chore {
 							"./gradlew",
 							"wrapper",
 							"--gradle-version",
-							"8.11.1",
+							"8.12.1",
 							"--distribution-type",
 							"all",
 							"--no-daemon"
