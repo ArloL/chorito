@@ -217,6 +217,7 @@ public abstract class Yamls {
 				.ifPresent(value -> node.setValue(value.getValue()));
 	}
 
+	@SuppressWarnings("null") // null analysis is unnecessarily complicated
 	public static void setKey(MappingNode map, String key, Node node) {
 		var newValue = map.getValue().stream().map(t -> {
 			if (t.getKeyNode() instanceof ScalarNode keyNode
