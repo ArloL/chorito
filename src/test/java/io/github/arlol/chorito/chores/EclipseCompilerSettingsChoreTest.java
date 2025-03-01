@@ -124,6 +124,7 @@ public class EclipseCompilerSettingsChoreTest {
 			org.eclipse.jdt.core.compiler.problem.unusedExceptionParameter=ignore
 			org.eclipse.jdt.core.compiler.problem.unusedImport=warning
 			org.eclipse.jdt.core.compiler.problem.unusedLabel=warning
+			org.eclipse.jdt.core.compiler.problem.unusedLambdaParameter=warning
 			org.eclipse.jdt.core.compiler.problem.unusedLocal=warning
 			org.eclipse.jdt.core.compiler.problem.unusedObjectAllocation=ignore
 			org.eclipse.jdt.core.compiler.problem.unusedParameter=ignore
