@@ -14,13 +14,17 @@ import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.FileAttributeView;
 import java.nio.file.attribute.FileTime;
+import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import org.jspecify.annotations.Nullable;
 
 public abstract class FilesSilent {
 
@@ -123,12 +127,33 @@ public abstract class FilesSilent {
 		}
 	}
 
+	public static void setPosixFilePermissions(
+			PosixFileAttributeView view,
+			Set<PosixFilePermission> permissions
+	) {
+		try {
+			view.setPermissions(permissions);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
 	public static Set<PosixFilePermission> getPosixFilePermissions(
 			Path path,
 			LinkOption... options
 	) {
 		try {
 			return Files.getPosixFilePermissions(path, options);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
+	public static Set<PosixFilePermission> getPosixFilePermissions(
+			PosixFileAttributeView view
+	) {
+		try {
+			return view.readAttributes().permissions();
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
@@ -260,6 +285,14 @@ public abstract class FilesSilent {
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
+	}
+
+	public static <V extends FileAttributeView> @Nullable V getFileAttributeView(
+			Path path,
+			Class<V> type,
+			LinkOption... options
+	) {
+		return Files.getFileAttributeView(path, type);
 	}
 
 }
