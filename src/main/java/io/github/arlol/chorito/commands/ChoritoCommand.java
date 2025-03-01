@@ -15,7 +15,7 @@ public class ChoritoCommand {
 	}
 
 	public void execute() {
-		List<Chore> chores = List.of(
+		var chores = List.of(
 				new GitMasterBranchChore(),
 				new ReadmeChore(),
 				new GitAttributesChore(),
