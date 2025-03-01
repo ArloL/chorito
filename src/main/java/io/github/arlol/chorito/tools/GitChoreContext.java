@@ -16,6 +16,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.WorkingTreeIterator;
+import org.jspecify.annotations.Nullable;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.arlol.chorito.filter.FileIsGoneFilter;
@@ -63,11 +64,13 @@ public class GitChoreContext {
 			treeWalk.setRecursive(true);
 			treeWalk.addTree(workingTreeIterator);
 			while (treeWalk.next()) {
+				@Nullable
 				DirCacheIterator c = treeWalk
 						.getTree(0, DirCacheIterator.class);
-				WorkingTreeIterator f = treeWalk
+				@Nullable
+				WorkingTreeIterator file = treeWalk
 						.getTree(1, WorkingTreeIterator.class);
-				if (c == null && f != null && f.isEntryIgnored()) {
+				if (c != null && file != null && file.isEntryIgnored()) {
 					continue;
 				}
 				Path path = root.resolve(treeWalk.getPathString());
@@ -112,8 +115,10 @@ public class GitChoreContext {
 			treeWalk.setRecursive(true);
 			treeWalk.addTree(workingTreeIterator);
 			while (treeWalk.next()) {
+				@Nullable
 				DirCacheIterator c = treeWalk
 						.getTree(0, DirCacheIterator.class);
+				@Nullable
 				WorkingTreeIterator f = treeWalk
 						.getTree(1, WorkingTreeIterator.class);
 				if (c != null && f != null && f.isEntryIgnored()) {
