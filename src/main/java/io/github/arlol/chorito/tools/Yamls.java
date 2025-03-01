@@ -218,7 +218,7 @@ public abstract class Yamls {
 	}
 
 	public static void setKey(MappingNode map, String key, Node node) {
-		List<NodeTuple> newValue = map.getValue().stream().map(t -> {
+		var newValue = map.getValue().stream().map(t -> {
 			if (t.getKeyNode() instanceof ScalarNode keyNode
 					&& key.equals(keyNode.getValue())) {
 				return new NodeTuple(t.getKeyNode(), node);
