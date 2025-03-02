@@ -20,8 +20,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
-import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.DirectoryStreams;
+import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.Jsons;
 import io.github.arlol.chorito.tools.MyPaths;
 
@@ -99,7 +99,21 @@ public class VsCodeChore implements Chore {
 		if (!FilesSilent.exists(settings)) {
 			return Jsons.asString(template);
 		}
-		Jsons.parse(settings).ifPresent(node -> Jsons.merge(template, node));
+		Jsons.parse(settings).ifPresent(node -> {
+			if (node instanceof ObjectNode objectNode) {
+				if (objectNode.has(
+						"java.compile.nullAnalysis.nullable"
+				) && objectNode.get("java.compile.nullAnalysis.nullable").toString().equalsIgnoreCase("[\"jakarta.annotation.Nullable\",\"edu.umd.cs.findbugs.annotations.Nullable\",\"javax.annotation.Nullable\",\"javax.annotation.CheckForNull\",\"org.jspecify.annotations.Nullable\",\"org.checkerframework.checker.nullness.qual.Nullable\",\"org.checkerframework.checker.nullness.compatqual.NullableDecl\",\"org.checkerframework.checker.nullness.compatqual.NullableType\",\"org.springframework.lang.Nullable\",\"android.support.annotation.Nullable\",\"androidx.annotation.Nullable\",\"androidx.annotation.RecentlyNullable\",\"com.android.annotations.Nullable\",\"org.eclipse.jdt.annotation.Nullable\",\"org.jetbrains.annotations.Nullable\"]")) {
+					objectNode.remove("java.compile.nullAnalysis.nullable");
+				}
+				if (objectNode.has(
+						"java.compile.nullAnalysis.nonnull"
+				) && objectNode.get("java.compile.nullAnalysis.nonnull").toString().equalsIgnoreCase("[\"jakarta.annotation.Nonnull\",\"edu.umd.cs.findbugs.annotations.NonNull\",\"javax.annotation.Nonnull\",\"lombok.NonNull\",\"org.jspecify.annotations.NonNull\",\"org.checkerframework.checker.nullness.qual.NonNull\",\"org.checkerframework.checker.nullness.compatqual.NonNullDecl\",\"org.checkerframework.checker.nullness.compatqual.NonNullType\",\"org.springframework.lang.NonNull\",\"android.support.annotation.NonNull\",\"androidx.annotation.NonNull\",\"androidx.annotation.RecentlyNonNull\",\"com.android.annotations.NonNull\",\"org.eclipse.jdt.annotation.NonNull\",\"org.jetbrains.annotations.NotNull\"]")) {
+					objectNode.remove("java.compile.nullAnalysis.nonnull");
+				}
+			}
+			Jsons.merge(template, node);
+		});
 		return Jsons.asString(Jsons.sortFields(template));
 	}
 
