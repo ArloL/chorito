@@ -222,4 +222,116 @@ public class VsCodeChoreTest {
 				);
 	}
 
+	@Test
+	public void testWithExistingJavaNullAnalysisSettings() {
+		// given
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
+		Path settings = extension.root().resolve(".vscode/settings.json");
+		FilesSilent.writeString(
+				settings,
+				"""
+						{
+						    "java.format.settings.url": ".vscode/java-formatter.xml",
+						    "java.compile.nullAnalysis.nonnull": [
+						        "jakarta.annotation.Nonnull",
+						        "edu.umd.cs.findbugs.annotations.NonNull",
+						        "javax.annotation.Nonnull",
+						        "lombok.NonNull",
+						        "org.jspecify.annotations.NonNull",
+						        "org.checkerframework.checker.nullness.qual.NonNull",
+						        "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
+						        "org.checkerframework.checker.nullness.compatqual.NonNullType",
+						        "org.springframework.lang.NonNull",
+						        "android.support.annotation.NonNull",
+						        "androidx.annotation.NonNull",
+						        "androidx.annotation.RecentlyNonNull",
+						        "com.android.annotations.NonNull",
+						        "org.eclipse.jdt.annotation.NonNull",
+						        "org.jetbrains.annotations.NotNull",
+						    ],
+						    "java.compile.nullAnalysis.nullable": [
+						        "jakarta.annotation.Nullable",
+						        "edu.umd.cs.findbugs.annotations.Nullable",
+						        "javax.annotation.Nullable",
+						        "javax.annotation.CheckForNull",
+						        "org.jspecify.annotations.Nullable",
+						        "org.checkerframework.checker.nullness.qual.Nullable",
+						        "org.checkerframework.checker.nullness.compatqual.NullableDecl",
+						        "org.checkerframework.checker.nullness.compatqual.NullableType",
+						        "org.springframework.lang.Nullable",
+						        "android.support.annotation.Nullable",
+						        "androidx.annotation.Nullable",
+						        "androidx.annotation.RecentlyNullable",
+						        "com.android.annotations.Nullable",
+						        "org.eclipse.jdt.annotation.Nullable",
+						        "org.jetbrains.annotations.Nullable",
+						    ],
+						}
+						"""
+		);
+
+		// when
+		doit();
+
+		// then
+		assertThat(settings).content()
+				.isEqualTo(
+						"""
+								{
+								    "[java]": {
+								        "editor.foldingImportsByDefault": true,
+								        "editor.formatOnSave": true,
+								        "editor.codeActionsOnSave": {
+								            "source.organizeImports": "always",
+								        },
+								    },
+								    "java.compile.nullAnalysis.mode": "automatic",
+								    "java.compile.nullAnalysis.nonnull": [
+								        "org.jspecify.annotations.NonNull",
+								        "jakarta.annotation.Nonnull",
+								        "edu.umd.cs.findbugs.annotations.NonNull",
+								        "javax.annotation.Nonnull",
+								        "lombok.NonNull",
+								        "org.checkerframework.checker.nullness.qual.NonNull",
+								        "org.checkerframework.checker.nullness.compatqual.NonNullDecl",
+								        "org.checkerframework.checker.nullness.compatqual.NonNullType",
+								        "org.springframework.lang.NonNull",
+								        "android.support.annotation.NonNull",
+								        "androidx.annotation.NonNull",
+								        "androidx.annotation.RecentlyNonNull",
+								        "com.android.annotations.NonNull",
+								        "org.eclipse.jdt.annotation.NonNull",
+								        "org.jetbrains.annotations.NotNull",
+								    ],
+								    "java.compile.nullAnalysis.nonnullbydefault": [
+								        "javax.annotation.ParametersAreNonnullByDefault",
+								        "org.springframework.lang.NonNullApi",
+								        "org.eclipse.jdt.annotation.NonNullByDefault",
+								    ],
+								    "java.compile.nullAnalysis.nullable": [
+								        "org.jspecify.annotations.Nullable",
+								        "jakarta.annotation.Nullable",
+								        "edu.umd.cs.findbugs.annotations.Nullable",
+								        "javax.annotation.Nullable",
+								        "javax.annotation.CheckForNull",
+								        "org.checkerframework.checker.nullness.qual.Nullable",
+								        "org.checkerframework.checker.nullness.compatqual.NullableDecl",
+								        "org.checkerframework.checker.nullness.compatqual.NullableType",
+								        "org.springframework.lang.Nullable",
+								        "android.support.annotation.Nullable",
+								        "androidx.annotation.Nullable",
+								        "androidx.annotation.RecentlyNullable",
+								        "com.android.annotations.Nullable",
+								        "org.eclipse.jdt.annotation.Nullable",
+								        "org.jetbrains.annotations.Nullable",
+								    ],
+								    "java.configuration.updateBuildConfiguration": "interactive",
+								    "java.format.settings.url": ".vscode/java-formatter.xml",
+								    "java.sources.organizeImports.starThreshold": 30,
+								    "java.sources.organizeImports.staticStarThreshold": 30,
+								}
+								"""
+				);
+	}
+
 }
