@@ -28,21 +28,24 @@ public class ModernizerPluginChore implements Chore {
 					throw new IllegalStateException("No spotbugs plugin");
 				}
 				spotbugsPlugin.after(
-						"\n" + "			<plugin>\n"
-								+ "				<groupId>org.gaul</groupId>\n"
-								+ "				<artifactId>modernizer-maven-plugin</artifactId>\n"
-								+ "				<version>2.9.0</version>\n"
-								+ "				<configuration>\n"
-								+ "					<javaVersion>${java.version}</javaVersion>\n"
-								+ "				</configuration>\n"
-								+ "				<executions>\n"
-								+ "					<execution>\n"
-								+ "						<goals>\n"
-								+ "							<goal>modernizer</goal>\n"
-								+ "						</goals>\n"
-								+ "					</execution>\n"
-								+ "				</executions>\n"
-								+ "			</plugin>"
+						"""
+
+											<plugin>
+												<groupId>org.gaul</groupId>
+												<artifactId>modernizer-maven-plugin</artifactId>
+												<version>2.9.0</version>
+												<configuration>
+													<javaVersion>${java.version}</javaVersion>
+												</configuration>
+												<executions>
+													<execution>
+														<goals>
+															<goal>modernizer</goal>
+														</goals>
+													</execution>
+												</executions>
+											</plugin>\
+								"""
 				);
 			}
 

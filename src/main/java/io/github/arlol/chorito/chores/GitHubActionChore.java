@@ -328,50 +328,57 @@ public class GitHubActionChore implements Chore {
 			return false;
 		}).map(context::resolve).forEach(path -> {
 			String updated = FilesSilent.readString(path);
+			updated = updated.replace("""
+
+					    - name: Set up Visual Studio shell
+					      uses: egor-tensin/vs-shell@v2\
+					""", "");
+			updated = updated.replace("""
+					    - uses: actions/setup-java@v3.5.1
+					      with:
+					        java-version: ${{ env.JAVA_VERSION }}
+					        distribution: adopt
+					        cache: 'maven'
+					    - name: Setup Graalvm
+					      uses: DeLaGuardo/setup-graalvm@5.0
+					      with:
+					        graalvm: ${{ env.GRAALVM_VERSION }}
+					        java: java${{ env.JAVA_VERSION }}
+					    - name: Install native-image module
+					      run: gu install native-image\
+					""", """
+					    - uses: graalvm/setup-graalvm@v1.0.7
+					      with:
+					        version: ${{ env.GRAALVM_VERSION }}
+					        java-version: ${{ env.JAVA_VERSION }}
+					        components: 'native-image'
+					        github-token: ${{ secrets.GITHUB_TOKEN }}
+					        cache: 'maven'\
+					""");
 			updated = updated.replace(
-					"\n" + "    - name: Set up Visual Studio shell\n"
-							+ "      uses: egor-tensin/vs-shell@v2",
-					""
-			);
-			updated = updated.replace(
-					"    - uses: actions/setup-java@v3.5.1\n" + "      with:\n"
-							+ "        java-version: ${{ env.JAVA_VERSION }}\n"
-							+ "        distribution: adopt\n"
-							+ "        cache: 'maven'\n"
-							+ "    - name: Setup Graalvm\n"
-							+ "      uses: DeLaGuardo/setup-graalvm@5.0\n"
-							+ "      with:\n"
-							+ "        graalvm: ${{ env.GRAALVM_VERSION }}\n"
-							+ "        java: java${{ env.JAVA_VERSION }}\n"
-							+ "    - name: Install native-image module\n"
-							+ "      run: gu install native-image",
-					"    - uses: graalvm/setup-graalvm@v1.0.7\n"
-							+ "      with:\n"
-							+ "        version: ${{ env.GRAALVM_VERSION }}\n"
-							+ "        java-version: ${{ env.JAVA_VERSION }}\n"
-							+ "        components: 'native-image'\n"
-							+ "        github-token: ${{ secrets.GITHUB_TOKEN }}\n"
-							+ "        cache: 'maven'"
-			);
-			updated = updated.replace(
-					"    - uses: actions/setup-java@v3.5.1\n" + "      with:\n"
-							+ "        java-version: ${{ env.JAVA_VERSION }}\n"
-							+ "        distribution: adopt\n"
-							+ "        cache: 'maven'\n"
-							+ "    - name: Setup Graalvm\n"
-							+ "      uses: DeLaGuardo/setup-graalvm@5.0\n"
-							+ "      with:\n"
-							+ "        graalvm: ${{ env.GRAALVM_VERSION }}\n"
-							+ "        java: java${{ env.JAVA_VERSION }}\n"
-							+ "    - name: Install native-image module\n"
-							+ "      run: '& \"$env:JAVA_HOME\\bin\\gu\" install native-image'",
-					"    - uses: graalvm/setup-graalvm@v1.0.7\n"
-							+ "      with:\n"
-							+ "        version: ${{ env.GRAALVM_VERSION }}\n"
-							+ "        java-version: ${{ env.JAVA_VERSION }}\n"
-							+ "        components: 'native-image'\n"
-							+ "        github-token: ${{ secrets.GITHUB_TOKEN }}\n"
-							+ "        cache: 'maven'"
+					"""
+							    - uses: actions/setup-java@v3.5.1
+							      with:
+							        java-version: ${{ env.JAVA_VERSION }}
+							        distribution: adopt
+							        cache: 'maven'
+							    - name: Setup Graalvm
+							      uses: DeLaGuardo/setup-graalvm@5.0
+							      with:
+							        graalvm: ${{ env.GRAALVM_VERSION }}
+							        java: java${{ env.JAVA_VERSION }}
+							    - name: Install native-image module
+							      run: '& "$env:JAVA_HOME\\bin\\gu" install native-image'\
+							""",
+					"""
+							    - uses: graalvm/setup-graalvm@v1.0.7
+							      with:
+							        version: ${{ env.GRAALVM_VERSION }}
+							        java-version: ${{ env.JAVA_VERSION }}
+							        components: 'native-image'
+							        github-token: ${{ secrets.GITHUB_TOKEN }}
+							        cache: 'maven'\
+							"""
 			);
 			FilesSilent.writeString(path, updated);
 		});
@@ -465,7 +472,7 @@ public class GitHubActionChore implements Chore {
 						if (s.trim().startsWith("echo \"::set-output name=")) {
 							return s.replace("::set-output name=", "")
 									.replace("::", "=")
-									+ " >> \"$GITHUB_OUTPUT\"";
+									+ " >> \"${GITHUB_OUTPUT}\"";
 						}
 						return s;
 					})
@@ -572,11 +579,10 @@ public class GitHubActionChore implements Chore {
 			return false;
 		}).map(context::resolve).forEach(path -> {
 			String input = FilesSilent.readString(path);
-			if (!input.contains("actions/checkout")) {
-				return;
-			}
 			var checkActionsWorkflow = new GitHubActionsWorkflowFile(input);
+			checkActionsWorkflow.clearPermissions();
 			checkActionsWorkflow.actionsCheckoutWithPersistCredentials();
+			checkActionsWorkflow.sortKeys();
 			if (!input.equals(checkActionsWorkflow.asStringWithoutVersions())) {
 				FilesSilent.writeString(path, checkActionsWorkflow.asString());
 			}

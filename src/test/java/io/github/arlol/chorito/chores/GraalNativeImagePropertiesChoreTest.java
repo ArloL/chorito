@@ -29,22 +29,22 @@ public class GraalNativeImagePropertiesChoreTest {
 		Path nativeImageProperties = context.resolve(
 				"src/main/resources/META-INF/native-image/io.github.arlol/chorito/native-image.properties"
 		);
-		FilesSilent.writeString(
-				nativeImageProperties,
-				"Args = \\\n" + "-H:+ReportExceptionStackTraces \\\n"
-						+ "--no-fallback \\\n"
-						+ "--allow-incomplete-classpath \\\n"
-						+ "--initialize-at-build-time=\\\n"
-						+ "org.eclipse.jgit.lib.ObjectId,\\\n"
-						+ "org.eclipse.jgit.diff.RenameDetector,\\\n"
-						+ "org.eclipse.jgit.diff.DiffEntry,\\\n"
-						+ "org.eclipse.jgit.ignore.internal.Strings,\\\n"
-						+ "org.eclipse.jgit.attributes.AttributesHandler,\\\n"
-						+ "org.eclipse.jgit.diff.RenameDetector,\\\n"
-						+ "org.eclipse.jgit.diff.DiffEntry,\\\n"
-						+ "org.eclipse.jgit.ignore.internal.Strings,\\\n"
-						+ "org.eclipse.jgit.attributes.AttributesHandler\n" + ""
-		);
+		FilesSilent.writeString(nativeImageProperties, """
+				Args = \\
+				-H:+ReportExceptionStackTraces \\
+				--no-fallback \\
+				--allow-incomplete-classpath \\
+				--initialize-at-build-time=\\
+				org.eclipse.jgit.lib.ObjectId,\\
+				org.eclipse.jgit.diff.RenameDetector,\\
+				org.eclipse.jgit.diff.DiffEntry,\\
+				org.eclipse.jgit.ignore.internal.Strings,\\
+				org.eclipse.jgit.attributes.AttributesHandler,\\
+				org.eclipse.jgit.diff.RenameDetector,\\
+				org.eclipse.jgit.diff.DiffEntry,\\
+				org.eclipse.jgit.ignore.internal.Strings,\\
+				org.eclipse.jgit.attributes.AttributesHandler
+				""");
 
 		String before = FilesSilent.readString(nativeImageProperties);
 		assertThat(before).contains("--allow-incomplete-classpath");
@@ -52,22 +52,21 @@ public class GraalNativeImagePropertiesChoreTest {
 
 		String actual = FilesSilent.readString(nativeImageProperties);
 		assertThat(actual).doesNotContain("--allow-incomplete-classpath");
-		assertEquals(
-				"Args = \\\n" + "-H:+ReportExceptionStackTraces \\\n"
-						+ "--no-fallback \\\n"
-						+ "--initialize-at-build-time=\\\n"
-						+ "org.eclipse.jgit.lib.ObjectId,\\\n"
-						+ "org.eclipse.jgit.diff.RenameDetector,\\\n"
-						+ "org.eclipse.jgit.diff.DiffEntry,\\\n"
-						+ "org.eclipse.jgit.ignore.internal.Strings,\\\n"
-						+ "org.eclipse.jgit.attributes.AttributesHandler,\\\n"
-						+ "org.eclipse.jgit.diff.RenameDetector,\\\n"
-						+ "org.eclipse.jgit.diff.DiffEntry,\\\n"
-						+ "org.eclipse.jgit.ignore.internal.Strings,\\\n"
-						+ "org.eclipse.jgit.attributes.AttributesHandler\n"
-						+ "",
-				actual
-		);
+		assertEquals("""
+				Args = \\
+				-H:+ReportExceptionStackTraces \\
+				--no-fallback \\
+				--initialize-at-build-time=\\
+				org.eclipse.jgit.lib.ObjectId,\\
+				org.eclipse.jgit.diff.RenameDetector,\\
+				org.eclipse.jgit.diff.DiffEntry,\\
+				org.eclipse.jgit.ignore.internal.Strings,\\
+				org.eclipse.jgit.attributes.AttributesHandler,\\
+				org.eclipse.jgit.diff.RenameDetector,\\
+				org.eclipse.jgit.diff.DiffEntry,\\
+				org.eclipse.jgit.ignore.internal.Strings,\\
+				org.eclipse.jgit.attributes.AttributesHandler
+				""", actual);
 	}
 
 	private ChoreContext context() {
@@ -76,19 +75,22 @@ public class GraalNativeImagePropertiesChoreTest {
 				context.resolve(
 						"src/main/resources/META-INF/native-image/io.github.arlol/chorito/native-image.properties"
 				),
-				"Args = \\\n" + "-H:+ReportExceptionStackTraces \\\n"
-						+ "--no-fallback \\\n"
-						+ "--allow-incomplete-classpath \\\n"
-						+ "--initialize-at-build-time=\\\n"
-						+ "org.eclipse.jgit.lib.ObjectId,\\\n"
-						+ "org.eclipse.jgit.diff.RenameDetector,\\\n"
-						+ "org.eclipse.jgit.diff.DiffEntry,\\\n"
-						+ "org.eclipse.jgit.ignore.internal.Strings,\\\n"
-						+ "org.eclipse.jgit.attributes.AttributesHandler,\\\n"
-						+ "org.eclipse.jgit.diff.RenameDetector,\\\n"
-						+ "org.eclipse.jgit.diff.DiffEntry,\\\n"
-						+ "org.eclipse.jgit.ignore.internal.Strings,\\\n"
-						+ "org.eclipse.jgit.attributes.AttributesHandler\n" + ""
+				"""
+						Args = \\
+						-H:+ReportExceptionStackTraces \\
+						--no-fallback \\
+						--allow-incomplete-classpath \\
+						--initialize-at-build-time=\\
+						org.eclipse.jgit.lib.ObjectId,\\
+						org.eclipse.jgit.diff.RenameDetector,\\
+						org.eclipse.jgit.diff.DiffEntry,\\
+						org.eclipse.jgit.ignore.internal.Strings,\\
+						org.eclipse.jgit.attributes.AttributesHandler,\\
+						org.eclipse.jgit.diff.RenameDetector,\\
+						org.eclipse.jgit.diff.DiffEntry,\\
+						org.eclipse.jgit.ignore.internal.Strings,\\
+						org.eclipse.jgit.attributes.AttributesHandler
+						"""
 		);
 		return context;
 	}

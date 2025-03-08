@@ -14,6 +14,7 @@ import static io.github.arlol.chorito.tools.Yamls.scalarValue;
 import static io.github.arlol.chorito.tools.Yamls.setKey;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -267,6 +268,34 @@ public class GitHubActionsWorkflowFile {
 					.toList();
 			setKey(jobNode, "steps", newSequence(steps));
 		}
+	}
+
+	public void clearPermissions() {
+		nodeAsMap(root).ifPresent(mappingNode -> {
+			setKey(mappingNode, "permissions", newMap());
+		});
+	}
+
+	public void sortKeys() {
+		nodeAsMap(root).ifPresent(mappingNode -> {
+			var list = mappingNode.getValue()
+					.stream()
+					.sorted(Comparator.comparingInt(tuple -> {
+						if (tuple.getKeyNode() instanceof ScalarNode keyNode) {
+							return switch (keyNode.getValue()) {
+							case "name" -> 10;
+							case "on" -> 50;
+							case "permissions" -> 70;
+							case "env" -> 80;
+							case "jobs" -> 200;
+							default -> 100;
+							};
+						}
+						return 100;
+					}))
+					.toList();
+			mappingNode.setValue(list);
+		});
 	}
 
 }

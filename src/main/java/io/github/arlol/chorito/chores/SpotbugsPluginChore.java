@@ -28,22 +28,25 @@ public class SpotbugsPluginChore implements Chore {
 					throw new IllegalStateException("No formatter plugin");
 				}
 				formatterPlugin.after(
-						"\n			<plugin>\n"
-								+ "				<groupId>com.github.spotbugs</groupId>\n"
-								+ "				<artifactId>spotbugs-maven-plugin</artifactId>\n"
-								+ "				<version>4.8.6.6</version>\n"
-								+ "				<configuration>\n"
-								+ "					<effort>Max</effort>\n"
-								+ "					<threshold>Low</threshold>\n"
-								+ "				</configuration>\n"
-								+ "				<executions>\n"
-								+ "					<execution>\n"
-								+ "						<goals>\n"
-								+ "							<goal>check</goal>\n"
-								+ "						</goals>\n"
-								+ "					</execution>\n"
-								+ "				</executions>\n"
-								+ "			</plugin>"
+						"""
+
+											<plugin>
+												<groupId>com.github.spotbugs</groupId>
+												<artifactId>spotbugs-maven-plugin</artifactId>
+												<version>4.8.6.6</version>
+												<configuration>
+													<effort>Max</effort>
+													<threshold>Low</threshold>
+												</configuration>
+												<executions>
+													<execution>
+														<goals>
+															<goal>check</goal>
+														</goals>
+													</execution>
+												</executions>
+											</plugin>\
+								"""
 				);
 			}
 
