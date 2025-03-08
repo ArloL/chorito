@@ -69,6 +69,8 @@ jobs:
       BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
     steps:
     - uses: actions/checkout@v4.1.7
+      with:
+        persist-credentials: false
     - uses: actions/setup-java@v4.3.0
       with:
         java-version: ${{ env.JAVA_VERSION }}
@@ -100,6 +102,8 @@ jobs:
       BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
     steps:
     - uses: actions/checkout@v4.1.7
+      with:
+        persist-credentials: false
     - uses: actions/setup-java@v4.3.0
       with:
         java-version: ${{ env.JAVA_VERSION }}
@@ -132,6 +136,8 @@ jobs:
       BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
     steps:
     - uses: actions/checkout@v4.1.7
+      with:
+        persist-credentials: false
     - uses: actions/setup-java@v4.3.0
       with:
         java-version: ${{ env.JAVA_VERSION }}
@@ -158,6 +164,8 @@ jobs:
       contents: write
     steps:
     - uses: actions/checkout@v4.1.7
+      with:
+        persist-credentials: false
     - name: Download all workflow run artifacts
       uses: actions/download-artifact@v4.1.8
       with:
@@ -212,6 +220,8 @@ jobs:
       packages: write
     steps:
     - uses: actions/checkout@v4.1.7
+      with:
+        persist-credentials: false
     - uses: actions/setup-java@v4.3.0
       with:
         java-version: ${{ env.JAVA_VERSION }}

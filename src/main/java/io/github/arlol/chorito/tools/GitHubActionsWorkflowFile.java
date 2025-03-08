@@ -5,6 +5,7 @@ import static io.github.arlol.chorito.tools.Yamls.getKeyAsMap;
 import static io.github.arlol.chorito.tools.Yamls.getKeyAsNode;
 import static io.github.arlol.chorito.tools.Yamls.getKeyAsSequence;
 import static io.github.arlol.chorito.tools.Yamls.getYamlPath;
+import static io.github.arlol.chorito.tools.Yamls.newMap;
 import static io.github.arlol.chorito.tools.Yamls.newScalar;
 import static io.github.arlol.chorito.tools.Yamls.newSequence;
 import static io.github.arlol.chorito.tools.Yamls.nodeAsMap;
@@ -229,6 +230,43 @@ public class GitHubActionsWorkflowFile {
 				key,
 				newSequence(nodes)
 		);
+	}
+
+	public void actionsCheckoutWithPersistCredentials() {
+		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
+				.orElse(List.of())) {
+			var jobNode = nodeAsMap(jobTuple.getValueNode());
+
+			List<Node> steps = getKeyAsSequence(jobNode, "steps")
+					.map(SequenceNode::getValue)
+					.orElse(List.of())
+					.stream()
+					.map(step -> {
+						var stepNode = nodeAsMap(step);
+						if (scalarValue(getKeyAsNode(stepNode, "uses"))
+								.filter(
+										uses -> uses
+												.startsWith("actions/checkout@")
+								)
+								.isPresent()) {
+							var withNode = getKeyAsMap(stepNode, "with")
+									.orElse(newMap());
+							var persistCredentialsNode = getKeyAsNode(
+									withNode,
+									"persist-credentials"
+							).orElse(newScalar(false));
+							setKey(
+									withNode,
+									"persist-credentials",
+									persistCredentialsNode
+							);
+							setKey(stepNode, "with", withNode);
+						}
+						return step;
+					})
+					.toList();
+			setKey(jobNode, "steps", newSequence(steps));
+		}
 	}
 
 }
