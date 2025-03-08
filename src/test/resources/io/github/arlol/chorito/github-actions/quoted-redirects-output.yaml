@@ -1,0 +1,7 @@
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+    - run: |
+        echo "hi=hi" >> "${GITHUB_OUTPUT}"
+        echo "hi=hi" >> "${GITHUB_ENV}"
