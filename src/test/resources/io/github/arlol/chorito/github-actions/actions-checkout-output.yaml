@@ -1,3 +1,4 @@
+permissions: {}
 jobs:
   linux:
     runs-on: ubuntu-latest

@@ -26,6 +26,7 @@ public class GitHubActionChoreTest {
 			        distribution: adopt
 			""";
 	private static final String EXPECTED_ADOPT = """
+			permissions: {}
 			jobs:
 			  linux:
 			    runs-on: ubuntu-latest
@@ -82,6 +83,7 @@ public class GitHubActionChoreTest {
 			      uses: egor-tensin/vs-shell@v2
 			""";
 	private static final String EXPECTED_GRAALSETUP_OUTPUT = """
+			permissions: {}
 			jobs:
 			  linux:
 			    runs-on: ubuntu-latest
@@ -147,41 +149,49 @@ public class GitHubActionChoreTest {
 	public void testBasicWorkflowFile() throws Exception {
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 
-		FilesSilent.writeString(
-				workflow,
-				"jobs:\n" + "  linux:\n" + "    runs-on: ubuntu-latest\n"
-						+ "    steps:\n" + "    - run: whoami\n"
-		);
+		FilesSilent.writeString(workflow, """
+				jobs:
+				  linux:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - run: whoami
+				""");
 
 		new GitHubActionChore().doit(extension.choreContext());
 
-		assertThat(workflow).content()
-				.isEqualTo(
-						"jobs:\n" + "  linux:\n"
-								+ "    runs-on: ubuntu-latest\n"
-								+ "    steps:\n" + "    - run: whoami\n"
-				);
+		assertThat(workflow).content().isEqualTo("""
+				permissions: {}
+				jobs:
+				  linux:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - run: whoami
+				""");
 	}
 
 	@Test
 	public void testVsShellWorkflowFile() throws Exception {
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
-		FilesSilent.writeString(
-				workflow,
-				"jobs:\n" + "  windows:\n" + "    runs-on: windows-latest\n"
-						+ "    steps:\n"
-						+ "    - name: Set up Visual Studio shell\n"
-						+ "      uses: egor-tensin/vs-shell@v2\n"
-		);
+		FilesSilent.writeString(workflow, """
+				jobs:
+				  windows:
+				    runs-on: windows-latest
+				    steps:
+				    - uses: graalvm/setup-graalvm@v1.0.7
+				    - name: Set up Visual Studio shell
+				      uses: egor-tensin/vs-shell@v2
+				""");
 
 		new GitHubActionChore().doit(extension.choreContext());
 
-		assertThat(workflow).content()
-				.isEqualTo(
-						"jobs:\n" + "  windows:\n"
-								+ "    runs-on: windows-latest\n"
-								+ "    steps:\n"
-				);
+		assertThat(workflow).content().isEqualTo("""
+				permissions: {}
+				jobs:
+				  windows:
+				    runs-on: windows-latest
+				    steps:
+				    - uses: graalvm/setup-graalvm@v1.0.7
+				""");
 	}
 
 	@Test
@@ -268,7 +278,11 @@ public class GitHubActionChoreTest {
 	public void testCodeQlSetSchedule4203() throws Exception {
 		Path workflow = extension.root()
 				.resolve(".github/workflows/codeql-analysis.yaml");
-		String input = "- cron: '4 20 * * 3'";
+		String input = """
+				on:
+				  schedule:
+				    - cron: '4 20 * * 3'
+				""";
 		FilesSilent.writeString(workflow, input);
 
 		ChoreContext context = extension.choreContext()
@@ -279,13 +293,22 @@ public class GitHubActionChoreTest {
 
 		new GitHubActionChore().doit(context);
 
-		assertThat(workflow).content().isEqualTo("- cron: '1 3 1 * *'\n");
+		assertThat(workflow).content().isEqualTo("""
+				on:
+				  schedule:
+				  - cron: '1 3 1 * *'
+				permissions: {}
+				""");
 	}
 
 	@Test
 	public void testMainSchedulDuplicated() throws Exception {
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
-		String input = "- cron: '17 4 5 * *'";
+		String input = """
+				on:
+				  schedule:
+				  - cron: '17 4 5 * *'
+				""";
 		FilesSilent.writeString(workflow, input);
 
 		ChoreContext context = extension.choreContext()
@@ -296,13 +319,22 @@ public class GitHubActionChoreTest {
 
 		new GitHubActionChore().doit(context);
 
-		assertThat(workflow).content().isEqualTo("- cron: '1 3 1 * *'\n");
+		assertThat(workflow).content().isEqualTo("""
+				on:
+				  schedule:
+				  - cron: '1 3 1 * *'
+				permissions: {}
+				""");
 	}
 
 	@Test
 	public void testMainScheduleAlreadyReplaced() throws Exception {
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
-		String input = "- cron: '5 5 5 * *'";
+		String input = """
+				on:
+				  schedule:
+				  - cron: '5 5 5 * *'
+				""";
 		FilesSilent.writeString(workflow, input);
 
 		ChoreContext context = extension.choreContext()
@@ -313,7 +345,12 @@ public class GitHubActionChoreTest {
 
 		new GitHubActionChore().doit(context);
 
-		assertThat(workflow).content().isEqualTo("- cron: '5 5 5 * *'\n");
+		assertThat(workflow).content().isEqualTo("""
+				on:
+				  schedule:
+				  - cron: '5 5 5 * *'
+				permissions: {}
+				""");
 	}
 
 	@Test
@@ -444,9 +481,10 @@ public class GitHubActionChoreTest {
 		FilesSilent.writeString(workflow, """
 				jobs:
 				  analyze:
-				  - uses: github/codeql-action/init@v3.24.4
-				  - uses: github/codeql-action/autobuild@v3.24.5
-				  - uses: github/codeql-action/analyze@v3.25.6
+				    steps:
+				    - uses: github/codeql-action/init@v3.24.4
+				    - uses: github/codeql-action/autobuild@v3.24.5
+				    - uses: github/codeql-action/analyze@v3.25.6
 				""");
 
 		ChoreContext context = extension.choreContext()
@@ -458,11 +496,13 @@ public class GitHubActionChoreTest {
 		new GitHubActionChore().doit(context);
 
 		assertThat(workflow).content().isEqualTo("""
+				permissions: {}
 				jobs:
 				  analyze:
-				  - uses: github/codeql-action/init@v3
-				  - uses: github/codeql-action/autobuild@v3
-				  - uses: github/codeql-action/analyze@v3
+				    steps:
+				    - uses: github/codeql-action/init@v3
+				    - uses: github/codeql-action/autobuild@v3
+				    - uses: github/codeql-action/analyze@v3
 				""");
 	}
 
