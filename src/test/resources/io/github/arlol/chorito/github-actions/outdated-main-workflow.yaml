@@ -171,12 +171,14 @@ jobs:
       uses: actions/download-artifact@v4.1.8
       with:
         path: ./target
-    - name: Build project
+    - name: Zip artifacts
       working-directory: target
+      env:
+        NEW_VERSION: ${{ needs.version.outputs.new_version }}
       run: |
-        zip -r windows.zip ${{ env.ARTIFACT }}-windows-${{ needs.version.outputs.new_version }}/
-        zip -r linux.zip ${{ env.ARTIFACT }}-linux-${{ needs.version.outputs.new_version }}/
-        zip -r macos.zip ${{ env.ARTIFACT }}-macos-${{ needs.version.outputs.new_version }}/
+        zip -r windows.zip "${ARTIFACT}-windows-${NEW_VERSION}/"
+        zip -r linux.zip "${ARTIFACT}-linux-${NEW_VERSION}/"
+        zip -r macos.zip "${ARTIFACT}-macos-${NEW_VERSION}/"
     - name: Create Release
       id: create_release
       uses: ncipollo/release-action@v1.14.0
