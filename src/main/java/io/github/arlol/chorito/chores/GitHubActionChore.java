@@ -218,17 +218,20 @@ public class GitHubActionChore implements Chore {
 							.readString("github-settings/workflows/chores.yaml")
 			);
 
-			var choresWorkflow = templateWorkflow;
+			GitHubActionsWorkflowFile choresWorkflow;
 			if (FilesSilent.exists(choresYaml)) {
 				choresWorkflow = new GitHubActionsWorkflowFile(
 						FilesSilent.readString(choresYaml)
 				);
+				var cron = choresWorkflow.getOnScheduleCron()
+						.filter(c -> !c.equals("26 15 * * 5"))
+						.filter(c -> !c.equals("1 6 16 * *"))
+						.orElse(randomDayOfMonth);
+				templateWorkflow.setOnScheduleCron(cron);
+			} else {
+				choresWorkflow = templateWorkflow.copy();
+				choresWorkflow.setOnScheduleCron(randomDayOfMonth);
 			}
-
-			var cron = choresWorkflow.getOnScheduleCron()
-					.filter(c -> !c.equals("26 15 * * 5"))
-					.orElse(randomDayOfMonth);
-			templateWorkflow.setOnScheduleCron(cron);
 
 			if (!templateWorkflow.asStringWithoutVersions()
 					.equals(choresWorkflow.asStringWithoutVersions())) {
