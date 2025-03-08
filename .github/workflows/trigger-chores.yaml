@@ -2,12 +2,14 @@ name: Trigger chores
 
 on:
   workflow_dispatch:
+  # zizmor: ignore[dangerous-triggers]
   workflow_run:
     workflows: ["Main"]
     branches:
     - main
     types:
     - completed
+permissions: {}
 
 jobs:
   debug:
