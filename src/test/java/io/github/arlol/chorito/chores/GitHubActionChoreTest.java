@@ -493,4 +493,17 @@ public class GitHubActionChoreTest {
 		assertThat(workflow).content().isEqualTo(outdatedWorkflow);
 	}
 
+	@Test
+	void shouldCreateCheckActionsWorkflow() throws Exception {
+		Path workflow = extension.root()
+				.resolve(".github/workflows/check-actions.yaml");
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+		new GitHubActionChore().doit(context);
+		assertThat(workflow).exists();
+	}
+
 }
