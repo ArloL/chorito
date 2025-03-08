@@ -522,4 +522,16 @@ public class GitHubActionChoreTest {
 		assertThat(workflow).content().isEqualTo(expected);
 	}
 
+	@Test
+	void quotedRedirects() throws Exception {
+		String input = ClassPathFiles
+				.readString("github-actions/quoted-redirects-input.yaml");
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(workflow, input);
+		new GitHubActionChore().doit(extension.choreContext());
+		String expected = ClassPathFiles
+				.readString("github-actions/quoted-redirects-output.yaml");
+		assertThat(workflow).content().isEqualTo(expected);
+	}
+
 }

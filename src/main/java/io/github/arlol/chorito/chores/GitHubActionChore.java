@@ -34,6 +34,7 @@ public class GitHubActionChore implements Chore {
 		updatePermissions(context);
 		addCheckActionWorkflow(context);
 		actionsCheckoutWithPersistCredentials(context);
+		quoteRedirects(context);
 		return context;
 	}
 
@@ -580,6 +581,25 @@ public class GitHubActionChore implements Chore {
 				FilesSilent.writeString(path, checkActionsWorkflow.asString());
 			}
 		});
+	}
+
+	private void quoteRedirects(ChoreContext context) {
+		Path workflowsLocation = context.resolve(".github/workflows");
+		context.textFiles().stream().filter(path -> {
+			if (path.startsWith(workflowsLocation)) {
+				return path.toString().endsWith(".yaml");
+			}
+			return false;
+		}).map(context::resolve).forEach(path -> {
+			var yaml = FilesSilent.readString(path);
+			yaml = yaml.replace("> $GITHUB_ENV", "> \"${GITHUB_ENV}\"");
+			yaml = yaml.replace("> $GITHUB_OUTPUT", "> \"${GITHUB_OUTPUT}\"");
+			yaml = yaml.replace("> \"$GITHUB_ENV\"", "> \"${GITHUB_ENV}\"");
+			yaml = yaml
+					.replace("> \"$GITHUB_OUTPUT\"", "> \"${GITHUB_OUTPUT}\"");
+			FilesSilent.writeString(path, yaml);
+		});
+
 	}
 
 }

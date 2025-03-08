@@ -57,8 +57,8 @@ jobs:
       env:
         NEW_VERSION: ${{ steps.tag.outputs.new_version }}
       run: |
-        echo "new_version=${NEW_VERSION:-$GITHUB_SHA}" >> "$GITHUB_OUTPUT"
-        echo "build_timestamp=$(date --iso-8601=seconds)" >> "$GITHUB_OUTPUT"
+        echo "new_version=${NEW_VERSION:-$GITHUB_SHA}" >> "${GITHUB_OUTPUT}"
+        echo "build_timestamp=$(date --iso-8601=seconds)" >> "${GITHUB_OUTPUT}"
     - name: Make sure build did not change anything
       run: git diff --exit-code
   macos:
