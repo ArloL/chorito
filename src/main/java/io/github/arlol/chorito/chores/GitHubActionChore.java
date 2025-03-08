@@ -462,7 +462,8 @@ public class GitHubActionChore implements Chore {
 					.map(s -> {
 						if (s.trim().startsWith("echo \"::set-output name=")) {
 							return s.replace("::set-output name=", "")
-									.replace("::", "=") + " >> $GITHUB_OUTPUT";
+									.replace("::", "=")
+									+ " >> \"$GITHUB_OUTPUT\"";
 						}
 						return s;
 					})
