@@ -185,7 +185,6 @@ jobs:
       with:
         tag: v${{ needs.version.outputs.new_version }}
         name: Release ${{ needs.version.outputs.new_version }}
-        body: ${{ needs.version.outputs.changelog }}
         draft: true
     - name: Upload Release Asset
       uses: shogo82148/actions-upload-release-asset@v1.7.7
