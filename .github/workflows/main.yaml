@@ -181,7 +181,7 @@ jobs:
       uses: actions/download-artifact@v4.1.9
       with:
         path: ./target
-    - name: Build project
+    - name: Zip artifacts
       working-directory: target
       env:
         NEW_VERSION: ${{ needs.version.outputs.new_version }}
