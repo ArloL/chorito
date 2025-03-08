@@ -32,6 +32,7 @@ public class GitHubActionChore implements Chore {
 		updateDebugSteps(context);
 		updateVersionSteps(context);
 		updatePermissions(context);
+		addCheckActionWorkflow(context);
 		return context;
 	}
 
@@ -512,6 +513,50 @@ public class GitHubActionChore implements Chore {
 					})
 					.toList();
 			FilesSilent.write(main, updated, "\n");
+		}
+	}
+
+	private void addCheckActionWorkflow(ChoreContext context) {
+		RandomCronBuilder randomCronBuilder = new RandomCronBuilder(
+				context.randomGenerator()
+		);
+		String randomDayOfMonth = randomCronBuilder.randomDayOfMonth();
+		if (context.remotes()
+				.stream()
+				.anyMatch(s -> s.startsWith("https://github.com"))
+				|| context.textFiles()
+						.stream()
+						.map(MyPaths::getParent)
+						.anyMatch(path -> path.endsWith(".github"))) {
+			Path checkActionsYaml = context
+					.resolve(".github/workflows/check-actions.yaml");
+
+			var templateWorkflow = new GitHubActionsWorkflowFile(
+					ClassPathFiles.readString(
+							"github-settings/workflows/check-actions.yaml"
+					)
+			);
+
+			GitHubActionsWorkflowFile checkActionsWorkflow;
+			if (FilesSilent.exists(checkActionsYaml)) {
+				checkActionsWorkflow = new GitHubActionsWorkflowFile(
+						FilesSilent.readString(checkActionsYaml)
+				);
+				templateWorkflow.setOnScheduleCron(
+						checkActionsWorkflow.getOnScheduleCron().orElseThrow()
+				);
+			} else {
+				checkActionsWorkflow = templateWorkflow.copy();
+				checkActionsWorkflow.setOnScheduleCron(randomDayOfMonth);
+			}
+
+			if (!templateWorkflow.asStringWithoutVersions()
+					.equals(checkActionsWorkflow.asStringWithoutVersions())) {
+				FilesSilent.writeString(
+						checkActionsYaml,
+						templateWorkflow.asString()
+				);
+			}
 		}
 	}
 
