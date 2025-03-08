@@ -35,6 +35,7 @@ public class GitHubActionChore implements Chore {
 		addCheckActionWorkflow(context);
 		actionsCheckoutWithPersistCredentials(context);
 		quoteRedirects(context);
+		migrateZipProjects(context);
 		return context;
 	}
 
@@ -605,7 +606,38 @@ public class GitHubActionChore implements Chore {
 					.replace("> \"$GITHUB_OUTPUT\"", "> \"${GITHUB_OUTPUT}\"");
 			FilesSilent.writeString(path, yaml);
 		});
+	}
 
+	private void migrateZipProjects(ChoreContext context) {
+		Path workflowsLocation = context.resolve(".github/workflows");
+		context.textFiles().stream().filter(path -> {
+			if (path.startsWith(workflowsLocation)) {
+				return path.toString().endsWith(".yaml");
+			}
+			return false;
+		}).map(context::resolve).forEach(path -> {
+			String updated = FilesSilent.readString(path);
+			String target = """
+					    - name: Build project
+					      working-directory: target
+					      run: |
+					        zip -r windows.zip ${{ env.ARTIFACT }}-windows-${{ needs.version.outputs.new_version }}/
+					        zip -r linux.zip ${{ env.ARTIFACT }}-linux-${{ needs.version.outputs.new_version }}/
+					        zip -r macos.zip ${{ env.ARTIFACT }}-macos-${{ needs.version.outputs.new_version }}/
+					""";
+			String replacement = """
+					    - name: Zip artifacts
+					      working-directory: target
+					      env:
+					        NEW_VERSION: ${{ needs.version.outputs.new_version }}
+					      run: |
+					        zip -r windows.zip "${ARTIFACT}-windows-${NEW_VERSION}/"
+					        zip -r linux.zip "${ARTIFACT}-linux-${NEW_VERSION}/"
+					        zip -r macos.zip "${ARTIFACT}-macos-${NEW_VERSION}/"
+					""";
+			updated = updated.replace(target, replacement);
+			FilesSilent.writeString(path, updated);
+		});
 	}
 
 }
