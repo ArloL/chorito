@@ -6,7 +6,7 @@ on:
     types:
     - chores
   schedule:
-  - cron: '1 6 16 * *'
+  - cron: '26 15 1 * *'
 permissions: {}
 concurrency: chores
 

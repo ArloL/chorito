@@ -52,6 +52,10 @@ public class GitHubActionsWorkflowFile {
 		).getSingleNode();
 	}
 
+	public GitHubActionsWorkflowFile copy() {
+		return new GitHubActionsWorkflowFile(asString());
+	}
+
 	public String asStringWithoutVersions() {
 		return removeVersions(asString());
 	}
