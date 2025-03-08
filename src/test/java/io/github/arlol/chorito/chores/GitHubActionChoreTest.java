@@ -90,6 +90,8 @@ public class GitHubActionChoreTest {
 			      REVISION: ${{ needs.version.outputs.new_version }}
 			    steps:
 			    - uses: actions/checkout@v3.1.0
+			      with:
+			        persist-credentials: false
 			    - uses: graalvm/setup-graalvm@v1.0.7
 			      with:
 			        version: ${{ env.GRAALVM_VERSION }}
@@ -104,6 +106,8 @@ public class GitHubActionChoreTest {
 			      REVISION: ${{ needs.version.outputs.new_version }}
 			    steps:
 			    - uses: actions/checkout@v3.1.0
+			      with:
+			        persist-credentials: false
 			    - uses: graalvm/setup-graalvm@v1.0.7
 			      with:
 			        version: ${{ env.GRAALVM_VERSION }}
@@ -504,6 +508,18 @@ public class GitHubActionChoreTest {
 				.build();
 		new GitHubActionChore().doit(context);
 		assertThat(workflow).exists();
+	}
+
+	@Test
+	void actionsCheckoutWithPersistCredentials() throws Exception {
+		String input = ClassPathFiles
+				.readString("github-actions/actions-checkout-input.yaml");
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(workflow, input);
+		new GitHubActionChore().doit(extension.choreContext());
+		String expected = ClassPathFiles
+				.readString("github-actions/actions-checkout-output.yaml");
+		assertThat(workflow).content().isEqualTo(expected);
 	}
 
 }

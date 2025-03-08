@@ -36,6 +36,13 @@ public abstract class Yamls {
 	}
 
 	public static Optional<SequenceNode> getKeyAsSequence(
+			MappingNode map,
+			String key
+	) {
+		return nodeAsSequence(getKeyAsNode(map, key));
+	}
+
+	public static Optional<SequenceNode> getKeyAsSequence(
 			Optional<MappingNode> map,
 			String key
 	) {
@@ -131,6 +138,14 @@ public abstract class Yamls {
 		return new MappingNode(Tag.MAP, nodes, FlowStyle.BLOCK);
 	}
 
+	public static ScalarNode newScalar(boolean value) {
+		return new ScalarNode(
+				Tag.BOOL,
+				String.valueOf(value),
+				ScalarStyle.PLAIN
+		);
+	}
+
 	public static ScalarNode newScalar(int value) {
 		return new ScalarNode(
 				Tag.INT,
@@ -219,14 +234,25 @@ public abstract class Yamls {
 
 	@SuppressWarnings("null") // null analysis is unnecessarily complicated
 	public static void setKey(MappingNode map, String key, Node node) {
-		var newValue = map.getValue().stream().map(t -> {
-			if (t.getKeyNode() instanceof ScalarNode keyNode
-					&& key.equals(keyNode.getValue())) {
-				return new NodeTuple(t.getKeyNode(), node);
-			}
-			return t;
-		}).toList();
-		map.setValue(newValue);
+		boolean hasKey = map.getValue()
+				.stream()
+				.anyMatch(
+						t -> t.getKeyNode() instanceof ScalarNode keyNode
+								&& key.equals(keyNode.getValue())
+				);
+		if (hasKey) {
+			var newValue = map.getValue().stream().map(t -> {
+				if (t.getKeyNode() instanceof ScalarNode keyNode
+						&& key.equals(keyNode.getValue())) {
+					return new NodeTuple(t.getKeyNode(), node);
+				}
+				return t;
+			}).toList();
+			map.setValue(newValue);
+		} else {
+			map.getValue().add(newTuple(key, node));
+		}
+
 	}
 
 	public static void removeKey(Optional<MappingNode> map, String key) {
