@@ -36,6 +36,7 @@ public class GitHubActionChore implements Chore {
 		actionsCheckoutWithPersistCredentials(context);
 		quoteRedirects(context);
 		migrateZipProjects(context);
+		removeNeedsVersionOutputsChangelog(context);
 		return context;
 	}
 
@@ -636,6 +637,23 @@ public class GitHubActionChore implements Chore {
 					        zip -r macos.zip "${ARTIFACT}-macos-${NEW_VERSION}/"
 					""";
 			updated = updated.replace(target, replacement);
+			FilesSilent.writeString(path, updated);
+		});
+	}
+
+	private void removeNeedsVersionOutputsChangelog(ChoreContext context) {
+		Path workflowsLocation = context.resolve(".github/workflows");
+		context.textFiles().stream().filter(path -> {
+			if (path.startsWith(workflowsLocation)) {
+				return path.toString().endsWith(".yaml");
+			}
+			return false;
+		}).map(context::resolve).forEach(path -> {
+			String updated = FilesSilent.readString(path);
+			String target = """
+					        body: ${{ needs.version.outputs.changelog }}
+					""";
+			updated = updated.replace(target, "");
 			FilesSilent.writeString(path, updated);
 		});
 	}
