@@ -86,8 +86,8 @@ public class GitHubActionChoreTest {
 			permissions: {}
 			jobs:
 			  linux:
-			    runs-on: ubuntu-latest
 			    needs: version
+			    runs-on: ubuntu-latest
 			    env:
 			      REVISION: ${{ needs.version.outputs.new_version }}
 			    steps:
@@ -102,8 +102,8 @@ public class GitHubActionChoreTest {
 			        github-token: ${{ secrets.GITHUB_TOKEN }}
 			        cache: 'maven'
 			  windows:
-			    runs-on: windows-latest
 			    needs: version
+			    runs-on: windows-latest
 			    env:
 			      REVISION: ${{ needs.version.outputs.new_version }}
 			    steps:

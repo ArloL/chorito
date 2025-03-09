@@ -40,9 +40,9 @@ jobs:
     - name: Dump environment variables
       run: set
   version:
+    runs-on: ubuntu-latest
     permissions:
       contents: write
-    runs-on: ubuntu-latest
     outputs:
       new_version: ${{ steps.output.outputs.new_version }}
       build_timestamp: ${{ steps.output.outputs.build_timestamp }}
@@ -63,8 +63,8 @@ jobs:
     - name: Make sure build did not change anything
       run: git diff --exit-code
   macos:
-    runs-on: macos-latest
     needs: version
+    runs-on: macos-latest
     env:
       REVISION: ${{ needs.version.outputs.new_version }}
       BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
@@ -99,8 +99,8 @@ jobs:
     - name: Make sure build did not change anything
       run: git diff --exit-code
   linux:
-    runs-on: ubuntu-latest
     needs: version
+    runs-on: ubuntu-latest
     env:
       REVISION: ${{ needs.version.outputs.new_version }}
       BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
@@ -135,8 +135,8 @@ jobs:
     - name: Make sure build did not change anything
       run: git diff --exit-code
   windows:
-    runs-on: windows-latest
     needs: version
+    runs-on: windows-latest
     env:
       REVISION: ${{ needs.version.outputs.new_version }}
       BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
@@ -168,11 +168,11 @@ jobs:
     - name: Make sure build did not change anything
       run: git diff --exit-code
   release:
+    needs: [version, macos, linux, windows]
     if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
     permissions:
       contents: write
-    runs-on: ubuntu-latest
-    needs: [version, macos, linux, windows]
     steps:
     - uses: actions/checkout@v4.2.2
       with:
@@ -248,9 +248,9 @@ jobs:
   deploy:
     needs: [version, macos, linux, windows]
     if: ${{ github.event_name == 'push' && !startsWith(github.ref, 'refs/heads/dependabot/') }}
+    runs-on: ubuntu-latest
     permissions:
       packages: write
-    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4.2.2
       with:
@@ -275,8 +275,8 @@ jobs:
     - name: Make sure build did not change anything
       run: git diff --exit-code
   trigger-livecheck:
-    runs-on: ubuntu-latest
     needs: release
+    runs-on: ubuntu-latest
     steps:
     - name: Trigger livecheck on ArloL/homebrew-tap
       uses: peter-evans/repository-dispatch@v3.0.0
@@ -285,7 +285,6 @@ jobs:
         repository: ArloL/homebrew-tap
         event-type: livecheck
   trigger-chores:
-    runs-on: ubuntu-latest
     needs: release
     strategy:
       matrix:
@@ -300,6 +299,7 @@ jobs:
         - ArloL/newlinechecker
         - ArloL/wait-for-ports
         - ArloL/website-janitor
+    runs-on: ubuntu-latest
     steps:
     - name: Trigger chores on ${{ matrix.repo }}
       uses: peter-evans/repository-dispatch@v3.0.0
