@@ -278,7 +278,7 @@ public class GitHubActionsWorkflowFile {
 
 	public void sortKeys() {
 		nodeAsMap(root).ifPresent(mappingNode -> {
-			var list = mappingNode.getValue()
+			var workflowList = mappingNode.getValue()
 					.stream()
 					.sorted(Comparator.comparingInt(tuple -> {
 						if (tuple.getKeyNode() instanceof ScalarNode keyNode) {
@@ -294,8 +294,66 @@ public class GitHubActionsWorkflowFile {
 						return 100;
 					}))
 					.toList();
-			mappingNode.setValue(list);
+			mappingNode.setValue(workflowList);
 		});
+
+		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
+				.orElse(List.of())) {
+			var jobNode = nodeAsMap(jobTuple.getValueNode());
+
+			List<Node> steps = getKeyAsSequence(jobNode, "steps")
+					.map(SequenceNode::getValue)
+					.orElse(List.of())
+					.stream()
+					.map(step -> {
+						var stepNode = nodeAsMap(step);
+						var stepList = stepNode.getValue()
+								.stream()
+								.sorted(Comparator.comparingInt(tuple -> {
+									if (tuple
+											.getKeyNode() instanceof ScalarNode keyNode) {
+										return switch (keyNode.getValue()) {
+										case "name" -> 10;
+										case "id" -> 11;
+										case "if" -> 12;
+										case "uses" -> 20;
+										case "with" -> 2000;
+										case "run" -> 2000;
+										default -> 1000;
+										};
+									}
+									return 1000;
+								}))
+								.toList();
+						stepNode.setValue(stepList);
+						return step;
+					})
+					.toList();
+			setKey(jobNode, "steps", newSequence(steps));
+
+			var jobList = jobNode.getValue()
+					.stream()
+					.sorted(Comparator.comparingInt(tuple -> {
+						if (tuple.getKeyNode() instanceof ScalarNode keyNode) {
+							return switch (keyNode.getValue()) {
+							case "name" -> 10;
+							case "needs" -> 15;
+							case "if" -> 20;
+							case "strategy" -> 30;
+							case "runs-on" -> 50;
+							case "environment" -> 60;
+							case "timeout-minutes" -> 70;
+							case "permissions" -> 80;
+							case "outputs" -> 90;
+							case "steps" -> 2000;
+							default -> 1000;
+							};
+						}
+						return 1000;
+					}))
+					.toList();
+			jobNode.setValue(jobList);
+		}
 	}
 
 }
