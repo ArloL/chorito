@@ -285,7 +285,6 @@ jobs:
         repository: ArloL/homebrew-tap
         event-type: livecheck
   trigger-chores:
-    name: Trigger chores
     runs-on: ubuntu-latest
     needs: release
     strategy:
