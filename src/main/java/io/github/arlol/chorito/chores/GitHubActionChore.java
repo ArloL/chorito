@@ -235,7 +235,7 @@ public class GitHubActionChore implements Chore {
 				templateWorkflow.setOnScheduleCron(cron);
 			} else {
 				choresWorkflow = templateWorkflow.copy();
-				choresWorkflow.setOnScheduleCron(randomDayOfMonth);
+				templateWorkflow.setOnScheduleCron(randomDayOfMonth);
 			}
 
 			if (!templateWorkflow.asStringWithoutVersions()
@@ -559,7 +559,7 @@ public class GitHubActionChore implements Chore {
 				);
 			} else {
 				checkActionsWorkflow = templateWorkflow.copy();
-				checkActionsWorkflow.setOnScheduleCron(randomDayOfMonth);
+				templateWorkflow.setOnScheduleCron(randomDayOfMonth);
 			}
 
 			if (!templateWorkflow.asStringWithoutVersions()

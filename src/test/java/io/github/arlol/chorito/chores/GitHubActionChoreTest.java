@@ -547,7 +547,7 @@ public class GitHubActionChoreTest {
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 		new GitHubActionChore().doit(context);
-		assertThat(workflow).exists();
+		assertThat(workflow).content().contains("1 3 1 * *");
 	}
 
 	@Test
