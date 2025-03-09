@@ -274,3 +274,37 @@ jobs:
           deploy
     - name: Make sure build did not change anything
       run: git diff --exit-code
+  trigger-livecheck:
+    runs-on: ubuntu-latest
+    needs: release
+    steps:
+    - name: Trigger livecheck on ArloL/homebrew-tap
+      uses: peter-evans/repository-dispatch@v3.0.0
+      with:
+        token: ${{ secrets.LIVECHECK_PAT }}
+        repository: ArloL/homebrew-tap
+        event-type: livecheck
+  trigger-chores:
+    name: Trigger chores
+    runs-on: ubuntu-latest
+    needs: release
+    strategy:
+      matrix:
+        repo:
+        - ArloL/abenteuer-irland
+        - ArloL/arlol.github.io
+        - ArloL/business-english
+        - ArloL/chorito
+        - ArloL/dotfiles
+        - ArloL/eclipse-projects
+        - ArloL/mvnx
+        - ArloL/newlinechecker
+        - ArloL/wait-for-ports
+        - ArloL/website-janitor
+    steps:
+    - name: Trigger chores on ${{ matrix.repo }}
+      uses: peter-evans/repository-dispatch@v3.0.0
+      with:
+        token: ${{ secrets.PAT }}
+        repository: ${{ matrix.repo }}
+        event-type: chores
