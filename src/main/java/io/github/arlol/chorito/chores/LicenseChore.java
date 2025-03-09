@@ -5,8 +5,8 @@ import java.time.Year;
 import java.util.Optional;
 
 import io.github.arlol.chorito.tools.ChoreContext;
-import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.DirectoryStreams;
+import io.github.arlol.chorito.tools.FilesSilent;
 
 public class LicenseChore implements Chore {
 
@@ -87,7 +87,7 @@ public class LicenseChore implements Chore {
 	private void checkPom(ChoreContext context) {
 		DirectoryStreams.rootMavenPoms(context).forEach(pomXml -> {
 			if (!FilesSilent.readString(pomXml).contains("licenses")) {
-				System.out.println("Add license to pom");
+				System.out.println("Add license to pom: " + pomXml);
 			}
 		});
 	}
