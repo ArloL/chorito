@@ -77,7 +77,7 @@
 			<id>graal</id>
 			<activation>
 				<file>
-					<exists>${env.JAVA_HOME}/GRAALVM-README.md</exists>
+					<exists>${env.JAVA_HOME}/lib/graal</exists>
 				</file>
 			</activation>
 			<build>
