@@ -18,28 +18,24 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.WorkingTreeIterator;
 import org.jspecify.annotations.Nullable;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.github.arlol.chorito.filter.FileIsGoneFilter;
 import io.github.arlol.chorito.filter.FileIsGoneOrBinaryFilter;
 import io.github.arlol.chorito.tools.ChoreContext.Builder;
 
 public class GitChoreContext {
 
-	@SuppressFBWarnings(
-			value = "BC_UNCONFIRMED_CAST_OF_RETURN_VALUE",
-			justification = "FileRepositoryBuilder uses generics which spotbugs cant know"
-	)
 	public static Builder refresh(Builder builder) {
 		Path root = builder.root();
 		List<Path> textFiles = new ArrayList<>();
 		List<Path> files = new ArrayList<>();
 		List<String> remotes = new ArrayList<>();
 
-		try (Repository repository = new FileRepositoryBuilder()
+		var fileRepositoryBuilder = new FileRepositoryBuilder()
 				.setMustExist(true)
 				.readEnvironment()
-				.findGitDir(root.toFile())
-				.build(); TreeWalk treeWalk = new TreeWalk(repository);) {
+				.findGitDir(root.toFile());
+		try (Repository repository = fileRepositoryBuilder.build();
+				TreeWalk treeWalk = new TreeWalk(repository);) {
 
 			for (String remoteName : repository.getRemoteNames()) {
 				Config config = repository.getConfig();
@@ -92,16 +88,13 @@ public class GitChoreContext {
 		return builder.textFiles(textFiles).files(files).remotes(remotes);
 	}
 
-	@SuppressFBWarnings(
-			value = "BC_UNCONFIRMED_CAST_OF_RETURN_VALUE",
-			justification = "FileRepositoryBuilder uses generics which spotbugs cant know"
-	)
 	public static void deleteIgnoredFiles(Path root) {
-		try (Repository repository = new FileRepositoryBuilder()
+		var fileRepositoryBuilder = new FileRepositoryBuilder()
 				.setMustExist(true)
 				.readEnvironment()
-				.findGitDir(root.toFile())
-				.build(); TreeWalk treeWalk = new TreeWalk(repository);) {
+				.findGitDir(root.toFile());
+		try (Repository repository = fileRepositoryBuilder.build();
+				TreeWalk treeWalk = new TreeWalk(repository);) {
 			treeWalk.addTree(
 					new DirCacheBuildIterator(
 							repository.readDirCache().builder()
