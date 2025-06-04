@@ -1,5 +1,6 @@
 package io.github.arlol.chorito.chores;
 
+import static io.github.arlol.chorito.tools.GitHubActionsWorkflowFile.removeVersions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -23,10 +24,6 @@ public class CodeQlAnalysisChoreTest {
 	@Test
 	public void testWithNothing() {
 		new CodeQlAnalysisChore().doit(extension.choreContext());
-	}
-
-	public String removeVersions(String input) {
-		return input.replaceAll("@v[0-9.]+\n", "@\n");
 	}
 
 	@Test
