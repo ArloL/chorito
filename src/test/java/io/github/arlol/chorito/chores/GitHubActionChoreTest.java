@@ -1,5 +1,6 @@
 package io.github.arlol.chorito.chores;
 
+import static io.github.arlol.chorito.tools.GitHubActionsWorkflowFile.removeVersions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.file.Path;
@@ -122,10 +123,6 @@ public class GitHubActionChoreTest {
 			    - name: Install upx
 			      run: choco install upx --version=3.96 --no-progress
 			""";
-
-	private String removeVersions(String input) {
-		return input.replaceAll("@v[0-9.]+\n", "@\n");
-	}
 
 	@RegisterExtension
 	final FileSystemExtension extension = new FileSystemExtension();

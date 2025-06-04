@@ -36,7 +36,7 @@ import org.snakeyaml.engine.v2.serializer.Serializer;
 public class GitHubActionsWorkflowFile {
 
 	public static String removeVersions(String input) {
-		return input.replaceAll("@v[0-9.]+\n", "@\n");
+		return input.replaceAll("(?m)^([\\s-]*uses:.*?)@.*$", "$1@\n");
 	}
 
 	private Optional<Node> root;
