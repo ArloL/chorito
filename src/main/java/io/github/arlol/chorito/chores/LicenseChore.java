@@ -77,9 +77,12 @@ public class LicenseChore implements Chore {
 					}
 					newLicenseContent = currentLicenseContent
 							.replace(existingRange, newRange);
+					FilesSilent.writeString(license, newLicenseContent);
 				}
+			} else {
+				FilesSilent.writeString(license, newLicenseContent);
 			}
-			FilesSilent.writeString(license, newLicenseContent);
+
 		}
 		return context;
 	}

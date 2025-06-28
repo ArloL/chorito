@@ -123,6 +123,22 @@ public class LicenseChoreTest {
 	}
 
 	@Test
+	public void testDontTouchDifferentLicense() throws Exception {
+		Path license = extension.root().resolve("LICENSE");
+		FilesSilent.writeString(license, gnuAfferoLicense());
+
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.build();
+
+		new LicenseChore().doit(context);
+
+		assertTrue(FilesSilent.exists(license));
+		assertThat(license).content().isEqualTo(gnuAfferoLicense());
+	}
+
+	@Test
 	public void testUpdateExistingRange() throws Exception {
 		Path license = extension.root().resolve("LICENSE");
 		FilesSilent.writeString(license, mitLicense("2017-2018"));
@@ -171,6 +187,30 @@ public class LicenseChoreTest {
 	private String mitLicense(String yearRange, String author) {
 		return LicenseChore.MIT_LICENSE.replace("${YEAR}", yearRange)
 				.replace("Keeffe\n", "Keeffe\nCopyright (c) " + author + "\n");
+	}
+
+	private String gnuAfferoLicense() {
+		return """
+				                    GNU AFFERO GENERAL PUBLIC LICENSE
+				                       Version 3, 19 November 2007
+
+				 Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+				 Everyone is permitted to copy and distribute verbatim copies
+				 of this license document, but changing it is not allowed.
+
+				                            Preamble
+
+				  The GNU Affero General Public License is a free, copyleft license for
+				software and other kinds of works, specifically designed to ensure
+				cooperation with the community in the case of network server software.
+
+				  The licenses for most software and other practical works are designed
+				to take away your freedom to share and change the works.  By contrast,
+				our General Public Licenses are intended to guarantee your freedom to
+				share and change all versions of a program--to make sure it remains free
+				software for all its users.
+				""";
+
 	}
 
 }
