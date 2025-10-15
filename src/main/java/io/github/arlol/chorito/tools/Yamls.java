@@ -250,7 +250,9 @@ public abstract class Yamls {
 			}).toList();
 			map.setValue(newValue);
 		} else {
-			map.getValue().add(newTuple(key, node));
+			var value = new ArrayList<>(map.getValue());
+			value.add(newTuple(key, node));
+			map.setValue(value);
 		}
 
 	}
