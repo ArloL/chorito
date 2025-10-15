@@ -1,14 +1,14 @@
 package io.github.arlol.chorito.chores;
 
-import java.io.StringReader;
+import java.io.Reader;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
-import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.DirectoryStreams;
+import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.PropertiesSilent;
 
 public class EclipseOptimizeImportSettingsChore implements Chore {
@@ -33,7 +33,7 @@ public class EclipseOptimizeImportSettingsChore implements Chore {
 
 			jdtUiPrefsMap.put("eclipse.preferences.version", "1");
 
-			new PropertiesSilent().load(new StringReader(templateJdtUiPrefs))
+			new PropertiesSilent().load(Reader.of(templateJdtUiPrefs))
 					.toMap()
 					.entrySet()
 					.stream()
