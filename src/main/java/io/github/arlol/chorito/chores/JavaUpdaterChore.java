@@ -34,11 +34,11 @@ public class JavaUpdaterChore implements Chore {
 		}
 		Map<String, String> prefsMap = new PropertiesSilent().load(prefsFile)
 				.toMap();
-		prefsMap.put("org.eclipse.jdt.core.compiler.source", "21");
-		prefsMap.put("org.eclipse.jdt.core.compiler.compliance", "21");
+		prefsMap.put("org.eclipse.jdt.core.compiler.source", "25");
+		prefsMap.put("org.eclipse.jdt.core.compiler.compliance", "25");
 		prefsMap.put(
 				"org.eclipse.jdt.core.compiler.codegen.targetPlatform",
-				"21"
+				"25"
 		);
 		List<String> propertyList = prefsMap.entrySet()
 				.stream()
@@ -59,21 +59,24 @@ public class JavaUpdaterChore implements Chore {
 			if (properties == null) {
 				project.append("""
 							<properties>
-								<java.version>21</java.version>
+								<java.version>25</java.version>
 							</properties>
 						""");
 			} else {
 				Elements javaVersionElements = properties
 						.getElementsByTag("java.version");
 				if (javaVersionElements.isEmpty()) {
-					properties.append("	<java.version>21</java.version>\n	");
+					properties.append("	<java.version>25</java.version>\n	");
 				} else {
 					javaVersionElements.stream()
 							.filter(e -> e.text().equals("11"))
-							.forEach(e -> e.text("21"));
+							.forEach(e -> e.text("25"));
 					javaVersionElements.stream()
 							.filter(e -> e.text().equals("17"))
-							.forEach(e -> e.text("21"));
+							.forEach(e -> e.text("25"));
+					javaVersionElements.stream()
+							.filter(e -> e.text().equals("21"))
+							.forEach(e -> e.text("25"));
 				}
 			}
 
@@ -93,10 +96,13 @@ public class JavaUpdaterChore implements Chore {
 					.stream()
 					.map(s -> {
 						if (s.trim().startsWith("JAVA_VERSION: 11")) {
-							return s.replace("11", "21");
+							return s.replace("11", "25");
 						}
 						if (s.trim().startsWith("JAVA_VERSION: 17")) {
-							return s.replace("17", "21");
+							return s.replace("17", "25");
+						}
+						if (s.trim().startsWith("JAVA_VERSION: 21")) {
+							return s.replace("21", "25");
 						}
 						return s;
 					})
@@ -112,13 +118,16 @@ public class JavaUpdaterChore implements Chore {
 					.stream()
 					.map(s -> {
 						if (s.trim().equals("- openjdk8")) {
-							return s.replace("openjdk8", "openjdk21");
+							return s.replace("openjdk8", "openjdk25");
 						}
 						if (s.trim().equals("- openjdk11")) {
-							return s.replace("openjdk11", "openjdk21");
+							return s.replace("openjdk11", "openjdk25");
 						}
 						if (s.trim().equals("- openjdk17")) {
-							return s.replace("openjdk17", "openjdk21");
+							return s.replace("openjdk17", "openjdk25");
+						}
+						if (s.trim().equals("- openjdk21")) {
+							return s.replace("openjdk21", "openjdk25");
 						}
 						return s;
 					})

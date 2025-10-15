@@ -8,7 +8,7 @@ on:
   schedule:
   - cron: '39 21 2 * *'
 env:
-  JAVA_VERSION: 21
+  JAVA_VERSION: 25
 
 jobs:
   debug:

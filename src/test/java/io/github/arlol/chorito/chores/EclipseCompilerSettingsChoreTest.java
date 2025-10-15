@@ -29,9 +29,9 @@ public class EclipseCompilerSettingsChoreTest {
 			org.eclipse.jdt.core.compiler.annotation.resourceanalysis=disabled
 			org.eclipse.jdt.core.compiler.codegen.inlineJsrBytecode=enabled
 			org.eclipse.jdt.core.compiler.codegen.methodParameters=generate
-			org.eclipse.jdt.core.compiler.codegen.targetPlatform=21
+			org.eclipse.jdt.core.compiler.codegen.targetPlatform=25
 			org.eclipse.jdt.core.compiler.codegen.unusedLocal=preserve
-			org.eclipse.jdt.core.compiler.compliance=21
+			org.eclipse.jdt.core.compiler.compliance=25
 			org.eclipse.jdt.core.compiler.debug.lineNumber=generate
 			org.eclipse.jdt.core.compiler.debug.localVariable=generate
 			org.eclipse.jdt.core.compiler.debug.sourceFile=generate
@@ -137,7 +137,7 @@ public class EclipseCompilerSettingsChoreTest {
 			org.eclipse.jdt.core.compiler.problem.varargsArgumentNeedCast=warning
 			org.eclipse.jdt.core.compiler.processAnnotations=disabled
 			org.eclipse.jdt.core.compiler.release=enabled
-			org.eclipse.jdt.core.compiler.source=21
+			org.eclipse.jdt.core.compiler.source=25
 			""";
 
 	@RegisterExtension

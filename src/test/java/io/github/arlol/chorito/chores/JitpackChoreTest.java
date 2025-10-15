@@ -16,7 +16,7 @@ public class JitpackChoreTest {
 
 	private static final String EXPECT_JITPACK = """
 			jdk:
-			- openjdk21
+			- openjdk25
 			install:
 			- ./mvnw --batch-mode install -DskipTests -Dsha1="${GIT_COMMIT}" -Drevision="${VERSION}"
 			""";
