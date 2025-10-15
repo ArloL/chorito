@@ -37,9 +37,9 @@ public class JavaUpdaterChoreTest {
 		doit();
 
 		assertThat(prefs).content().isEqualTo("""
-				org.eclipse.jdt.core.compiler.codegen.targetPlatform=21
-				org.eclipse.jdt.core.compiler.compliance=21
-				org.eclipse.jdt.core.compiler.source=21
+				org.eclipse.jdt.core.compiler.codegen.targetPlatform=25
+				org.eclipse.jdt.core.compiler.compliance=25
+				org.eclipse.jdt.core.compiler.source=25
 						""");
 	}
 
@@ -56,7 +56,7 @@ public class JavaUpdaterChoreTest {
 
 		assertThat(pom).content()
 				.isEqualTo(
-						"<project><properties><java.version>21</java.version></properties></project>"
+						"<project><properties><java.version>25</java.version></properties></project>"
 				);
 	}
 
@@ -67,7 +67,7 @@ public class JavaUpdaterChoreTest {
 
 		doit();
 
-		assertThat(workflow).content().isEqualTo("  JAVA_VERSION: 21\n");
+		assertThat(workflow).content().isEqualTo("  JAVA_VERSION: 25\n");
 	}
 
 	@Test
@@ -77,7 +77,7 @@ public class JavaUpdaterChoreTest {
 
 		doit();
 
-		assertThat(jitpack).content().isEqualTo("- openjdk21\n");
+		assertThat(jitpack).content().isEqualTo("- openjdk25\n");
 	}
 
 	@Test
@@ -87,7 +87,7 @@ public class JavaUpdaterChoreTest {
 
 		doit();
 
-		assertThat(jitpack).content().isEqualTo("- openjdk21\n");
+		assertThat(jitpack).content().isEqualTo("- openjdk25\n");
 	}
 
 	@Test
@@ -108,7 +108,7 @@ public class JavaUpdaterChoreTest {
 				<project>
 					<properties>
 						<revision>0.0.1-SNAPSHOT</revision>
-						<java.version>21</java.version>
+						<java.version>25</java.version>
 					</properties>
 				</project>
 				""");
@@ -128,7 +128,7 @@ public class JavaUpdaterChoreTest {
 		assertThat(pom).content().isEqualTo("""
 				<project>
 					<properties>
-						<java.version>21</java.version>
+						<java.version>25</java.version>
 					</properties>
 				</project>
 				""");
