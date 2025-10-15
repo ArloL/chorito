@@ -7,8 +7,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 
 import io.github.arlol.chorito.tools.ChoreContext;
-import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.DirectoryStreams;
+import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.JsoupSilent;
 
 public class PomScmChore implements Chore {
@@ -20,7 +20,7 @@ public class PomScmChore implements Chore {
 				.filter(s -> s.startsWith("https://github.com"))
 				.map(s -> s.replace(".git", ""))
 				// if there are multiple return null
-				.collect(Collectors.reducing((a, b) -> null))
+				.collect(Collectors.reducing((_, _) -> null))
 				.ifPresent(remote -> {
 
 					DirectoryStreams.rootMavenPoms(context).forEach(pom -> {
