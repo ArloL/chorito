@@ -1,6 +1,7 @@
 package io.github.arlol.chorito.tools;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -79,6 +80,38 @@ public class DependabotConfigFileTest {
 				dependabotConfigFile.hasEcosystemWithDirectory("gradle", "/")
 		);
 
+	}
+
+	@Test
+	void testAddCooldownIfMissing() throws Exception {
+		var dependabotConfigFile = new DependabotConfigFile("""
+				updates:
+				- package-ecosystem: "github-actions"
+				""");
+		dependabotConfigFile.addCooldownIfMissing();
+		assertEquals("""
+				updates:
+				- package-ecosystem: "github-actions"
+				  cooldown:
+				    default-days: 4
+				""", dependabotConfigFile.asString());
+	}
+
+	@Test
+	void testAddCooldownIfTooLow() throws Exception {
+		var dependabotConfigFile = new DependabotConfigFile("""
+				updates:
+				- package-ecosystem: "github-actions"
+				  cooldown:
+				    default-days: 2
+				""");
+		dependabotConfigFile.addCooldownIfMissing();
+		assertEquals("""
+				updates:
+				- package-ecosystem: "github-actions"
+				  cooldown:
+				    default-days: 4
+				""", dependabotConfigFile.asString());
 	}
 
 }

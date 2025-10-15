@@ -1,6 +1,8 @@
 package io.github.arlol.chorito.tools;
 
+import static io.github.arlol.chorito.tools.Yamls.getKeyAsMap;
 import static io.github.arlol.chorito.tools.Yamls.getKeyAsNode;
+import static io.github.arlol.chorito.tools.Yamls.getKeyAsScalar;
 import static io.github.arlol.chorito.tools.Yamls.getKeyAsSequence;
 import static io.github.arlol.chorito.tools.Yamls.getYamlPath;
 import static io.github.arlol.chorito.tools.Yamls.newMap;
@@ -47,7 +49,7 @@ public class DependabotConfigFile {
 	}
 
 	private Stream<MappingNode> getUpdatesAsMappingNode() {
-		return getUpdates().stream().map(node -> nodeAsMap(node));
+		return getUpdates().stream().map(Yamls::nodeAsMap);
 	}
 
 	public boolean hasEcosystemWithDirectory(
@@ -58,7 +60,7 @@ public class DependabotConfigFile {
 				.substring(0, directory.length() - 1);
 		return getUpdatesAsMappingNode().anyMatch(step -> {
 			return scalarValue(getKeyAsNode(step, "package-ecosystem"))
-					.filter(value -> packageEcosystem.equals(value))
+					.filter(packageEcosystem::equals)
 					.isPresent()
 					&& scalarValue(getKeyAsNode(step, "directory"))
 							.filter(
@@ -91,6 +93,27 @@ public class DependabotConfigFile {
 				.forEach(node -> {
 					setKey(nodeAsMap(node), "interval", newScalar("monthly"));
 				});
+	}
+
+	public void addCooldownIfMissing() {
+		getUpdatesAsMappingNode().forEach(update -> {
+			getKeyAsMap(update, "cooldown").ifPresentOrElse(cooldown -> {
+				getKeyAsScalar(cooldown, "default-days")
+						.ifPresentOrElse(defaultDays -> {
+							if (Integer.parseInt(defaultDays.getValue()) < 4) {
+								setKey(cooldown, "default-days", newScalar(4));
+							}
+						}, () -> {
+							setKey(cooldown, "default-days", newScalar(4));
+						});
+			}, () -> {
+				setKey(
+						update,
+						"cooldown",
+						newMap(newTuple("default-days", newScalar(4)))
+				);
+			});
+		});
 	}
 
 }
