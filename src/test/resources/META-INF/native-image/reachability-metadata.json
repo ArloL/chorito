@@ -1,0 +1,18 @@
+{
+    "reflection": [
+        {
+            "type": {
+                "proxy": [
+                    "java.nio.file.attribute.BasicFileAttributeView"
+                ]
+            }
+        },
+        {
+            "type": {
+                "proxy": [
+                    "java.nio.file.attribute.PosixFileAttributeView"
+                ]
+            }
+        }
+    ]
+}
