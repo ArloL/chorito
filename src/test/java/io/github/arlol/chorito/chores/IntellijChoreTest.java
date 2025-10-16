@@ -121,4 +121,41 @@ public class IntellijChoreTest {
 				);
 	}
 
+	@Test
+	public void testAddLombok() throws Exception {
+
+		// given
+		Path externalDependencies = extension.root()
+				.resolve(".idea/externalDependencies.xml");
+		FilesSilent.touch(extension.root().resolve("lombok.config"));
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
+		FilesSilent.writeString(
+				externalDependencies,
+				"""
+						<?xml version="1.0" encoding="UTF-8"?>
+						<project version="4">
+						  <component name="ExternalDependencies">
+							<plugin id="EclipseCodeFormatter" min-version="23.5.241.000.0-Eclipse_2024-09" />
+							<plugin id="software.xdev.saveactions" min-version="1.2.2" />
+						  </component>
+						</project>"""
+		);
+
+		doit();
+
+		assertThat(externalDependencies).content()
+				.isEqualTo(
+						"""
+								<?xml version="1.0" encoding="UTF-8"?>
+								<project version="4">
+								  <component name="ExternalDependencies">
+								    <plugin id="EclipseCodeFormatter" min-version="23.5.241.000.0-Eclipse_2024-09" />
+								    <plugin id="software.xdev.saveactions" min-version="1.4.2" />
+								    <plugin id="Lombook Plugin" min-version="251.27812.12" />
+								  </component>
+								</project>"""
+				);
+	}
+
 }
