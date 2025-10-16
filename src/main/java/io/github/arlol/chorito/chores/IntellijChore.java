@@ -39,7 +39,6 @@ public class IntellijChore implements Chore {
 		if (!FilesSilent.exists(path)) {
 			FilesSilent.writeString(path, template);
 			context.setDirty();
-			return;
 		}
 	}
 
@@ -89,6 +88,14 @@ public class IntellijChore implements Chore {
 							.attr(attribute.getKey(), attribute.getValue());
 				}
 			}
+		}
+
+		if (FilesSilent.exists(dir.resolve("lombok.config"))
+				&& externalDependencies.select("plugin[id=Lombook Plugin]")
+						.isEmpty()) {
+			externalDependencies.append(
+					"<plugin id=\"Lombook Plugin\" min-version=\"251.27812.12\" />"
+			);
 		}
 
 		String after = document.outerHtml();
