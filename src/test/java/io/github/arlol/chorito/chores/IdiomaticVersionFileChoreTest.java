@@ -31,9 +31,9 @@ public class IdiomaticVersionFileChoreTest {
 
 		doit();
 
-		Path javaVersion = extension.root().resolve(".java-version");
-		assertThat(javaVersion).content().isEqualTo("""
-				temurin-25
+		Path toolVersions = extension.root().resolve(".tool-versions");
+		assertThat(toolVersions).content().isEqualTo("""
+				java temurin-25
 				""");
 	}
 
@@ -41,12 +41,12 @@ public class IdiomaticVersionFileChoreTest {
 	public void testNoOverwrite() throws Exception {
 		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
 		FilesSilent.touch(extension.root().resolve("pom.xml"));
-		FilesSilent.touch(extension.root().resolve(".java-version"));
+		FilesSilent.touch(extension.root().resolve(".tool-versions"));
 
 		doit();
 
-		Path javaVersion = extension.root().resolve(".java-version");
-		assertThat(javaVersion).content().isEqualTo("""
+		Path toolVersions = extension.root().resolve(".tool-versions");
+		assertThat(toolVersions).content().isEqualTo("""
 				""");
 	}
 
@@ -91,9 +91,9 @@ public class IdiomaticVersionFileChoreTest {
 
 		doit();
 
-		Path javaVersion = extension.root().resolve(".java-version");
-		assertThat(javaVersion).content().isEqualTo("""
-				graalvm-community-25.0.0
+		Path toolVersions = extension.root().resolve(".tool-versions");
+		assertThat(toolVersions).content().isEqualTo("""
+				java graalvm-community-25
 				""");
 	}
 
