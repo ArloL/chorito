@@ -8,10 +8,8 @@ on:
     branches:
     - main
   schedule:
-  - cron: '54 17 16 * *'
+  - cron: "54 17 16 * *"
 permissions: {}
-env:
-  JAVA_VERSION: 25
 
 jobs:
   debug:

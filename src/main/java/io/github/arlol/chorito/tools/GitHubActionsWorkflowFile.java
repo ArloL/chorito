@@ -8,6 +8,7 @@ import static io.github.arlol.chorito.tools.Yamls.getYamlPath;
 import static io.github.arlol.chorito.tools.Yamls.newMap;
 import static io.github.arlol.chorito.tools.Yamls.newScalar;
 import static io.github.arlol.chorito.tools.Yamls.newSequence;
+import static io.github.arlol.chorito.tools.Yamls.newTuple;
 import static io.github.arlol.chorito.tools.Yamls.nodeAsMap;
 import static io.github.arlol.chorito.tools.Yamls.removeKey;
 import static io.github.arlol.chorito.tools.Yamls.scalarValue;
@@ -130,7 +131,7 @@ public class GitHubActionsWorkflowFile {
 								.orElseThrow()
 				),
 				"cron",
-				newScalar(newCron, ScalarStyle.SINGLE_QUOTED)
+				newScalar(newCron, ScalarStyle.DOUBLE_QUOTED)
 		);
 	}
 
@@ -223,7 +224,7 @@ public class GitHubActionsWorkflowFile {
 				.forEach(scalar -> nodes.add(scalar));
 		setKey(
 				nodeAsMap(
-						Yamls.getYamlPath(
+						getYamlPath(
 								getJob(job).orElseThrow(),
 								"/strategy/matrix"
 						)
@@ -276,6 +277,68 @@ public class GitHubActionsWorkflowFile {
 		});
 	}
 
+	public void singleToDoubleQuote() {
+		root.ifPresent(this::singleToDoubleQuote);
+	}
+
+	public Node singleToDoubleQuote(Node node) {
+		return switch (node) {
+		case MappingNode mappingNode -> {
+			var value = mappingNode.getValue().stream().map(nodeTuple -> {
+				return newTuple(
+						nodeTuple.getKeyNode(),
+						singleToDoubleQuote(nodeTuple.getValueNode())
+				);
+			}).toList();
+			mappingNode.setValue(value);
+			yield mappingNode;
+		}
+		case SequenceNode sequenceNode -> newSequence(
+				sequenceNode.getValue()
+						.stream()
+						.map(this::singleToDoubleQuote)
+						.toList()
+		);
+		case ScalarNode scalarNode -> {
+			String value = scalarNode.getValue();
+
+			if (scalarNode.getScalarStyle() == ScalarStyle.SINGLE_QUOTED) {
+				if (!value.contains("\"")) {
+					scalarNode = new ScalarNode(
+							scalarNode.getTag(),
+							value,
+							ScalarStyle.DOUBLE_QUOTED
+					);
+				}
+			}
+
+			if (scalarNode.getScalarStyle() == ScalarStyle.DOUBLE_QUOTED) {
+
+				if ((value.equalsIgnoreCase("off")
+						|| value.equalsIgnoreCase("on")) || value.contains("*")
+						|| value.contains(":")) {
+					scalarNode = new ScalarNode(
+							scalarNode.getTag(),
+							value,
+							ScalarStyle.DOUBLE_QUOTED
+					);
+				} else {
+					scalarNode = new ScalarNode(
+							scalarNode.getTag(),
+							value,
+							ScalarStyle.PLAIN
+					);
+				}
+			}
+
+			yield scalarNode;
+		}
+		default -> {
+			yield node;
+		}
+		};
+	}
+
 	public void sortKeys() {
 		nodeAsMap(root).ifPresent(mappingNode -> {
 			var workflowList = mappingNode.getValue()
@@ -307,6 +370,21 @@ public class GitHubActionsWorkflowFile {
 					.stream()
 					.map(step -> {
 						var stepNode = nodeAsMap(step);
+
+						getKeyAsMap(stepNode, "with").ifPresent(mappingNode -> {
+							var workflowList = mappingNode.getValue()
+									.stream()
+									.sorted(Comparator.comparing(tuple -> {
+										if (tuple
+												.getKeyNode() instanceof ScalarNode keyNode) {
+											return keyNode.getValue();
+										}
+										return tuple.getKeyNode().toString();
+									}))
+									.toList();
+							mappingNode.setValue(workflowList);
+						});
+
 						var stepList = stepNode.getValue()
 								.stream()
 								.sorted(Comparator.comparingInt(tuple -> {

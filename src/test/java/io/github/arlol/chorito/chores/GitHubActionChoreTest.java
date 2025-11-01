@@ -35,6 +35,7 @@ public class GitHubActionChoreTest {
 			    - uses: actions/setup-java@v3.5.1
 			      with:
 			        distribution: temurin
+			        java-version-file: .tool-versions
 			""";
 	private static final String INPUT_GRAALSETUP_OUTPUT = """
 			jobs:
@@ -97,11 +98,11 @@ public class GitHubActionChoreTest {
 			        persist-credentials: false
 			    - uses: graalvm/setup-graalvm@v1.0.7
 			      with:
-			        version: ${{ env.GRAALVM_VERSION }}
-			        java-version: ${{ env.JAVA_VERSION }}
-			        components: 'native-image'
+			        cache: maven
+			        components: native-image
 			        github-token: ${{ secrets.GITHUB_TOKEN }}
-			        cache: 'maven'
+			        java-version: ${{ env.JAVA_VERSION }}
+			        version: ${{ env.GRAALVM_VERSION }}
 			  windows:
 			    needs: version
 			    runs-on: windows-latest
@@ -113,11 +114,11 @@ public class GitHubActionChoreTest {
 			        persist-credentials: false
 			    - uses: graalvm/setup-graalvm@v1.0.7
 			      with:
-			        version: ${{ env.GRAALVM_VERSION }}
-			        java-version: ${{ env.JAVA_VERSION }}
-			        components: 'native-image'
+			        cache: maven
+			        components: native-image
 			        github-token: ${{ secrets.GITHUB_TOKEN }}
-			        cache: 'maven'
+			        java-version: ${{ env.JAVA_VERSION }}
+			        version: ${{ env.GRAALVM_VERSION }}
 			    - name: Remove WindowsImageHeapProviderFeature
 			      run: '& 7z d "$env:JAVA_HOME\\lib\\svm\\builder\\svm.jar" com/oracle/svm/core/windows/WindowsImageHeapProviderFeature.class'
 			    - name: Install upx
@@ -218,7 +219,7 @@ public class GitHubActionChoreTest {
 		FilesSilent.writeString(workflow, """
 				on:
 				  schedule:
-				  - cron: '5 3 4 4 5'
+				  - cron: '5 3 4 4 *'
 				""");
 
 		ChoreContext context = extension.choreContext()
@@ -237,7 +238,7 @@ public class GitHubActionChoreTest {
 				    types:
 				    - chores
 				  schedule:
-				  - cron: '5 3 4 4 5'
+				  - cron: "5 3 4 4 *"
 				""");
 	}
 
@@ -293,7 +294,7 @@ public class GitHubActionChoreTest {
 		assertThat(workflow).content().isEqualTo("""
 				on:
 				  schedule:
-				  - cron: '1 3 1 * *'
+				  - cron: "1 3 1 * *"
 				permissions: {}
 				""");
 	}
@@ -319,7 +320,7 @@ public class GitHubActionChoreTest {
 		assertThat(workflow).content().isEqualTo("""
 				on:
 				  schedule:
-				  - cron: '1 3 1 * *'
+				  - cron: "1 3 1 * *"
 				permissions: {}
 				""");
 	}
@@ -345,7 +346,7 @@ public class GitHubActionChoreTest {
 		assertThat(workflow).content().isEqualTo("""
 				on:
 				  schedule:
-				  - cron: '5 5 5 * *'
+				  - cron: "5 5 5 * *"
 				permissions: {}
 				""");
 	}
