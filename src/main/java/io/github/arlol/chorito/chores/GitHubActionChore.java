@@ -37,6 +37,7 @@ public class GitHubActionChore implements Chore {
 		quoteRedirects(context);
 		migrateZipProjects(context);
 		removeNeedsVersionOutputsChangelog(context);
+		migrateEregonPublishRelease(context);
 		return context;
 	}
 
@@ -654,6 +655,39 @@ public class GitHubActionChore implements Chore {
 					        body: ${{ needs.version.outputs.changelog }}
 					""";
 			updated = updated.replace(target, "");
+			FilesSilent.writeString(path, updated);
+		});
+	}
+
+	private void migrateEregonPublishRelease(ChoreContext context) {
+		Path workflowsLocation = context.resolve(".github/workflows");
+		context.textFiles().stream().filter(path -> {
+			if (path.startsWith(workflowsLocation)) {
+				return path.toString().endsWith(".yaml");
+			}
+			return false;
+		}).map(context::resolve).forEach(path -> {
+			var current = FilesSilent.readString(path);
+
+			var target = """
+					    - uses: eregon/publish-release@01df127f5e9a3c26935118e22e738d95b59d10ce # v1.0.6
+					      env:
+					        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+					      with:
+					        release_id: ${{ steps.create_release.outputs.id }}
+					""";
+			var replacement = """
+					    - uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
+					      with:
+					        tag: v${{ needs.version.outputs.new_version }}
+					        allowUpdates: true
+					        immutableCreate: true
+					        omitBodyDuringUpdate: true
+					        omitNameDuringUpdate: true
+					        updateOnlyUnreleased: true
+					""";
+			var updated = current.replaceAll("eregon/publish-release@.*$", "");
+			updated = updated.replace(target, replacement);
 			FilesSilent.writeString(path, updated);
 		});
 	}
