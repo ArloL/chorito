@@ -38,6 +38,7 @@ public class GitHubActionChore implements Chore {
 		migrateZipProjects(context);
 		removeNeedsVersionOutputsChangelog(context);
 		migrateEregonPublishRelease(context);
+		migrateSetupGraalvm(context);
 		return context;
 	}
 
@@ -689,6 +690,50 @@ public class GitHubActionChore implements Chore {
 			var updated = current.replaceAll("eregon/publish-release@.*$", "");
 			updated = updated.replace(target, replacement);
 			FilesSilent.writeString(path, updated);
+		});
+	}
+
+	private void migrateSetupGraalvm(ChoreContext context) {
+		Path workflowsLocation = context.resolve(".github/workflows");
+		context.textFiles().stream().filter(path -> {
+			if (path.startsWith(workflowsLocation)) {
+				return path.toString().endsWith(".yaml");
+			}
+			return false;
+		}).map(context::resolve).forEach(path -> {
+			String current = FilesSilent.readString(path);
+			var workflow = new GitHubActionsWorkflowFile(current);
+			String before = workflow.asStringWithoutVersions();
+
+			workflow.removeEnv("GRAALVM_VERSION");
+			workflow.removeEnv("JAVA_VERSION");
+
+			workflow.removeInputParameterFromAction(
+					"graalvm/setup-graalvm",
+					"github-token"
+			);
+			workflow.replaceActionWith(
+					"graalvm/setup-graalvm",
+					"actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165",
+					"v5.0.0"
+			);
+
+			workflow.removeInputParameterFromAction(
+					"actions/setup-java",
+					"java-version"
+			);
+			workflow.addInputParameterToAction(
+					"actions/setup-java",
+					"java-version-file",
+					".tool-versions"
+			);
+
+			workflow.singleToDoubleQuote();
+
+			String after = workflow.asStringWithoutVersions();
+			if (!after.equals(before)) {
+				FilesSilent.writeString(path, workflow.asString());
+			}
 		});
 	}
 
