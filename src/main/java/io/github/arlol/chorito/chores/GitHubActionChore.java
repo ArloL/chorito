@@ -62,7 +62,7 @@ public class GitHubActionChore implements Chore {
 			return;
 		}
 		String string = FilesSilent.readString(mainYaml);
-		if (!string.contains("setup-graalvm") || string.contains("gluonfx")) {
+		if (!string.contains("graalvm") || string.contains("gluonfx")) {
 			return;
 		}
 		var main = new GitHubActionsWorkflowFile(string);
@@ -711,6 +711,14 @@ public class GitHubActionChore implements Chore {
 			workflow.removeInputParameterFromAction(
 					"graalvm/setup-graalvm",
 					"github-token"
+			);
+			workflow.removeInputParameterFromAction(
+					"graalvm/setup-graalvm",
+					"version"
+			);
+			workflow.removeInputParameterFromAction(
+					"graalvm/setup-graalvm",
+					"components"
 			);
 			workflow.replaceActionWith(
 					"graalvm/setup-graalvm",

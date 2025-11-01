@@ -96,13 +96,10 @@ public class GitHubActionChoreTest {
 			    - uses: actions/checkout@v3.1.0
 			      with:
 			        persist-credentials: false
-			    - uses: graalvm/setup-graalvm@v1.0.7
+			    - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
 			      with:
 			        cache: maven
-			        components: native-image
-			        github-token: ${{ secrets.GITHUB_TOKEN }}
-			        java-version: ${{ env.JAVA_VERSION }}
-			        version: ${{ env.GRAALVM_VERSION }}
+			        java-version-file: .tool-versions
 			  windows:
 			    needs: version
 			    runs-on: windows-latest
@@ -112,13 +109,10 @@ public class GitHubActionChoreTest {
 			    - uses: actions/checkout@v3.1.0
 			      with:
 			        persist-credentials: false
-			    - uses: graalvm/setup-graalvm@v1.0.7
+			    - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
 			      with:
 			        cache: maven
-			        components: native-image
-			        github-token: ${{ secrets.GITHUB_TOKEN }}
-			        java-version: ${{ env.JAVA_VERSION }}
-			        version: ${{ env.GRAALVM_VERSION }}
+			        java-version-file: .tool-versions
 			    - name: Remove WindowsImageHeapProviderFeature
 			      run: '& 7z d "$env:JAVA_HOME\\lib\\svm\\builder\\svm.jar" com/oracle/svm/core/windows/WindowsImageHeapProviderFeature.class'
 			    - name: Install upx
@@ -182,14 +176,19 @@ public class GitHubActionChoreTest {
 
 		new GitHubActionChore().doit(extension.choreContext());
 
-		assertThat(workflow).content().isEqualTo("""
-				permissions: {}
-				jobs:
-				  windows:
-				    runs-on: windows-latest
-				    steps:
-				    - uses: graalvm/setup-graalvm@v1.0.7
-				""");
+		assertThat(workflow).content()
+				.isEqualTo(
+						"""
+								permissions: {}
+								jobs:
+								  windows:
+								    runs-on: windows-latest
+								    steps:
+								    - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+								      with:
+								        java-version-file: .tool-versions
+								"""
+				);
 	}
 
 	@Test
