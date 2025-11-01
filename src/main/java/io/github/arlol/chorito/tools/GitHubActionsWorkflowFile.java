@@ -3,6 +3,7 @@ package io.github.arlol.chorito.tools;
 import static io.github.arlol.chorito.tools.Yamls.copyValue;
 import static io.github.arlol.chorito.tools.Yamls.getKeyAsMap;
 import static io.github.arlol.chorito.tools.Yamls.getKeyAsNode;
+import static io.github.arlol.chorito.tools.Yamls.getKeyAsScalar;
 import static io.github.arlol.chorito.tools.Yamls.getKeyAsSequence;
 import static io.github.arlol.chorito.tools.Yamls.getYamlPath;
 import static io.github.arlol.chorito.tools.Yamls.newMap;
@@ -21,6 +22,8 @@ import java.util.Optional;
 
 import org.snakeyaml.engine.v2.api.DumpSettings;
 import org.snakeyaml.engine.v2.api.LoadSettings;
+import org.snakeyaml.engine.v2.comments.CommentLine;
+import org.snakeyaml.engine.v2.comments.CommentType;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
 import org.snakeyaml.engine.v2.composer.Composer;
 import org.snakeyaml.engine.v2.emitter.Emitter;
@@ -141,6 +144,15 @@ public class GitHubActionsWorkflowFile {
 
 	public void setEnv(Optional<MappingNode> newEnv) {
 		getEnv().ifPresent(copyValue(newEnv));
+	}
+
+	public void removeEnv(String key) {
+		removeKey(getEnv(), key);
+		getEnv().ifPresent(env -> {
+			if (env.getValue().isEmpty()) {
+				removeEnv();
+			}
+		});
 	}
 
 	public void updatePermissionsFromTemplate(
@@ -265,6 +277,72 @@ public class GitHubActionsWorkflowFile {
 							setKey(stepNode, "with", withNode);
 						}
 						return step;
+					})
+					.toList();
+			setKey(jobNode, "steps", newSequence(steps));
+		}
+	}
+
+	public void removeInputParameterFromAction(
+			String actionName,
+			String inputParameter
+	) {
+		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
+				.orElse(List.of())) {
+			var jobNode = nodeAsMap(jobTuple.getValueNode());
+
+			List<Node> steps = getKeyAsSequence(jobNode, "steps")
+					.map(SequenceNode::getValue)
+					.orElse(List.of())
+					.stream()
+					.peek(step -> {
+						var stepNode = nodeAsMap(step);
+						if (scalarValue(getKeyAsNode(stepNode, "uses"))
+								.filter(
+										uses -> uses
+												.startsWith(actionName + "@")
+								)
+								.isPresent()) {
+							removeKey(
+									getKeyAsMap(stepNode, "with"),
+									inputParameter
+							);
+						}
+					})
+					.toList();
+			setKey(jobNode, "steps", newSequence(steps));
+		}
+	}
+
+	public void addInputParameterToAction(
+			String actionName,
+			String inputParameter,
+			String value
+	) {
+		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
+				.orElse(List.of())) {
+			var jobNode = nodeAsMap(jobTuple.getValueNode());
+
+			List<Node> steps = getKeyAsSequence(jobNode, "steps")
+					.map(SequenceNode::getValue)
+					.orElse(List.of())
+					.stream()
+					.peek(step -> {
+						var stepNode = nodeAsMap(step);
+						if (scalarValue(getKeyAsNode(stepNode, "uses"))
+								.filter(
+										uses -> uses
+												.startsWith(actionName + "@")
+								)
+								.isPresent()) {
+							var withNode = getKeyAsMap(stepNode, "with")
+									.orElseGet(() -> {
+										var with = newMap();
+										setKey(stepNode, "with", with);
+										return with;
+									});
+							setKey(withNode, inputParameter, newScalar(value));
+						}
 					})
 					.toList();
 			setKey(jobNode, "steps", newSequence(steps));
@@ -431,6 +509,49 @@ public class GitHubActionsWorkflowFile {
 					}))
 					.toList();
 			jobNode.setValue(jobList);
+		}
+	}
+
+	public void replaceActionWith(
+			String oldAction,
+			String newActionRef,
+			String newActionVersion
+	) {
+		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
+				.orElse(List.of())) {
+			var jobNode = nodeAsMap(jobTuple.getValueNode());
+
+			List<Node> steps = getKeyAsSequence(jobNode, "steps")
+					.map(SequenceNode::getValue)
+					.orElse(List.of())
+					.stream()
+					.peek(step -> {
+						var stepNode = nodeAsMap(step);
+						getKeyAsScalar(stepNode, "uses")
+								.filter(
+										uses -> uses.getValue()
+												.startsWith(oldAction + "@")
+								)
+								.ifPresent(uses -> {
+									var scalarNode = newScalar(
+											newActionRef,
+											uses.getScalarStyle()
+									);
+									scalarNode.setInLineComments(
+											List.of(
+													new CommentLine(
+															Optional.empty(),
+															Optional.empty(),
+															" " + newActionVersion,
+															CommentType.IN_LINE
+													)
+											)
+									);
+									setKey(stepNode, "uses", scalarNode);
+								});
+					})
+					.toList();
+			setKey(jobNode, "steps", newSequence(steps));
 		}
 	}
 
