@@ -51,7 +51,8 @@ public class ChoritoCommand {
 				new DeleteUnnecessaryFilesChore(),
 				new DeleteUnwantedFilesChore(),
 				new ProhibitedFilenameChore(),
-				new IdiomaticVersionFileChore()
+				new IdiomaticVersionFileChore(),
+				new RenovateChore()
 		);
 		ChoreContext currentContext = GitChoreContext.newBuilder(root).build();
 		for (Chore chore : chores) {
