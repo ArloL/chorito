@@ -19,7 +19,12 @@ public class RenovateChore implements Chore {
 							  "extends": [
 							    "config:recommended"
 							  ],
-							  "minimumReleaseAge": "4 days"
+							  "minimumReleaseAge": "4 days",
+							  "schedule": ["on the 20th day of the month"],
+							  "vulnerabilityAlerts": {
+							    "schedule": ["at any time"],
+							    "minimumReleaseAge": "0 days"
+							  }
 							}
 							"""
 			);
