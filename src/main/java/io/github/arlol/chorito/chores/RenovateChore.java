@@ -10,7 +10,18 @@ public class RenovateChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		Path renovateJson = context.resolve("renovate.json");
-		if (!FilesSilent.exists(renovateJson)) {
+		if (FilesSilent.exists(renovateJson)) {
+			var currentLines = FilesSilent.readAllLines(renovateJson);
+			var updatedLines = currentLines.stream().map(s -> {
+				if (s.startsWith("  \"minimumReleaseAge\": \"4 days\",")) {
+					return "  \"minimumReleaseAge\": \"7 days\",";
+				}
+				return s;
+			}).toList();
+			if (!currentLines.equals(updatedLines)) {
+				FilesSilent.write(renovateJson, updatedLines, "\n");
+			}
+		} else {
 			FilesSilent.writeString(
 					renovateJson,
 					"""
@@ -19,7 +30,7 @@ public class RenovateChore implements Chore {
 							  "extends": [
 							    "config:recommended"
 							  ],
-							  "minimumReleaseAge": "4 days",
+							  "minimumReleaseAge": "7 days",
 							  "schedule": ["on the 20th day of the month"],
 							  "vulnerabilityAlerts": {
 							    "schedule": ["at any time"],
