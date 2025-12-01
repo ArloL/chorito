@@ -93,7 +93,7 @@ public class DependabotConfigFileTest {
 				updates:
 				- package-ecosystem: "github-actions"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				""", dependabotConfigFile.asString());
 	}
 
@@ -110,7 +110,7 @@ public class DependabotConfigFileTest {
 				updates:
 				- package-ecosystem: "github-actions"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				""", dependabotConfigFile.asString());
 	}
 

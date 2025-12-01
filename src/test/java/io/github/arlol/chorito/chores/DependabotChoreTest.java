@@ -49,13 +49,13 @@ public class DependabotChoreTest {
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				- package-ecosystem: "npm"
 				  directory: "/test-projects/vite-project/"
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				""");
 	}
 
@@ -78,19 +78,19 @@ public class DependabotChoreTest {
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				- package-ecosystem: "npm"
 				  directory: "/"
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				- package-ecosystem: "npm"
 				  directory: "/test-projects/vite-project/"
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				""");
 	}
 
@@ -109,13 +109,13 @@ public class DependabotChoreTest {
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				- package-ecosystem: "terraform"
 				  directory: "/"
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				""");
 	}
 
@@ -134,13 +134,13 @@ public class DependabotChoreTest {
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				- package-ecosystem: "docker"
 				  directory: "/"
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				""");
 	}
 
@@ -159,13 +159,13 @@ public class DependabotChoreTest {
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				- package-ecosystem: "docker"
 				  directory: "/"
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				""");
 	}
 
@@ -181,7 +181,7 @@ public class DependabotChoreTest {
 				    schedule:
 				      interval: "monthly"
 				    cooldown:
-				      default-days: 4
+				      default-days: 7
 				""");
 
 		doit();
@@ -195,7 +195,7 @@ public class DependabotChoreTest {
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				""");
 	}
 
@@ -236,19 +236,19 @@ public class DependabotChoreTest {
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				- package-ecosystem: "github-actions"
 				  directory: "/.github/actions/hello/"
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				- package-ecosystem: "github-actions"
 				  directory: "/.github/actions/bye/"
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				""");
 	}
 
@@ -285,7 +285,7 @@ public class DependabotChoreTest {
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				""");
 	}
 
@@ -316,13 +316,13 @@ public class DependabotChoreTest {
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				- package-ecosystem: "github-actions"
 				  directory: "/"
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				""");
 	}
 
@@ -350,7 +350,7 @@ public class DependabotChoreTest {
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
-				    default-days: 4
+				    default-days: 7
 				""");
 	}
 

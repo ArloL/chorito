@@ -100,17 +100,17 @@ public class DependabotConfigFile {
 			getKeyAsMap(update, "cooldown").ifPresentOrElse(cooldown -> {
 				getKeyAsScalar(cooldown, "default-days")
 						.ifPresentOrElse(defaultDays -> {
-							if (Integer.parseInt(defaultDays.getValue()) < 4) {
-								setKey(cooldown, "default-days", newScalar(4));
+							if (Integer.parseInt(defaultDays.getValue()) < 7) {
+								setKey(cooldown, "default-days", newScalar(7));
 							}
 						}, () -> {
-							setKey(cooldown, "default-days", newScalar(4));
+							setKey(cooldown, "default-days", newScalar(7));
 						});
 			}, () -> {
 				setKey(
 						update,
 						"cooldown",
-						newMap(newTuple("default-days", newScalar(4)))
+						newMap(newTuple("default-days", newScalar(7)))
 				);
 			});
 		});
