@@ -281,6 +281,15 @@ jobs:
           deploy
     - name: Make sure build did not change anything
       run: git diff --exit-code
+  required-status-check:
+    name: main.required-status-check
+    needs:
+    - macos
+    - linux
+    - windows
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "Use this job as the required status check of this workflow"
   trigger-livecheck:
     needs: release
     runs-on: ubuntu-latest

@@ -61,3 +61,10 @@ jobs:
       uses: github/codeql-action/analyze@v3.22.12
     - name: Make sure build did not change anything
       run: git diff --exit-code
+  required-status-check:
+    name: codeql-analysis.required-status-check
+    needs:
+    - analyze
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "Use this job as the required status check of this workflow"
