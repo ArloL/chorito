@@ -298,7 +298,7 @@ jobs:
       env:
         RESULTS: ${{ toJSON(needs) }}
       run: |
-        echo "$RESULTS" | jq -e 'all(.result == "success")' || exit 1
+        echo "$RESULTS" | jq --exit-status 'all(.result == "success")' || exit 1
   trigger-livecheck:
     needs: release
     runs-on: ubuntu-latest
