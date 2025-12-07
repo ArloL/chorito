@@ -43,6 +43,12 @@ public class CodeQlAnalysisChore implements Chore {
 				.anyMatch(path -> path.endsWith("Pipfile"))) {
 			languages.add("python");
 		}
+		Path workflowsLocation = context.resolve(".github/workflows");
+		if (context.textFiles()
+				.stream()
+				.anyMatch(path -> path.startsWith(workflowsLocation))) {
+			languages.add("actions");
+		}
 
 		// there is no code in this repository that can be analyzed
 		if (languages.isEmpty()) {
