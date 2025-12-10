@@ -1,6 +1,7 @@
 package io.github.arlol.chorito.chores;
 
 import java.nio.file.Path;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import io.github.arlol.chorito.tools.ChoreContext;
@@ -41,6 +42,13 @@ public class DependabotChore implements Chore {
 		addEcosystemIfFileExists("package.json", "npm", context);
 		addEcosystemIfFileExists("build.gradle", "gradle", context);
 		addEcosystemIfFileExists(".terraform.lock.hcl", "terraform", context);
+		addEcosystemIfFileExists(
+				"devcontainer.json",
+				"devcontainers",
+				context,
+				MyPaths::getParent
+		);
+
 		addCompositeGitHubActions(context);
 
 		dependabotConfigFile.changeDailyScheduleToMonthly();
@@ -58,7 +66,7 @@ public class DependabotChore implements Chore {
 						.contains("using: composite");
 			}
 			return false;
-		}, "github-actions");
+		}, "github-actions", Function.identity());
 	}
 
 	private void addEcosystemIfFileExists(
@@ -66,9 +74,23 @@ public class DependabotChore implements Chore {
 			String ecosystem,
 			ChoreContext context
 	) {
+		addEcosystemIfFileExists(
+				fileName,
+				ecosystem,
+				context,
+				Function.identity()
+		);
+	}
+
+	private void addEcosystemIfFileExists(
+			String fileName,
+			String ecosystem,
+			ChoreContext context,
+			Function<Path, Path> transformFilePathToDirectory
+	) {
 		addEcosystemIfFilterMatches(context, path -> {
 			return path.endsWith(fileName);
-		}, ecosystem);
+		}, ecosystem, transformFilePathToDirectory);
 	}
 
 	private void addEcosystemIfFileNameMatches(
@@ -76,20 +98,36 @@ public class DependabotChore implements Chore {
 			String ecosystem,
 			ChoreContext context
 	) {
+		addEcosystemIfFileNameMatches(
+				fileNamePattern,
+				ecosystem,
+				context,
+				Function.identity()
+		);
+	}
+
+	private void addEcosystemIfFileNameMatches(
+			String fileNamePattern,
+			String ecosystem,
+			ChoreContext context,
+			Function<Path, Path> transformFilePathToDirectory
+	) {
 		addEcosystemIfFilterMatches(context, path -> {
 			return MyPaths.getFileNameAsString(path).matches(fileNamePattern);
-		}, ecosystem);
+		}, ecosystem, transformFilePathToDirectory);
 	}
 
 	private void addEcosystemIfFilterMatches(
 			ChoreContext context,
 			Predicate<? super Path> predicate,
-			String ecosystem
+			String ecosystem,
+			Function<Path, Path> transformFilePathToDirectory
 	) {
 		context.textFiles()
 				.stream()
 				.filter(predicate)
 				.map(context::resolve)
+				.map(transformFilePathToDirectory)
 				.map(path -> getRootRelativePath(context.root(), path))
 				.distinct()
 				.forEach(rootRelativePath -> {

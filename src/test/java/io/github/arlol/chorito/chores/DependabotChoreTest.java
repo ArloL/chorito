@@ -354,4 +354,31 @@ public class DependabotChoreTest {
 				""");
 	}
 
+	@Test
+	public void testDevcontainerJson() throws Exception {
+		FilesSilent.touch(
+				extension.root().resolve(".devcontainer/devcontainer.json")
+		);
+
+		doit();
+
+		Path dependabot = extension.root().resolve(".github/dependabot.yml");
+		assertThat(dependabot).content().isEqualTo("""
+				version: 2
+				updates:
+				- package-ecosystem: "github-actions"
+				  directory: "/"
+				  schedule:
+				    interval: "monthly"
+				  cooldown:
+				    default-days: 7
+				- package-ecosystem: "devcontainers"
+				  directory: "/"
+				  schedule:
+				    interval: "monthly"
+				  cooldown:
+				    default-days: 7
+				""");
+	}
+
 }
