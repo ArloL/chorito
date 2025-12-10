@@ -3,11 +3,12 @@
 {
 	"name": "Java",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/java:3-17-bookworm",
+	"image": "mcr.microsoft.com/devcontainers/java:25-bookworm",
 
 	"features": {
-		"ghcr.io/devcontainers/features/java:1": {
-			"version": "none",
+		"ghcr.io/devcontainers/features/java:1.6.3": {
+			"version": "latest",
+			"jdkDistro": "graalce",
 			"installMaven": "true",
 			"installGradle": "false"
 		}
@@ -17,8 +18,9 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "java -version",
-	"postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
+	"postCreateCommand": "java -version",
+
+	// "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
 
 	// Configure tool-specific properties.
 	"customizations": {
