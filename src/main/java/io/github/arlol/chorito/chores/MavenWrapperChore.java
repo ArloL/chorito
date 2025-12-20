@@ -20,7 +20,7 @@ public class MavenWrapperChore implements Chore {
 	private static String DEFAULT_PROPERTIES = """
 			wrapperVersion=3.3.4
 			distributionType=bin
-			distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.11/apache-maven-3.9.11-bin.zip
+			distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.12/apache-maven-3.9.12-bin.zip
 			wrapperUrl=https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.3.4/maven-wrapper-3.3.4.jar
 			""";
 
@@ -42,7 +42,7 @@ public class MavenWrapperChore implements Chore {
 								"mvn",
 								"-N",
 								"wrapper:3.3.4:wrapper",
-								"-Dmaven=3.9.11",
+								"-Dmaven=3.9.12",
 								"-Dtype=bin"
 						)
 								.inheritIO()
@@ -64,7 +64,7 @@ public class MavenWrapperChore implements Chore {
 									"./mvnw",
 									"-N",
 									"wrapper:3.3.4:wrapper",
-									"-Dmaven=3.9.11",
+									"-Dmaven=3.9.12",
 									"-Dtype=bin"
 							)
 									.inheritIO()
