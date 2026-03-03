@@ -38,19 +38,29 @@ public class RenovateChoreTest {
 				.isEqualTo(
 						"""
 								{
-								  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-								  "extends": [
-								    "config:recommended"
-								  ],
-								  "labels": ["dependencies"],
-								  "addLabels": ["{{manager}}"],
-								  "minimumReleaseAge": "7 days",
-								  "schedule": ["on the 20th day of the month"],
-								  "vulnerabilityAlerts": {
-								    "schedule": ["at any time"],
-								    "minimumReleaseAge": "0 days",
-								    "addLabels": ["security"]
-								  }
+								    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+								    "extends": [
+								        "config:recommended",
+								    ],
+								    "labels": [
+								        "dependencies",
+								    ],
+								    "addLabels": [
+								        "{{manager}}",
+								    ],
+								    "minimumReleaseAge": "7 days",
+								    "schedule": [
+								        "on the 20th day of the month",
+								    ],
+								    "vulnerabilityAlerts": {
+								        "schedule": [
+								            "at any time",
+								        ],
+								        "minimumReleaseAge": "0 days",
+								        "addLabels": [
+								            "security",
+								        ],
+								    },
 								}
 								"""
 				);
@@ -109,19 +119,29 @@ public class RenovateChoreTest {
 				.isEqualTo(
 						"""
 								{
-								  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-								  "extends": [
-								    "config:recommended"
-								  ],
-								  "labels": ["dependencies"],
-								  "addLabels": ["{{manager}}"],
-								  "minimumReleaseAge": "7 days",
-								  "schedule": ["on the 20th day of the month"],
-								  "vulnerabilityAlerts": {
-								    "schedule": ["at any time"],
-								    "minimumReleaseAge": "0 days",
-								    "addLabels": ["security"]
-								  }
+								    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+								    "extends": [
+								        "config:recommended",
+								    ],
+								    "labels": [
+								        "dependencies",
+								    ],
+								    "addLabels": [
+								        "{{manager}}",
+								    ],
+								    "minimumReleaseAge": "7 days",
+								    "schedule": [
+								        "on the 20th day of the month",
+								    ],
+								    "vulnerabilityAlerts": {
+								        "schedule": [
+								            "at any time",
+								        ],
+								        "minimumReleaseAge": "0 days",
+								        "addLabels": [
+								            "security",
+								        ],
+								    },
 								}
 								"""
 				);
@@ -149,13 +169,17 @@ public class RenovateChoreTest {
 				.isEqualTo(
 						"""
 								{
-								  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-								  "extends": [
-								    "config:recommended"
-								  ],
-								  "labels": ["dependencies"],
-								  "addLabels": ["{{manager}}"],
-								  "minimumReleaseAge": "7 days"
+								    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+								    "extends": [
+								        "config:recommended",
+								    ],
+								    "minimumReleaseAge": "7 days",
+								    "labels": [
+								        "dependencies",
+								    ],
+								    "addLabels": [
+								        "{{manager}}",
+								    ],
 								}
 								"""
 				);
@@ -189,18 +213,26 @@ public class RenovateChoreTest {
 				.isEqualTo(
 						"""
 								{
-								  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-								  "extends": [
-								    "config:recommended"
-								  ],
-								  "labels": ["dependencies"],
-								  "addLabels": ["{{manager}}"],
-								  "minimumReleaseAge": "7 days",
-								  "vulnerabilityAlerts": {
-								    "schedule": ["at any time"],
-								    "minimumReleaseAge": "0 days",
-								    "addLabels": ["security"]
-								  }
+								    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+								    "extends": [
+								        "config:recommended",
+								    ],
+								    "labels": [
+								        "dependencies",
+								    ],
+								    "addLabels": [
+								        "{{manager}}",
+								    ],
+								    "minimumReleaseAge": "7 days",
+								    "vulnerabilityAlerts": {
+								        "schedule": [
+								            "at any time",
+								        ],
+								        "minimumReleaseAge": "0 days",
+								        "addLabels": [
+								            "security",
+								        ],
+								    },
 								}
 								"""
 				);
