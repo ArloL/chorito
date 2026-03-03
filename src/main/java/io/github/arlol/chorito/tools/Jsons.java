@@ -71,7 +71,7 @@ public abstract class Jsons {
 
 	public static JsonNode merge(JsonNode mainNode, JsonNode updateNode) {
 		if (mainNode instanceof ObjectNode mainObjectNode) {
-			updateNode.fields().forEachRemaining(entry -> {
+			updateNode.properties().forEach(entry -> {
 				String fieldName = entry.getKey();
 				JsonNode jsonNode = entry.getValue();
 				if (mainObjectNode.has(fieldName)) {
@@ -92,10 +92,8 @@ public abstract class Jsons {
 	public static JsonNode sortFields(JsonNode node) {
 		if (node instanceof ObjectNode objectNode) {
 			Map<String, JsonNode> sortedMap = new TreeMap<>();
-			objectNode.fields()
-					.forEachRemaining(
-							e -> sortedMap.put(e.getKey(), e.getValue())
-					);
+			objectNode.properties()
+					.forEach(e -> sortedMap.put(e.getKey(), e.getValue()));
 
 			ObjectNode sortedObjectNode = objectMapper().createObjectNode();
 			sortedMap.forEach(sortedObjectNode::set);
