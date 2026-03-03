@@ -30,6 +30,8 @@ public class RenovateChore implements Chore {
 							  "extends": [
 							    "config:recommended"
 							  ],
+							  "labels": ["dependencies"],
+							  "addLabels": ["{{manager}}"],
 							  "minimumReleaseAge": "7 days",
 							  "schedule": ["on the 20th day of the month"],
 							  "vulnerabilityAlerts": {
