@@ -36,7 +36,8 @@ public class RenovateChore implements Chore {
 							  "schedule": ["on the 20th day of the month"],
 							  "vulnerabilityAlerts": {
 							    "schedule": ["at any time"],
-							    "minimumReleaseAge": "0 days"
+							    "minimumReleaseAge": "0 days",
+							    "addLabels": ["security"]
 							  }
 							}
 							"""
