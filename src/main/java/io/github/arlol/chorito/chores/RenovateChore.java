@@ -1,68 +1,71 @@
 package io.github.arlol.chorito.chores;
 
 import java.nio.file.Path;
-import java.util.stream.Stream;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.Jsons;
 
 public class RenovateChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		Path renovateJson = context.resolve("renovate.json");
+		Path renovateJson5 = context.resolve("renovate.json5");
 		if (FilesSilent.exists(renovateJson)) {
-			var currentLines = FilesSilent.readAllLines(renovateJson);
-			boolean hasLabels = currentLines.stream()
-					.anyMatch(s -> s.contains("\"labels\""));
-			boolean hasSecurityLabel = currentLines.stream()
-					.anyMatch(s -> s.contains("\"addLabels\": [\"security\"]"));
-			var updatedLines = currentLines.stream().flatMap(s -> {
-				if (s.startsWith("  \"minimumReleaseAge\": \"4 days\",")) {
-					return Stream.of("  \"minimumReleaseAge\": \"7 days\",");
+			FilesSilent.move(renovateJson, renovateJson5);
+			context.setDirty();
+		}
+		if (FilesSilent.exists(renovateJson5)) {
+			var content = FilesSilent.readString(renovateJson5);
+			Jsons.parse(content).ifPresent(node -> {
+				if (!(node instanceof ObjectNode root)) {
+					return;
 				}
-				if (s.equals("  ],") && !hasLabels) {
-					return Stream.of(
-							s,
-							"  \"labels\": [\"dependencies\"],",
-							"  \"addLabels\": [\"{{manager}}\"],"
-					);
+
+				JsonNode releaseAge = root.get("minimumReleaseAge");
+				if (releaseAge != null
+						&& "4 days".equals(releaseAge.asText())) {
+					root.put("minimumReleaseAge", "7 days");
 				}
-				if (s.equals("    \"minimumReleaseAge\": \"0 days\"")
-						&& !hasSecurityLabel) {
-					return Stream.of(
-							"    \"minimumReleaseAge\": \"0 days\",",
-							"    \"addLabels\": [\"security\"]"
-					);
+
+				if (!root.has("labels")) {
+					root.putArray("labels").add("dependencies");
+					root.putArray("addLabels").add("{{manager}}");
 				}
-				return Stream.of(s);
-			}).toList();
-			if (!currentLines.equals(updatedLines)) {
-				FilesSilent.write(renovateJson, updatedLines, "\n");
-			}
+
+				JsonNode vulnAlerts = root.get("vulnerabilityAlerts");
+				if (vulnAlerts instanceof ObjectNode vulnNode
+						&& !vulnNode.has("addLabels")) {
+					vulnNode.putArray("addLabels").add("security");
+				}
+
+				var newContent = Jsons.asString(root);
+				if (!newContent.equalsIgnoreCase(content)) {
+					FilesSilent.writeString(renovateJson5, newContent);
+				}
+			});
 		} else if (context.remotes()
 				.stream()
 				.anyMatch(s -> s.startsWith("https://github.com"))) {
-			FilesSilent.writeString(
-					renovateJson,
-					"""
-							{
-							  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-							  "extends": [
-							    "config:recommended"
-							  ],
-							  "labels": ["dependencies"],
-							  "addLabels": ["{{manager}}"],
-							  "minimumReleaseAge": "7 days",
-							  "schedule": ["on the 20th day of the month"],
-							  "vulnerabilityAlerts": {
-							    "schedule": ["at any time"],
-							    "minimumReleaseAge": "0 days",
-							    "addLabels": ["security"]
-							  }
-							}
-							"""
+			ObjectNode root = Jsons.objectMapper().createObjectNode();
+			root.put(
+					"$schema",
+					"https://docs.renovatebot.com/renovate-schema.json"
 			);
+			root.putArray("extends").add("config:recommended");
+			root.putArray("labels").add("dependencies");
+			root.putArray("addLabels").add("{{manager}}");
+			root.put("minimumReleaseAge", "7 days");
+			root.putArray("schedule").add("on the 20th day of the month");
+			ObjectNode vulnAlerts = root.putObject("vulnerabilityAlerts");
+			vulnAlerts.putArray("schedule").add("at any time");
+			vulnAlerts.put("minimumReleaseAge", "0 days");
+			vulnAlerts.putArray("addLabels").add("security");
+			FilesSilent.writeString(renovateJson5, Jsons.asString(root));
 			context.setDirty();
 		}
 		return context;
