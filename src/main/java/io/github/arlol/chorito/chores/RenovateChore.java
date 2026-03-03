@@ -21,7 +21,9 @@ public class RenovateChore implements Chore {
 			if (!currentLines.equals(updatedLines)) {
 				FilesSilent.write(renovateJson, updatedLines, "\n");
 			}
-		} else {
+		} else if (context.remotes()
+				.stream()
+				.anyMatch(s -> s.startsWith("https://github.com"))) {
 			FilesSilent.writeString(
 					renovateJson,
 					"""
