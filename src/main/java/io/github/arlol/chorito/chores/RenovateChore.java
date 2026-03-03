@@ -1,6 +1,7 @@
 package io.github.arlol.chorito.chores;
 
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
@@ -12,11 +13,29 @@ public class RenovateChore implements Chore {
 		Path renovateJson = context.resolve("renovate.json");
 		if (FilesSilent.exists(renovateJson)) {
 			var currentLines = FilesSilent.readAllLines(renovateJson);
-			var updatedLines = currentLines.stream().map(s -> {
+			boolean hasLabels = currentLines.stream()
+					.anyMatch(s -> s.contains("\"labels\""));
+			boolean hasSecurityLabel = currentLines.stream()
+					.anyMatch(s -> s.contains("\"addLabels\": [\"security\"]"));
+			var updatedLines = currentLines.stream().flatMap(s -> {
 				if (s.startsWith("  \"minimumReleaseAge\": \"4 days\",")) {
-					return "  \"minimumReleaseAge\": \"7 days\",";
+					return Stream.of("  \"minimumReleaseAge\": \"7 days\",");
 				}
-				return s;
+				if (s.equals("  ],") && !hasLabels) {
+					return Stream.of(
+							s,
+							"  \"labels\": [\"dependencies\"],",
+							"  \"addLabels\": [\"{{manager}}\"],"
+					);
+				}
+				if (s.equals("    \"minimumReleaseAge\": \"0 days\"")
+						&& !hasSecurityLabel) {
+					return Stream.of(
+							"    \"minimumReleaseAge\": \"0 days\",",
+							"    \"addLabels\": [\"security\"]"
+					);
+				}
+				return Stream.of(s);
 			}).toList();
 			if (!currentLines.equals(updatedLines)) {
 				FilesSilent.write(renovateJson, updatedLines, "\n");
