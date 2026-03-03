@@ -36,11 +36,18 @@ public class LicenseChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		Path licenseMd = context.resolve("LICENSE.md");
 		Path license = context.resolve("LICENSE");
+
+		Path licenseMd = context.resolve("LICENSE.md");
 		if (FilesSilent.exists(licenseMd)) {
 			FilesSilent.move(licenseMd, license);
 		}
+
+		Path licenseTxt = context.resolve("LICENSE.txt");
+		if (FilesSilent.exists(licenseTxt)) {
+			FilesSilent.move(licenseTxt, license);
+		}
+
 		if (context.remotes()
 				.stream()
 				.anyMatch(s -> s.startsWith("https://github.com"))) {
