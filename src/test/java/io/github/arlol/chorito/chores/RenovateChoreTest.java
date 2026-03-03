@@ -30,11 +30,52 @@ public class RenovateChoreTest {
 	}
 
 	@Test
-	public void testCreatesRenovateJsonForGitHubRepo() throws Exception {
+	public void testRenamesRenovateJsonToRenovateJson5() throws Exception {
+		Path renovateJson = extension.root().resolve("renovate.json");
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
+		FilesSilent.writeString(
+				renovateJson,
+				"""
+						{
+						    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+						    "extends": [
+						        "config:recommended",
+						    ],
+						    "labels": [
+						        "dependencies",
+						    ],
+						    "addLabels": [
+						        "{{manager}}",
+						    ],
+						    "minimumReleaseAge": "7 days",
+						    "schedule": [
+						        "on the 20th day of the month",
+						    ],
+						    "vulnerabilityAlerts": {
+						        "schedule": [
+						            "at any time",
+						        ],
+						        "minimumReleaseAge": "0 days",
+						        "addLabels": [
+						            "security",
+						        ],
+						    },
+						}
+						"""
+		);
+
 		new RenovateChore().doit(githubContext());
 
-		Path renovateJson = extension.root().resolve("renovate.json");
-		assertThat(renovateJson).content()
+		assertThat(renovateJson).doesNotExist();
+		assertThat(renovateJson5).exists();
+	}
+
+	@Test
+	public void testCreatesRenovateJson5ForGitHubRepo() throws Exception {
+		new RenovateChore().doit(githubContext());
+
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
+		assertThat(renovateJson5).content()
 				.isEqualTo(
 						"""
 								{
@@ -67,7 +108,7 @@ public class RenovateChoreTest {
 	}
 
 	@Test
-	public void testDoesNotCreateRenovateJsonForNonGitHubRepo()
+	public void testDoesNotCreateRenovateJson5ForNonGitHubRepo()
 			throws Exception {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
@@ -76,24 +117,24 @@ public class RenovateChoreTest {
 
 		new RenovateChore().doit(context);
 
-		Path renovateJson = extension.root().resolve("renovate.json");
-		assertThat(renovateJson).doesNotExist();
+		assertThat(extension.root().resolve("renovate.json")).doesNotExist();
+		assertThat(extension.root().resolve("renovate.json5")).doesNotExist();
 	}
 
 	@Test
-	public void testDoesNotCreateRenovateJsonWithNoRemotes() throws Exception {
+	public void testDoesNotCreateRenovateJson5WithNoRemotes() throws Exception {
 		new RenovateChore().doit(extension.choreContext());
 
-		Path renovateJson = extension.root().resolve("renovate.json");
-		assertThat(renovateJson).doesNotExist();
+		assertThat(extension.root().resolve("renovate.json")).doesNotExist();
+		assertThat(extension.root().resolve("renovate.json5")).doesNotExist();
 	}
 
 	@Test
 	public void testUpdatesMinimumReleaseAgeFrom4DaysTo7Days()
 			throws Exception {
-		Path renovateJson = extension.root().resolve("renovate.json");
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
 		FilesSilent.writeString(
-				renovateJson,
+				renovateJson5,
 				"""
 						{
 						  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
@@ -115,7 +156,7 @@ public class RenovateChoreTest {
 
 		new RenovateChore().doit(githubContext());
 
-		assertThat(renovateJson).content()
+		assertThat(renovateJson5).content()
 				.isEqualTo(
 						"""
 								{
@@ -149,9 +190,9 @@ public class RenovateChoreTest {
 
 	@Test
 	public void testAddsLabelsWhenMissing() throws Exception {
-		Path renovateJson = extension.root().resolve("renovate.json");
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
 		FilesSilent.writeString(
-				renovateJson,
+				renovateJson5,
 				"""
 						{
 						  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
@@ -165,7 +206,7 @@ public class RenovateChoreTest {
 
 		new RenovateChore().doit(githubContext());
 
-		assertThat(renovateJson).content()
+		assertThat(renovateJson5).content()
 				.isEqualTo(
 						"""
 								{
@@ -187,9 +228,9 @@ public class RenovateChoreTest {
 
 	@Test
 	public void testAddsSecurityLabelToVulnerabilityAlerts() throws Exception {
-		Path renovateJson = extension.root().resolve("renovate.json");
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
 		FilesSilent.writeString(
-				renovateJson,
+				renovateJson5,
 				"""
 						{
 						  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
@@ -209,7 +250,7 @@ public class RenovateChoreTest {
 
 		new RenovateChore().doit(githubContext());
 
-		assertThat(renovateJson).content()
+		assertThat(renovateJson5).content()
 				.isEqualTo(
 						"""
 								{
@@ -240,68 +281,88 @@ public class RenovateChoreTest {
 
 	@Test
 	public void testDoesNotModifyAlreadyUpToDateFile() throws Exception {
-		Path renovateJson = extension.root().resolve("renovate.json");
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
 		String content = """
 				{
-				  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-				  "extends": [
-				    "config:recommended"
-				  ],
-				  "labels": ["dependencies"],
-				  "addLabels": ["{{manager}}"],
-				  "minimumReleaseAge": "7 days",
-				  "schedule": ["on the 20th day of the month"],
-				  "vulnerabilityAlerts": {
-				    "schedule": ["at any time"],
-				    "minimumReleaseAge": "0 days",
-				    "addLabels": ["security"]
-				  }
+				    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+				    "extends": [
+				        "config:recommended",
+				    ],
+				    "labels": [
+				        "dependencies",
+				    ],
+				    "addLabels": [
+				        "{{manager}}",
+				    ],
+				    "minimumReleaseAge": "7 days",
+				    "schedule": [
+				        "on the 20th day of the month",
+				    ],
+				    "vulnerabilityAlerts": {
+				        "schedule": [
+				            "at any time",
+				        ],
+				        "minimumReleaseAge": "0 days",
+				        "addLabels": [
+				            "security",
+				        ],
+				    },
 				}
 				""";
-		FilesSilent.writeString(renovateJson, content);
+		FilesSilent.writeString(renovateJson5, content);
 
 		new RenovateChore().doit(githubContext());
 
-		assertThat(renovateJson).content().isEqualTo(content);
+		assertThat(renovateJson5).content().isEqualTo(content);
 	}
 
 	@Test
 	public void testDoesNotAddLabelsWhenAlreadyPresent() throws Exception {
-		Path renovateJson = extension.root().resolve("renovate.json");
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
 		String content = """
 				{
-				  "labels": ["custom"],
-				  "addLabels": ["{{manager}}"],
-				  "minimumReleaseAge": "7 days"
+				    "labels": [
+				        "custom",
+				    ],
+				    "addLabels": [
+				        "{{manager}}",
+				    ],
+				    "minimumReleaseAge": "7 days",
 				}
 				""";
-		FilesSilent.writeString(renovateJson, content);
+		FilesSilent.writeString(renovateJson5, content);
 
 		new RenovateChore().doit(githubContext());
 
-		assertThat(renovateJson).content().isEqualTo(content);
+		assertThat(renovateJson5).content().isEqualTo(content);
 	}
 
 	@Test
 	public void testDoesNotAddSecurityLabelWhenAlreadyPresent()
 			throws Exception {
-		Path renovateJson = extension.root().resolve("renovate.json");
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
 		String content = """
 				{
-				  "labels": ["dependencies"],
-				  "addLabels": ["{{manager}}"],
-				  "minimumReleaseAge": "7 days",
-				  "vulnerabilityAlerts": {
-				    "minimumReleaseAge": "0 days",
-				    "addLabels": ["security"]
-				  }
+				    "labels": [
+				        "dependencies",
+				    ],
+				    "addLabels": [
+				        "{{manager}}",
+				    ],
+				    "minimumReleaseAge": "7 days",
+				    "vulnerabilityAlerts": {
+				        "minimumReleaseAge": "0 days",
+				        "addLabels": [
+				            "security",
+				        ],
+				    },
 				}
 				""";
-		FilesSilent.writeString(renovateJson, content);
+		FilesSilent.writeString(renovateJson5, content);
 
 		new RenovateChore().doit(githubContext());
 
-		assertThat(renovateJson).content().isEqualTo(content);
+		assertThat(renovateJson5).content().isEqualTo(content);
 	}
 
 }
