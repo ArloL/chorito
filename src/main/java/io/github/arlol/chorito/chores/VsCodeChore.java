@@ -48,7 +48,7 @@ public class VsCodeChore implements Chore {
 					? FilesSilent.readString(extensions)
 					: "";
 
-			var builder = extensionsContent == "" ? JsonBuilder.object()
+			var builder = extensionsContent.equals("") ? JsonBuilder.object()
 					: JsonBuilder.wrap(extensionsContent);
 
 			if (FilesSilent.anyChildExists(dir, "mvnw", "pom.xml")) {
