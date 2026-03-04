@@ -80,26 +80,26 @@ public class RenovateChoreTest {
 						"""
 								{
 								    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+								    "addLabels": [
+								        "{{manager}}",
+								    ],
 								    "extends": [
 								        "config:recommended",
 								    ],
 								    "labels": [
 								        "dependencies",
 								    ],
-								    "addLabels": [
-								        "{{manager}}",
-								    ],
 								    "minimumReleaseAge": "7 days",
 								    "schedule": [
 								        "on the 20th day of the month",
 								    ],
 								    "vulnerabilityAlerts": {
-								        "schedule": [
-								            "at any time",
-								        ],
-								        "minimumReleaseAge": "0 days",
 								        "addLabels": [
 								            "security",
+								        ],
+								        "minimumReleaseAge": "0 days",
+								        "schedule": [
+								            "at any time",
 								        ],
 								    },
 								}
@@ -161,26 +161,26 @@ public class RenovateChoreTest {
 						"""
 								{
 								    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+								    "addLabels": [
+								        "{{manager}}",
+								    ],
 								    "extends": [
 								        "config:recommended",
 								    ],
 								    "labels": [
 								        "dependencies",
 								    ],
-								    "addLabels": [
-								        "{{manager}}",
-								    ],
 								    "minimumReleaseAge": "7 days",
 								    "schedule": [
 								        "on the 20th day of the month",
 								    ],
 								    "vulnerabilityAlerts": {
-								        "schedule": [
-								            "at any time",
-								        ],
-								        "minimumReleaseAge": "0 days",
 								        "addLabels": [
 								            "security",
+								        ],
+								        "minimumReleaseAge": "0 days",
+								        "schedule": [
+								            "at any time",
 								        ],
 								    },
 								}
@@ -211,16 +211,16 @@ public class RenovateChoreTest {
 						"""
 								{
 								    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-								    "extends": [
-								        "config:recommended",
-								    ],
-								    "minimumReleaseAge": "7 days",
-								    "labels": [
-								        "dependencies",
-								    ],
 								    "addLabels": [
 								        "{{manager}}",
 								    ],
+								    "extends": [
+								        "config:recommended",
+								    ],
+								    "labels": [
+								        "dependencies",
+								    ],
+								    "minimumReleaseAge": "7 days",
 								}
 								"""
 				);
@@ -255,23 +255,23 @@ public class RenovateChoreTest {
 						"""
 								{
 								    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+								    "addLabels": [
+								        "{{manager}}",
+								    ],
 								    "extends": [
 								        "config:recommended",
 								    ],
 								    "labels": [
 								        "dependencies",
 								    ],
-								    "addLabels": [
-								        "{{manager}}",
-								    ],
 								    "minimumReleaseAge": "7 days",
 								    "vulnerabilityAlerts": {
-								        "schedule": [
-								            "at any time",
-								        ],
-								        "minimumReleaseAge": "0 days",
 								        "addLabels": [
 								            "security",
+								        ],
+								        "minimumReleaseAge": "0 days",
+								        "schedule": [
+								            "at any time",
 								        ],
 								    },
 								}
@@ -285,26 +285,26 @@ public class RenovateChoreTest {
 		String content = """
 				{
 				    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+				    "addLabels": [
+				        "{{manager}}",
+				    ],
 				    "extends": [
 				        "config:recommended",
 				    ],
 				    "labels": [
 				        "dependencies",
 				    ],
-				    "addLabels": [
-				        "{{manager}}",
-				    ],
 				    "minimumReleaseAge": "7 days",
 				    "schedule": [
 				        "on the 20th day of the month",
 				    ],
 				    "vulnerabilityAlerts": {
-				        "schedule": [
-				            "at any time",
-				        ],
-				        "minimumReleaseAge": "0 days",
 				        "addLabels": [
 				            "security",
+				        ],
+				        "minimumReleaseAge": "0 days",
+				        "schedule": [
+				            "at any time",
 				        ],
 				    },
 				}
@@ -321,11 +321,11 @@ public class RenovateChoreTest {
 		Path renovateJson5 = extension.root().resolve("renovate.json5");
 		String content = """
 				{
-				    "labels": [
-				        "custom",
-				    ],
 				    "addLabels": [
 				        "{{manager}}",
+				    ],
+				    "labels": [
+				        "custom",
 				    ],
 				    "minimumReleaseAge": "7 days",
 				}
@@ -343,18 +343,18 @@ public class RenovateChoreTest {
 		Path renovateJson5 = extension.root().resolve("renovate.json5");
 		String content = """
 				{
-				    "labels": [
-				        "dependencies",
-				    ],
 				    "addLabels": [
 				        "{{manager}}",
 				    ],
+				    "labels": [
+				        "dependencies",
+				    ],
 				    "minimumReleaseAge": "7 days",
 				    "vulnerabilityAlerts": {
-				        "minimumReleaseAge": "0 days",
 				        "addLabels": [
 				            "security",
 				        ],
+				        "minimumReleaseAge": "0 days",
 				    },
 				}
 				""";
