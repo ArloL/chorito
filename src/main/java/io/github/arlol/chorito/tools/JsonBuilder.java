@@ -109,10 +109,6 @@ public final class JsonBuilder {
 				.toList();
 	}
 
-	public ObjectNode toNode() {
-		return node;
-	}
-
 	public String asString() {
 		return Jsons.asString(Jsons.sortFields(node));
 	}
