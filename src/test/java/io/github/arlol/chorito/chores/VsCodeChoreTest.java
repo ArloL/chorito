@@ -68,11 +68,11 @@ public class VsCodeChoreTest {
 						"""
 								{
 								    "[java]": {
-								        "editor.foldingImportsByDefault": true,
-								        "editor.formatOnSave": true,
 								        "editor.codeActionsOnSave": {
 								            "source.organizeImports": "always",
 								        },
+								        "editor.foldingImportsByDefault": true,
+								        "editor.formatOnSave": true,
 								    },
 								    "java.compile.nullAnalysis.mode": "automatic",
 								    "java.compile.nullAnalysis.nonnull": [
@@ -167,11 +167,11 @@ public class VsCodeChoreTest {
 						"""
 								{
 								    "[java]": {
-								        "editor.foldingImportsByDefault": true,
-								        "editor.formatOnSave": true,
 								        "editor.codeActionsOnSave": {
 								            "source.organizeImports": "always",
 								        },
+								        "editor.foldingImportsByDefault": true,
+								        "editor.formatOnSave": true,
 								    },
 								    "java.compile.nullAnalysis.mode": "automatic",
 								    "java.compile.nullAnalysis.nonnull": [
@@ -279,11 +279,11 @@ public class VsCodeChoreTest {
 						"""
 								{
 								    "[java]": {
-								        "editor.foldingImportsByDefault": true,
-								        "editor.formatOnSave": true,
 								        "editor.codeActionsOnSave": {
 								            "source.organizeImports": "always",
 								        },
+								        "editor.foldingImportsByDefault": true,
+								        "editor.formatOnSave": true,
 								    },
 								    "java.compile.nullAnalysis.mode": "automatic",
 								    "java.compile.nullAnalysis.nonnull": [
