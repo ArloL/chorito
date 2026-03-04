@@ -93,7 +93,10 @@ public abstract class Jsons {
 		if (node instanceof ObjectNode objectNode) {
 			Map<String, JsonNode> sortedMap = new TreeMap<>();
 			objectNode.properties()
-					.forEach(e -> sortedMap.put(e.getKey(), e.getValue()));
+					.forEach(
+							e -> sortedMap
+									.put(e.getKey(), sortFields(e.getValue()))
+					);
 
 			ObjectNode sortedObjectNode = objectMapper().createObjectNode();
 			sortedMap.forEach(sortedObjectNode::set);
