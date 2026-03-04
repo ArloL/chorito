@@ -49,7 +49,7 @@ public class VsCodeChore implements Chore {
 					: "";
 
 			var builder = extensionsContent == "" ? JsonBuilder.object()
-					: JsonBuilder.wrap("");
+					: JsonBuilder.wrap(extensionsContent);
 
 			if (FilesSilent.anyChildExists(dir, "mvnw", "pom.xml")) {
 				builder.arrayAdd("recommendations", "vscjava.vscode-java-pack");
