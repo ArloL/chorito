@@ -22,7 +22,7 @@ public class DockerIgnoreChoreTest {
 
 			/target/
 
-			# Add custom ignores after this line to be preserved during automated updates
+			# Add custom entries after this line to be preserved during automated updates
 			""";
 	private static final String DEFAULT_GRADLE = """
 			### Docker ###
@@ -35,7 +35,7 @@ public class DockerIgnoreChoreTest {
 			/build/
 			/.gradle/
 
-			# Add custom ignores after this line to be preserved during automated updates
+			# Add custom entries after this line to be preserved during automated updates
 			""";
 	private static final String OLD_MAVEN = """
 			# Created by chorito https://github.com/ArloL/chorito
@@ -138,7 +138,7 @@ public class DockerIgnoreChoreTest {
 								.dockerignore
 								compose.yaml
 
-								# Add custom ignores after this line to be preserved during automated updates
+								# Add custom entries after this line to be preserved during automated updates
 								"""
 				);
 	}
@@ -168,7 +168,7 @@ public class DockerIgnoreChoreTest {
 								docker-compose.yml
 								docker-compose.yaml
 
-								# Add custom ignores after this line to be preserved during automated updates
+								# Add custom entries after this line to be preserved during automated updates
 								"""
 				);
 	}

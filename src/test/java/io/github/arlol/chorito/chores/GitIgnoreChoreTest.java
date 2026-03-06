@@ -22,7 +22,7 @@ public class GitIgnoreChoreTest {
 			!/org.eclipse.jdt.core.prefs
 			!/org.eclipse.jdt.ui.prefs
 
-			# Add custom ignores after this line to be preserved during automated updates
+			# Add custom entries after this line to be preserved during automated updates
 			""";
 
 	private static String DEFAULT_POM_XML = """
@@ -45,7 +45,7 @@ public class GitIgnoreChoreTest {
 			/target/
 			/.flattened-pom.xml
 
-			# Add custom ignores after this line to be preserved during automated updates
+			# Add custom entries after this line to be preserved during automated updates
 			""";
 
 	private static String DEFAULT_BUILD_GRADLE = """
@@ -68,7 +68,7 @@ public class GitIgnoreChoreTest {
 			/.gradle/
 			/build/
 
-			# Add custom ignores after this line to be preserved during automated updates
+			# Add custom entries after this line to be preserved during automated updates
 			""";
 
 	private static String DEFAULT_IDEA = """
@@ -83,7 +83,7 @@ public class GitIgnoreChoreTest {
 			!/codeStyles/codeStyleConfig.xml
 			!/codeStyles/Project.xml
 
-			# Add custom ignores after this line to be preserved during automated updates
+			# Add custom entries after this line to be preserved during automated updates
 			""";
 
 	private static String OLD_POM_XML = """
@@ -108,7 +108,7 @@ public class GitIgnoreChoreTest {
 			/target/
 			/.flattened-pom.xml
 
-			# Add custom ignores after this line to be preserved during automated updates
+			# Add custom entries after this line to be preserved during automated updates
 			""";
 
 	@RegisterExtension
@@ -180,7 +180,7 @@ public class GitIgnoreChoreTest {
 								!/org.eclipse.jdt.core.prefs
 								!/org.eclipse.jdt.ui.prefs
 
-								# Add custom ignores after this line to be preserved during automated updates
+								# Add custom entries after this line to be preserved during automated updates
 								"""
 				);
 	}
@@ -205,7 +205,7 @@ public class GitIgnoreChoreTest {
 								!extensions.json
 								!*.code-snippets
 
-								# Add custom ignores after this line to be preserved during automated updates
+								# Add custom entries after this line to be preserved during automated updates
 								"""
 				);
 	}
