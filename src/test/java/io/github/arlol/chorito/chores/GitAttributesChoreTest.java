@@ -15,7 +15,7 @@ public class GitAttributesChoreTest {
 
 	private static final String DEFAULT_GITATTRIBUTES = """
 			# See https://git-scm.com/docs/gitattributes for more about gitattributes files.
-				
+
 			*        text=auto eol=lf
 			*.bat    text      eol=crlf
 			*.cmd    text      eol=crlf
@@ -77,18 +77,21 @@ public class GitAttributesChoreTest {
 		);
 		doit();
 		assertThat(FilesSilent.exists(gitattributes)).isTrue();
-		assertThat(gitattributes).content().isEqualTo("""
-				# See https://git-scm.com/docs/gitattributes for more about gitattributes files.
-				
-				*        text=auto eol=lf
-				*.bat    text      eol=crlf
-				*.cmd    text      eol=crlf
-				*.ps1    text      eol=crlf
-				*.sh     text      eol=lf
+		assertThat(gitattributes).content()
+				.isEqualTo(
+						"""
+								# See https://git-scm.com/docs/gitattributes for more about gitattributes files.
 
-				# Add custom entries after this line to be preserved during automated updates
-				*.sql  text      eol=lf
-				""");
+								*        text=auto eol=lf
+								*.bat    text      eol=crlf
+								*.cmd    text      eol=crlf
+								*.ps1    text      eol=crlf
+								*.sh     text      eol=lf
+
+								# Add custom entries after this line to be preserved during automated updates
+								*.sql  text      eol=lf
+								"""
+				);
 	}
 
 	@Test

@@ -9,7 +9,7 @@ public class GitAttributesChore implements Chore {
 
 	private static final String GITATTRIBUTES = """
 			# See https://git-scm.com/docs/gitattributes for more about gitattributes files.
-				
+
 			*        text=auto eol=lf
 			*.bat    text      eol=crlf
 			*.cmd    text      eol=crlf

@@ -45,14 +45,9 @@ public class ExistingFileUpdaterTest {
 
 	@Test
 	public void testWithCurrentSuffix() {
-		FilesSilent.write(
-				target(),
-				List.of(SUFFIX, "custom content"),
-				"\n"
-		);
+		FilesSilent.write(target(), List.of(SUFFIX, "custom content"), "\n");
 		ExistingFileUpdater.update(target(), CONTENT);
-		assertThat(target()).content()
-				.isEqualTo(DEFAULT + "custom content\n");
+		assertThat(target()).content().isEqualTo(DEFAULT + "custom content\n");
 	}
 
 	@Test
@@ -73,8 +68,7 @@ public class ExistingFileUpdaterTest {
 				"\n"
 		);
 		ExistingFileUpdater.update(target(), CONTENT);
-		assertThat(target()).content()
-				.isEqualTo(DEFAULT + "custom content\n");
+		assertThat(target()).content().isEqualTo(DEFAULT + "custom content\n");
 	}
 
 	@Test
@@ -88,8 +82,7 @@ public class ExistingFileUpdaterTest {
 				"\n"
 		);
 		ExistingFileUpdater.update(target(), CONTENT);
-		assertThat(target()).content()
-				.isEqualTo(DEFAULT + "custom content\n");
+		assertThat(target()).content().isEqualTo(DEFAULT + "custom content\n");
 	}
 
 	@Test
@@ -103,8 +96,7 @@ public class ExistingFileUpdaterTest {
 				"\n"
 		);
 		ExistingFileUpdater.update(target(), CONTENT);
-		assertThat(target()).content()
-				.isEqualTo(DEFAULT + "custom content\n");
+		assertThat(target()).content().isEqualTo(DEFAULT + "custom content\n");
 	}
 
 }
