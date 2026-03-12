@@ -86,6 +86,14 @@ public class GitIgnoreChoreTest {
 			# Add custom entries after this line to be preserved during automated updates
 			""";
 
+	private static String DEFAULT_PYPROJECT_TOML = """
+			### Python ###
+
+			__pycache__/
+
+			# Add custom entries after this line to be preserved during automated updates
+			""";
+
 	private static String OLD_POM_XML = """
 			# Created by chorito https://github.com/ArloL/chorito
 
@@ -123,6 +131,26 @@ public class GitIgnoreChoreTest {
 		Path gitignore = extension.root().resolve(".gitignore");
 		doit();
 		assertThat(FilesSilent.exists(gitignore)).isFalse();
+	}
+
+	@Test
+	public void testWithPyprojectToml() throws Exception {
+		FilesSilent.touch(extension.root().resolve("pyproject.toml"));
+
+		doit();
+
+		Path gitignore = extension.root().resolve(".gitignore");
+		assertThat(gitignore).content().isEqualTo(DEFAULT_PYPROJECT_TOML);
+	}
+
+	@Test
+	public void testWithNestedPyprojectToml() throws Exception {
+		FilesSilent.touch(extension.root().resolve("a/nested/pyproject.toml"));
+
+		doit();
+
+		assertThat(extension.root().resolve("a/nested/.gitignore")).content()
+				.isEqualTo(DEFAULT_PYPROJECT_TOML);
 	}
 
 	@Test
