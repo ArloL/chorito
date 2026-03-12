@@ -97,6 +97,13 @@ public final class DirectoryStreams {
 		}).filter(dir -> withCode(context, dir));
 	}
 
+	public static Stream<Path> pyprojectTomlDirs(ChoreContext context) {
+		return context.textFiles()
+				.stream()
+				.filter(file -> file.endsWith("pyproject.toml"))
+				.map(MyPaths::getParent);
+	}
+
 	public static Stream<Path> packageJsonDirs(ChoreContext context) {
 		return context.textFiles()
 				.stream()

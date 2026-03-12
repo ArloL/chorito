@@ -93,6 +93,12 @@ public class GitIgnoreChore implements Chore {
 			!*.code-snippets
 			""";
 
+	private static String GITIGNORE_PYTHON = """
+			### Python ###
+
+			__pycache__/
+			""";
+
 	private static String GITIGNORE_PACKAGE_JSON = """
 			/node_modules/
 			""";
@@ -114,6 +120,7 @@ public class GitIgnoreChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
+		createPythonIgnore(context);
 		createPackageJsonIgnore(context);
 		createYarnIgnore(context);
 		createMavenAndGradleIgnore(context);
@@ -130,6 +137,16 @@ public class GitIgnoreChore implements Chore {
 			String newGitignoreContent
 	) {
 		ExistingFileUpdater.update(gitignore, newGitignoreContent);
+	}
+
+	private void createPythonIgnore(ChoreContext context) {
+		DirectoryStreams.pyprojectTomlDirs(context).forEach(dir -> {
+			String newGitignoreContent = GITIGNORE_PYTHON;
+			updateExistingGitignore(
+					dir.resolve(".gitignore"),
+					newGitignoreContent
+			);
+		});
 	}
 
 	private void createPackageJsonIgnore(ChoreContext context) {
