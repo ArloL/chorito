@@ -39,6 +39,7 @@ public class DependabotChore implements Chore {
 		dependabotConfigFile.addEcosystemInDirectory("github-actions", "/");
 		addEcosystemIfFileNameMatches("(?i).*dockerfile", "docker", context);
 		addEcosystemIfFileExists("Pipfile", "pip", context);
+		addEcosystemIfFileExists("pyproject.toml", "pip", context);
 		addEcosystemIfFileExists("package.json", "npm", context);
 		addEcosystemIfFileExists("build.gradle", "gradle", context);
 		addEcosystemIfFileExists(".terraform.lock.hcl", "terraform", context);

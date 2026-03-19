@@ -355,6 +355,31 @@ public class DependabotChoreTest {
 	}
 
 	@Test
+	public void testPyprojectToml() throws Exception {
+		FilesSilent.touch(extension.root().resolve("pyproject.toml"));
+
+		doit();
+
+		Path dependabot = extension.root().resolve(".github/dependabot.yml");
+		assertThat(dependabot).content().isEqualTo("""
+				version: 2
+				updates:
+				- package-ecosystem: "github-actions"
+				  directory: "/"
+				  schedule:
+				    interval: "monthly"
+				  cooldown:
+				    default-days: 7
+				- package-ecosystem: "pip"
+				  directory: "/"
+				  schedule:
+				    interval: "monthly"
+				  cooldown:
+				    default-days: 7
+				""");
+	}
+
+	@Test
 	public void testDevcontainerJson() throws Exception {
 		FilesSilent.touch(
 				extension.root().resolve(".devcontainer/devcontainer.json")
