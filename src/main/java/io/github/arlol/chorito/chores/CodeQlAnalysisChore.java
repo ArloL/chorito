@@ -40,7 +40,10 @@ public class CodeQlAnalysisChore implements Chore {
 		}
 		if (context.textFiles()
 				.stream()
-				.anyMatch(path -> path.endsWith("Pipfile") || path.endsWith("pyproject.toml"))) {
+				.anyMatch(
+						path -> path.endsWith("Pipfile")
+								|| path.endsWith("pyproject.toml")
+				)) {
 			languages.add("python");
 		}
 		Path workflowsLocation = context.resolve(".github/workflows");
