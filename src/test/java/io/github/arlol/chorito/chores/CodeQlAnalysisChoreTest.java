@@ -103,6 +103,28 @@ public class CodeQlAnalysisChoreTest {
 	}
 
 	@Test
+	public void testPython() throws Exception {
+		FilesSilent.touch(extension.root().resolve("pyproject.toml"));
+
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		Path workflow = context
+				.resolve(".github/workflows/codeql-analysis.yaml");
+
+		new CodeQlAnalysisChore().doit(context);
+
+		assertThat(removeVersions(FilesSilent.readString(workflow))).isEqualTo(
+				removeVersions(
+						ClassPathFiles.readString("codeql/python-expected.yaml")
+				)
+		);
+	}
+
+	@Test
 	public void testActions() throws Exception {
 		FilesSilent
 				.touch(extension.root().resolve(".github/workflows/main.yaml"));
