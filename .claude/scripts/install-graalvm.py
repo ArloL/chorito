@@ -8,10 +8,7 @@ import tarfile
 import tempfile
 import urllib.request
 
-TOOL_VERSIONS = os.path.join(
-    os.environ.get("CLAUDE_PROJECT_DIR", os.path.join(os.path.dirname(__file__), "..", "..")),
-    ".tool-versions",
-)
+TOOL_VERSIONS = os.path.join(os.environ["CLAUDE_PROJECT_DIR"], ".tool-versions")
 
 # Parse: "java graalvm-community-25.0.2"
 java_version = None

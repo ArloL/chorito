@@ -9,10 +9,7 @@ import tempfile
 
 CA_BUNDLE = "/etc/ssl/certs/ca-certificates.crt"
 
-TOOL_VERSIONS = os.path.join(
-    os.environ.get("CLAUDE_PROJECT_DIR", os.path.join(os.path.dirname(__file__), "..", "..")),
-    ".tool-versions",
-)
+TOOL_VERSIONS = os.path.join(os.environ["CLAUDE_PROJECT_DIR"], ".tool-versions")
 
 java_version = None
 with open(TOOL_VERSIONS) as f:
