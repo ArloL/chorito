@@ -9,24 +9,7 @@ import tempfile
 
 CA_BUNDLE = "/etc/ssl/certs/ca-certificates.crt"
 
-TOOL_VERSIONS = os.path.join(os.environ["CLAUDE_PROJECT_DIR"], ".tool-versions")
-
-java_version = None
-with open(TOOL_VERSIONS) as f:
-    for line in f:
-        parts = line.split()
-        if len(parts) == 2 and parts[0] == "java":
-            java_version = parts[1]
-            break
-
-if not java_version:
-    print(f"ERROR: no java entry found in {TOOL_VERSIONS}", file=sys.stderr)
-    sys.exit(1)
-
-java_home = os.path.join(
-    os.path.expanduser("~"),
-    ".local", "share", "mise", "installs", "java", java_version,
-)
+java_home = os.environ["JAVA_HOME"]
 keytool = os.path.join(java_home, "bin", "keytool")
 cacerts = os.path.join(java_home, "lib", "security", "cacerts")
 
