@@ -22,10 +22,7 @@ public final class JsonMigrations {
 		return builder -> builder.ifAbsent(key, body);
 	}
 
-	public static JsonMigration whenObject(
-			String key,
-			JsonMigration... inner
-	) {
+	public static JsonMigration whenObject(String key, JsonMigration... inner) {
 		return builder -> builder.ifObjectPresent(key, sub -> {
 			for (JsonMigration m : inner) {
 				m.apply(sub);
