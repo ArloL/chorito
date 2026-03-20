@@ -2,7 +2,6 @@
 """Import system CA certs into the GraalVM JDK truststore."""
 
 import os
-import re
 import subprocess
 import sys
 import tempfile
@@ -25,31 +24,35 @@ if already_imported:
     print("System CA certs already imported, skipping.")
     sys.exit(0)
 
-with open(CA_BUNDLE) as f:
-    content = f.read()
+with tempfile.TemporaryDirectory() as tmpdir:
+    p12 = os.path.join(tmpdir, "system-ca.p12")
 
-certs = re.findall(
-    r"-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----",
-    content,
-    re.DOTALL,
-)
+    # Convert PEM bundle to PKCS12 in two openssl calls
+    crl2pkcs7 = subprocess.run(
+        ["openssl", "crl2pkcs7", "-nocrl", "-certfile", CA_BUNDLE],
+        capture_output=True,
+        check=True,
+    )
+    subprocess.run(
+        ["openssl", "pkcs12", "-export", "-nokeys", "-out", p12, "-password", "pass:changeit"],
+        input=crl2pkcs7.stdout,
+        capture_output=True,
+        check=True,
+    )
 
-imported = 0
-for i, cert in enumerate(certs):
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".pem", delete=False) as f:
-        f.write(cert)
-        tmpfile = f.name
     result = subprocess.run(
         [
-            keytool, "-importcert", "-trustcacerts", "-noprompt",
-            "-keystore", cacerts, "-storepass", "changeit",
-            "-alias", f"system-ca-{i}", "-file", tmpfile,
+            keytool, "-importkeystore",
+            "-srckeystore", p12, "-srcstoretype", "PKCS12", "-srcstorepass", "changeit",
+            "-destkeystore", cacerts, "-deststorepass", "changeit",
+            "-noprompt",
         ],
         capture_output=True,
         text=True,
     )
-    os.unlink(tmpfile)
-    if result.returncode == 0:
-        imported += 1
 
-print(f"Imported {imported} of {len(certs)} system CA certs into JVM truststore")
+# keytool prints import counts to stderr
+output = result.stderr + result.stdout
+print(output.strip() if output.strip() else "Import complete")
+if result.returncode != 0:
+    sys.exit(result.returncode)
