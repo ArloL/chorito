@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.StreamSupport;
 
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -107,6 +108,14 @@ public final class JsonBuilder {
 				.filter(JsonNode::isTextual)
 				.map(JsonNode::asText)
 				.toList();
+	}
+
+	public JsonBuilder apply(List<JsonMigration> migrations) {
+		JsonBuilder current = this;
+		for (JsonMigration m : migrations) {
+			current = m.apply(current);
+		}
+		return current;
 	}
 
 	public String asString() {

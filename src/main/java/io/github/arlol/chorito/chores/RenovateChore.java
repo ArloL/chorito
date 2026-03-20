@@ -1,12 +1,31 @@
 package io.github.arlol.chorito.chores;
 
+import static io.github.arlol.chorito.tools.JsonMigrations.ifAbsent;
+import static io.github.arlol.chorito.tools.JsonMigrations.replaceString;
+import static io.github.arlol.chorito.tools.JsonMigrations.whenObject;
+
 import java.nio.file.Path;
+import java.util.List;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.JsonBuilder;
+import io.github.arlol.chorito.tools.JsonMigration;
 
 public class RenovateChore implements Chore {
+
+	static final List<JsonMigration> MIGRATIONS = List.of(
+			replaceString("minimumReleaseAge", "4 days", "7 days"),
+			ifAbsent(
+					"labels",
+					root -> root.array("labels", "dependencies")
+							.array("addLabels", "{{manager}}")
+			),
+			whenObject(
+					"vulnerabilityAlerts",
+					ifAbsent("addLabels", a -> a.array("addLabels", "security"))
+			)
+	);
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
@@ -19,19 +38,7 @@ public class RenovateChore implements Chore {
 		if (FilesSilent.exists(renovateJson5)) {
 			var content = FilesSilent.readString(renovateJson5);
 			var newContent = JsonBuilder.wrap(content)
-					.migrateString("minimumReleaseAge", "4 days", "7 days")
-					.ifAbsent(
-							"labels",
-							root -> root.array("labels", "dependencies")
-									.array("addLabels", "{{manager}}")
-					)
-					.ifObjectPresent(
-							"vulnerabilityAlerts",
-							v -> v.ifAbsent(
-									"addLabels",
-									a -> a.array("addLabels", "security")
-							)
-					)
+					.apply(MIGRATIONS)
 					.asString();
 			if (!newContent.equalsIgnoreCase(content)) {
 				FilesSilent.writeString(renovateJson5, newContent);
