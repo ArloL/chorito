@@ -8,9 +8,11 @@ fi
 
 SCRIPTS_DIR="${CLAUDE_PROJECT_DIR}/.claude/scripts"
 
+export JAVA_HOME="${HOME}/.local/share/java/graalvm-community"
+echo "export JAVA_HOME=${JAVA_HOME}" >> "${CLAUDE_ENV_FILE}"
+
 echo "Installing Java..."
-JAVA_HOME=$(python3 "${SCRIPTS_DIR}/install-graalvm.py")
-export JAVA_HOME
+python3 "${SCRIPTS_DIR}/install-graalvm.py"
 
 echo "Importing system CA certs into JVM truststore..."
 python3 "${SCRIPTS_DIR}/import-cacerts.py"
