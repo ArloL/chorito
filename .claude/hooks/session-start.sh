@@ -28,4 +28,6 @@ python3 "${SCRIPTS_DIR}/install-graalvm.py"
 echo "Importing system CA certs into JVM truststore..."
 python3 "${SCRIPTS_DIR}/import-cacerts.py"
 
+echo "export JAVA_TOOL_OPTIONS=\"\${JAVA_TOOL_OPTIONS} -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts\"" >> "${CLAUDE_ENV_FILE}"
+
 echo "export X_CLAUDE_CODE_CONTAINER_INITIALIZED=1" >> "${CLAUDE_ENV_FILE}"
