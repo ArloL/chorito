@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Install GraalVM CE into the mise Java installs directory."""
+"""Install GraalVM CE into the mise Java installs directory.
+
+Prints the JAVA_HOME path to stdout; all other output goes to stderr.
+"""
 
 import os
 import shutil
@@ -40,29 +43,36 @@ install_dir = os.path.join(
 )
 
 if os.path.isdir(install_dir):
-    print(f"GraalVM CE {java_version} already installed at {install_dir}")
-    sys.exit(0)
+    print(f"GraalVM CE {java_version} already installed at {install_dir}", file=sys.stderr)
+else:
+    print(f"Downloading GraalVM CE from {graalvm_url} ...", file=sys.stderr)
+    with tempfile.TemporaryDirectory() as tmp:
+        archive = os.path.join(tmp, graalvm_file)
+        urllib.request.urlretrieve(graalvm_url, archive)
 
-print(f"Downloading GraalVM CE from {graalvm_url} ...")
-with tempfile.TemporaryDirectory() as tmp:
-    archive = os.path.join(tmp, graalvm_file)
-    urllib.request.urlretrieve(graalvm_url, archive)
+        print("Extracting...", file=sys.stderr)
+        with tarfile.open(archive, "r:gz") as tf:
+            tf.extractall(tmp)
 
-    print("Extracting...")
-    with tarfile.open(archive, "r:gz") as tf:
-        tf.extractall(tmp)
+        # The extracted directory name includes a build suffix we don't know upfront,
+        # e.g. graalvm-community-openjdk-25.0.2+10.1 — find it by listing tmp.
+        candidates = [
+            d for d in os.listdir(tmp)
+            if os.path.isdir(os.path.join(tmp, d))
+        ]
+        if len(candidates) != 1:
+            print(f"ERROR: expected one extracted dir in {tmp}, found: {candidates}", file=sys.stderr)
+            sys.exit(1)
 
-    # The extracted directory name includes a build suffix we don't know upfront,
-    # e.g. graalvm-community-openjdk-25.0.2+10.1 — find it by listing tmp.
-    candidates = [
-        d for d in os.listdir(tmp)
-        if os.path.isdir(os.path.join(tmp, d)) and d != archive
-    ]
-    if len(candidates) != 1:
-        print(f"ERROR: expected one extracted dir in {tmp}, found: {candidates}", file=sys.stderr)
-        sys.exit(1)
+        os.makedirs(os.path.dirname(install_dir), exist_ok=True)
+        shutil.move(os.path.join(tmp, candidates[0]), install_dir)
+        print(f"GraalVM CE {java_version} installed to {install_dir}", file=sys.stderr)
 
-    os.makedirs(os.path.dirname(install_dir), exist_ok=True)
-    shutil.move(os.path.join(tmp, candidates[0]), install_dir)
+# Write JAVA_HOME to CLAUDE_ENV_FILE for future hook invocations / subshells
+claude_env_file = os.environ.get("CLAUDE_ENV_FILE")
+if claude_env_file:
+    with open(claude_env_file, "a") as f:
+        f.write(f"export JAVA_HOME={install_dir}\n")
 
-print(f"GraalVM CE {java_version} installed to {install_dir}")
+# Print the path to stdout so the hook can export it for the current session
+print(install_dir)
