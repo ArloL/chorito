@@ -17,50 +17,71 @@ if ! command -v mise &>/dev/null && ! [ -x "$HOME/.local/bin/mise" ]; then
 fi
 echo 'eval "$(~/.local/bin/mise activate bash)"' >> "${CLAUDE_ENV_FILE}"
 
-echo "Setting up Maven proxy..."
+echo "Installing Java via mise..."
+# mise-java.jdx.dev is blocked in this environment; install GraalVM CE manually from GitHub
+JAVA_VERSION="graalvm-community-25.0.2"
+JAVA_INSTALL_DIR="$HOME/.local/share/mise/installs/java/${JAVA_VERSION}"
+if [ ! -d "$JAVA_INSTALL_DIR" ]; then
+    GRAALVM_TAG="jdk-25.0.2"
+    GRAALVM_FILE="graalvm-community-jdk-25.0.2_linux-x64_bin.tar.gz"
+    GRAALVM_URL="https://github.com/graalvm/graalvm-ce-builds/releases/download/${GRAALVM_TAG}/${GRAALVM_FILE}"
+    echo "Downloading GraalVM CE 25.0.2 from GitHub..."
+    curl -fL --progress-bar "$GRAALVM_URL" -o /tmp/graalvm-ce-25.tar.gz
+    mkdir -p "$HOME/.local/share/mise/installs/java"
+    tar -xzf /tmp/graalvm-ce-25.tar.gz -C /tmp/
+    mv /tmp/graalvm-community-openjdk-25.0.2+10.1 "$JAVA_INSTALL_DIR"
+    rm -f /tmp/graalvm-ce-25.tar.gz
+    echo "GraalVM CE 25.0.2 installed to $JAVA_INSTALL_DIR"
+else
+    echo "GraalVM CE 25.0.2 already installed"
+fi
 
-# Kill any stale proxy from a previous session (JWT token has rotated)
-pkill -f "maven-proxy.py" 2>/dev/null || true
+echo "Configuring Maven for Claude Code remote environment..."
 
-# Start local proxy in background; it reads HTTPS_PROXY for current session credentials
-python3 "$CLAUDE_PROJECT_DIR/.claude/scripts/maven-proxy.py" \
-    > /tmp/maven-proxy.log 2>&1 &
-PROXY_PID=$!
-echo "Maven proxy started (PID $PROXY_PID)"
+# Create Maven config directory
+mkdir -p ~/.m2
 
-# Write Maven settings.xml pointing to local unauthenticated proxy
-mkdir -p "$HOME/.m2"
-cat > "$HOME/.m2/settings.xml" << 'SETTINGS'
+# Extract proxy host and port from HTTPS_PROXY environment variable
+# Expected format: http://user:pass@host:port or http://host:port
+if [ -n "${HTTPS_PROXY:-}" ]; then
+    # Extract host and port from proxy URL
+    PROXY_HOST=$(echo "$HTTPS_PROXY" | sed -E 's|https?://([^:@]*:)?([^:@]*)@||' | sed -E 's|https?://||' | cut -d':' -f1)
+    PROXY_PORT=$(echo "$HTTPS_PROXY" | sed -E 's|https?://([^:@]*:)?([^:@]*)@||' | sed -E 's|https?://||' | cut -d':' -f2 | cut -d'/' -f1)
+    echo "Detected proxy: $PROXY_HOST:$PROXY_PORT"
+
+    # Get no_proxy list
+    NO_PROXY_HOSTS="${NO_PROXY:-localhost|127.0.0.1}"
+
+    # Create Maven settings.xml with proxy configuration
+    cat > ~/.m2/settings.xml <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
-  <proxies>
-    <proxy>
-      <id>local-auth-proxy</id>
-      <active>true</active>
-      <protocol>https</protocol>
-      <host>127.0.0.1</host>
-      <port>3128</port>
-    </proxy>
-    <proxy>
-      <id>local-auth-proxy-http</id>
-      <active>true</active>
-      <protocol>http</protocol>
-      <host>127.0.0.1</host>
-      <port>3128</port>
-    </proxy>
-  </proxies>
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+          http://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <proxies>
+        <proxy>
+            <id>http-proxy</id>
+            <active>true</active>
+            <protocol>http</protocol>
+            <host>${PROXY_HOST}</host>
+            <port>${PROXY_PORT}</port>
+            <nonProxyHosts>${NO_PROXY_HOSTS}</nonProxyHosts>
+        </proxy>
+        <proxy>
+            <id>https-proxy</id>
+            <active>true</active>
+            <protocol>https</protocol>
+            <host>${PROXY_HOST}</host>
+            <port>${PROXY_PORT}</port>
+            <nonProxyHosts>${NO_PROXY_HOSTS}</nonProxyHosts>
+        </proxy>
+    </proxies>
 </settings>
-SETTINGS
-
-# Wait for proxy to be ready
-sleep 2
-
-# Verify proxy is listening
-if python3 -c "import socket; s=socket.create_connection(('127.0.0.1', 3128), timeout=5); s.close()" 2>/dev/null; then
-    echo "Maven proxy is ready on 127.0.0.1:3128"
+EOF
+    echo "Maven settings.xml created with proxy configuration"
 else
-    echo "WARNING: Maven proxy did not start in time, check /tmp/maven-proxy.log"
-    cat /tmp/maven-proxy.log || true
+    echo "No HTTPS_PROXY environment variable found, skipping proxy configuration"
 fi
+
+echo "Session start hook completed successfully"
