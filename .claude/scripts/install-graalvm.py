@@ -3,6 +3,7 @@
 
 import os
 import shutil
+import ssl
 import sys
 import tarfile
 import tempfile
@@ -42,6 +43,20 @@ if os.path.isdir(install_dir):
     sys.exit(0)
 
 MAX_RETRIES = 5
+
+# Explicitly load the system CA bundle so the proxy's SSL inspection
+# certificate is trusted, regardless of SSL_CERT_FILE env var.
+_ssl_ctx = ssl.create_default_context()
+for _ca_bundle in ["/etc/ssl/certs/ca-certificates.crt"]:
+    if os.path.exists(_ca_bundle):
+        _ssl_ctx.load_verify_locations(cafile=_ca_bundle)
+        break
+urllib.request.install_opener(
+    urllib.request.build_opener(
+        urllib.request.ProxyHandler(),
+        urllib.request.HTTPSHandler(context=_ssl_ctx),
+    )
+)
 
 print(f"Downloading GraalVM CE from {graalvm_url} ...")
 for attempt in range(1, MAX_RETRIES + 1):
