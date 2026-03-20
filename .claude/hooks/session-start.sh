@@ -11,7 +11,7 @@ SCRIPTS_DIR="${CLAUDE_PROJECT_DIR}/.claude/scripts"
 echo "Configuring Maven proxy..."
 python3 "${SCRIPTS_DIR}/configure-maven-proxy.py"
 
-if [ "${X_SESSION_START_DONE:-}" = "1" ]; then
+if [ "${X_CLAUDE_CODE_CONTAINER_INITIALIZED:-}" = "1" ]; then
     exit 0
 fi
 
@@ -24,4 +24,4 @@ python3 "${SCRIPTS_DIR}/install-graalvm.py"
 echo "Importing system CA certs into JVM truststore..."
 python3 "${SCRIPTS_DIR}/import-cacerts.py"
 
-echo "export X_SESSION_START_DONE=1" >> "${CLAUDE_ENV_FILE}"
+echo "export X_CLAUDE_CODE_CONTAINER_INITIALIZED=1" >> "${CLAUDE_ENV_FILE}"
