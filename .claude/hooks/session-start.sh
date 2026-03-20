@@ -6,14 +6,14 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
     exit 0
 fi
 
-if [ "${X_SESSION_START_DONE:-}" = "1" ]; then
-    exit 0
-fi
-
 SCRIPTS_DIR="${CLAUDE_PROJECT_DIR}/.claude/scripts"
 
 echo "Configuring Maven proxy..."
 python3 "${SCRIPTS_DIR}/configure-maven-proxy.py"
+
+if [ "${X_SESSION_START_DONE:-}" = "1" ]; then
+    exit 0
+fi
 
 export JAVA_HOME="${HOME}/.local/share/java/graalvm-community"
 echo "export JAVA_HOME=${JAVA_HOME}" >> "${CLAUDE_ENV_FILE}"
