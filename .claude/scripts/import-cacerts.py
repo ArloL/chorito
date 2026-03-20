@@ -6,7 +6,7 @@ import subprocess
 import sys
 import tempfile
 
-CA_BUNDLE = "/etc/ssl/certs/ca-certificates.crt"
+CA_BUNDLE = os.environ.get("SSL_CERT_FILE", "/etc/ssl/certs/ca-certificates.crt")
 
 java_home = os.environ["JAVA_HOME"]
 keytool = os.path.join(java_home, "bin", "keytool")
