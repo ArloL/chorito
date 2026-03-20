@@ -17,6 +17,14 @@ if not os.path.exists(keytool):
     print(f"keytool not found at {keytool}, skipping CA import")
     sys.exit(0)
 
+already_imported = subprocess.run(
+    [keytool, "-list", "-keystore", cacerts, "-storepass", "changeit", "-alias", "system-ca-0"],
+    capture_output=True,
+).returncode == 0
+if already_imported:
+    print("System CA certs already imported, skipping.")
+    sys.exit(0)
+
 with open(CA_BUNDLE) as f:
     content = f.read()
 
