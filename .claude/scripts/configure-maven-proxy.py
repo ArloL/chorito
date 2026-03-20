@@ -2,8 +2,8 @@
 """Write ~/.m2/settings.xml with proxy config derived from HTTPS_PROXY."""
 
 import os
-import re
 import sys
+from urllib.parse import urlparse
 
 SETTINGS_XML = """\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -37,12 +37,13 @@ if not https_proxy:
     print("No HTTPS_PROXY environment variable found, skipping proxy configuration")
     sys.exit(0)
 
-# Strip scheme and credentials: http://user:pass@host:port -> host:port
-url = re.sub(r"https?://([^@]+@)?", "", https_proxy).rstrip("/")
-host, _, port = url.partition(":")
+parsed = urlparse(https_proxy)
+host = parsed.hostname
+port = parsed.port
 if not host or not port:
     print(f"ERROR: could not parse host:port from HTTPS_PROXY={https_proxy!r}", file=sys.stderr)
     sys.exit(1)
+port = str(port)
 
 non_proxy_hosts = os.environ.get("NO_PROXY", "localhost|127.0.0.1")
 print(f"Detected proxy: {host}:{port}")
