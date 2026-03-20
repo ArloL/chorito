@@ -6,20 +6,22 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
     exit 0
 fi
 
+if [ "${X_SESSION_START_DONE:-}" = "1" ]; then
+    exit 0
+fi
+
 SCRIPTS_DIR="${CLAUDE_PROJECT_DIR}/.claude/scripts"
 
-if [ "${X_SESSION_START_DONE:-}" != "1" ]; then
-    export JAVA_HOME="${HOME}/.local/share/java/graalvm-community"
-    echo "export JAVA_HOME=${JAVA_HOME}" >> "${CLAUDE_ENV_FILE}"
+export JAVA_HOME="${HOME}/.local/share/java/graalvm-community"
+echo "export JAVA_HOME=${JAVA_HOME}" >> "${CLAUDE_ENV_FILE}"
 
-    echo "Installing Java..."
-    python3 "${SCRIPTS_DIR}/install-graalvm.py"
+echo "Installing Java..."
+python3 "${SCRIPTS_DIR}/install-graalvm.py"
 
-    echo "Importing system CA certs into JVM truststore..."
-    python3 "${SCRIPTS_DIR}/import-cacerts.py"
-
-    echo "export X_SESSION_START_DONE=1" >> "${CLAUDE_ENV_FILE}"
-fi
+echo "Importing system CA certs into JVM truststore..."
+python3 "${SCRIPTS_DIR}/import-cacerts.py"
 
 echo "Configuring Maven proxy..."
 python3 "${SCRIPTS_DIR}/configure-maven-proxy.py"
+
+echo "export X_SESSION_START_DONE=1" >> "${CLAUDE_ENV_FILE}"
