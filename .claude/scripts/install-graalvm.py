@@ -6,6 +6,7 @@ import shutil
 import sys
 import tarfile
 import tempfile
+import time
 import urllib.request
 
 TOOL_VERSIONS = os.path.join(os.environ["CLAUDE_PROJECT_DIR"], ".tool-versions")
@@ -40,26 +41,40 @@ if os.path.isdir(install_dir):
     print(f"GraalVM already installed at {install_dir}, skipping.")
     sys.exit(0)
 
+MAX_RETRIES = 5
+
 print(f"Downloading GraalVM CE from {graalvm_url} ...")
-with tempfile.TemporaryDirectory() as tmp:
-    archive = os.path.join(tmp, graalvm_file)
-    urllib.request.urlretrieve(graalvm_url, archive)
+for attempt in range(1, MAX_RETRIES + 1):
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            archive = os.path.join(tmp, graalvm_file)
+            urllib.request.urlretrieve(graalvm_url, archive)
 
-    print("Extracting...")
-    with tarfile.open(archive, "r:gz") as tf:
-        tf.extractall(tmp)
+            print("Extracting...")
+            with tarfile.open(archive, "r:gz") as tf:
+                tf.extractall(tmp)
 
-    # The extracted directory name includes a build suffix we don't know upfront,
-    # e.g. graalvm-community-openjdk-25.0.2+10.1 — find it by listing tmp.
-    candidates = [
-        d for d in os.listdir(tmp)
-        if os.path.isdir(os.path.join(tmp, d))
-    ]
-    if len(candidates) != 1:
-        print(f"ERROR: expected one extracted dir in {tmp}, found: {candidates}", file=sys.stderr)
-        sys.exit(1)
+            # The extracted directory name includes a build suffix we don't know upfront,
+            # e.g. graalvm-community-openjdk-25.0.2+10.1 — find it by listing tmp.
+            candidates = [
+                d for d in os.listdir(tmp)
+                if os.path.isdir(os.path.join(tmp, d))
+            ]
+            if len(candidates) != 1:
+                print(f"ERROR: expected one extracted dir in {tmp}, found: {candidates}", file=sys.stderr)
+                sys.exit(1)
 
-    os.makedirs(os.path.dirname(install_dir), exist_ok=True)
-    shutil.move(os.path.join(tmp, candidates[0]), install_dir)
+            os.makedirs(os.path.dirname(install_dir), exist_ok=True)
+            shutil.move(os.path.join(tmp, candidates[0]), install_dir)
 
-print(f"GraalVM CE {java_version} installed to {install_dir}")
+        print(f"GraalVM CE {java_version} installed to {install_dir}")
+        sys.exit(0)
+    except Exception as e:
+        print(f"Attempt {attempt}/{MAX_RETRIES} failed: {e}", file=sys.stderr)
+        if attempt < MAX_RETRIES:
+            wait = 2 ** attempt
+            print(f"Retrying in {wait}s...", file=sys.stderr)
+            time.sleep(wait)
+
+print(f"ERROR: all {MAX_RETRIES} attempts failed", file=sys.stderr)
+sys.exit(1)
