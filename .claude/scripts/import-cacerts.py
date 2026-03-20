@@ -7,12 +7,28 @@ import subprocess
 import sys
 import tempfile
 
-JAVA_VERSION = "graalvm-community-25.0.2"
 CA_BUNDLE = "/etc/ssl/certs/ca-certificates.crt"
+
+TOOL_VERSIONS = os.path.join(
+    os.environ.get("CLAUDE_PROJECT_DIR", os.path.join(os.path.dirname(__file__), "..", "..")),
+    ".tool-versions",
+)
+
+java_version = None
+with open(TOOL_VERSIONS) as f:
+    for line in f:
+        parts = line.split()
+        if len(parts) == 2 and parts[0] == "java":
+            java_version = parts[1]
+            break
+
+if not java_version:
+    print(f"ERROR: no java entry found in {TOOL_VERSIONS}", file=sys.stderr)
+    sys.exit(1)
 
 java_home = os.path.join(
     os.path.expanduser("~"),
-    ".local", "share", "mise", "installs", "java", JAVA_VERSION,
+    ".local", "share", "mise", "installs", "java", java_version,
 )
 keytool = os.path.join(java_home, "bin", "keytool")
 cacerts = os.path.join(java_home, "lib", "security", "cacerts")
