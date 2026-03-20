@@ -21,7 +21,15 @@ public class JsonMigrationsTest {
 				}
 				""";
 		var result = JsonBuilder.wrap(input)
-				.apply(List.of(replaceString("minimumReleaseAge", "4 days", "7 days")))
+				.apply(
+						List.of(
+								replaceString(
+										"minimumReleaseAge",
+										"4 days",
+										"7 days"
+								)
+						)
+				)
 				.asString();
 		assertThat(result).contains("\"7 days\"");
 		assertThat(result).doesNotContain("\"4 days\"");
@@ -35,7 +43,15 @@ public class JsonMigrationsTest {
 				}
 				""";
 		var result = JsonBuilder.wrap(input)
-				.apply(List.of(replaceString("minimumReleaseAge", "4 days", "7 days")))
+				.apply(
+						List.of(
+								replaceString(
+										"minimumReleaseAge",
+										"4 days",
+										"7 days"
+								)
+						)
+				)
 				.asString();
 		assertThat(result).doesNotContain("minimumReleaseAge");
 	}
@@ -48,7 +64,15 @@ public class JsonMigrationsTest {
 				}
 				""";
 		var result = JsonBuilder.wrap(input)
-				.apply(List.of(replaceString("minimumReleaseAge", "4 days", "7 days")))
+				.apply(
+						List.of(
+								replaceString(
+										"minimumReleaseAge",
+										"4 days",
+										"7 days"
+								)
+						)
+				)
 				.asString();
 		assertThat(result).contains("\"14 days\"");
 	}
@@ -61,7 +85,15 @@ public class JsonMigrationsTest {
 				}
 				""";
 		var result = JsonBuilder.wrap(input)
-				.apply(List.of(replaceString("minimumReleaseAge", "4 days", "7 days")))
+				.apply(
+						List.of(
+								replaceString(
+										"minimumReleaseAge",
+										"4 days",
+										"7 days"
+								)
+						)
+				)
 				.asString();
 		assertThat(result).contains("\"7 days\"");
 	}
@@ -76,7 +108,14 @@ public class JsonMigrationsTest {
 				}
 				""";
 		var result = JsonBuilder.wrap(input)
-				.apply(List.of(ifAbsent("labels", b -> b.array("labels", "dependencies"))))
+				.apply(
+						List.of(
+								ifAbsent(
+										"labels",
+										b -> b.array("labels", "dependencies")
+								)
+						)
+				)
 				.asString();
 		assertThat(result).contains("\"labels\"");
 		assertThat(result).contains("\"dependencies\"");
@@ -92,7 +131,14 @@ public class JsonMigrationsTest {
 				}
 				""";
 		var result = JsonBuilder.wrap(input)
-				.apply(List.of(ifAbsent("labels", b -> b.array("labels", "dependencies"))))
+				.apply(
+						List.of(
+								ifAbsent(
+										"labels",
+										b -> b.array("labels", "dependencies")
+								)
+						)
+				)
 				.asString();
 		assertThat(result).contains("\"custom\"");
 		assertThat(result).doesNotContain("\"dependencies\"");
@@ -112,10 +158,20 @@ public class JsonMigrationsTest {
 				}
 				""";
 		var result = JsonBuilder.wrap(input)
-				.apply(List.of(whenObject(
-						"vulnerabilityAlerts",
-						ifAbsent("addLabels", a -> a.array("addLabels", "security"))
-				)))
+				.apply(
+						List.of(
+								whenObject(
+										"vulnerabilityAlerts",
+										ifAbsent(
+												"addLabels",
+												a -> a.array(
+														"addLabels",
+														"security"
+												)
+										)
+								)
+						)
+				)
 				.asString();
 		assertThat(result).contains("\"security\"");
 	}
@@ -128,10 +184,20 @@ public class JsonMigrationsTest {
 				}
 				""";
 		var result = JsonBuilder.wrap(input)
-				.apply(List.of(whenObject(
-						"vulnerabilityAlerts",
-						ifAbsent("addLabels", a -> a.array("addLabels", "security"))
-				)))
+				.apply(
+						List.of(
+								whenObject(
+										"vulnerabilityAlerts",
+										ifAbsent(
+												"addLabels",
+												a -> a.array(
+														"addLabels",
+														"security"
+												)
+										)
+								)
+						)
+				)
 				.asString();
 		assertThat(result).doesNotContain("vulnerabilityAlerts");
 		assertThat(result).doesNotContain("security");
@@ -145,10 +211,20 @@ public class JsonMigrationsTest {
 				}
 				""";
 		var result = JsonBuilder.wrap(input)
-				.apply(List.of(whenObject(
-						"vulnerabilityAlerts",
-						ifAbsent("addLabels", a -> a.array("addLabels", "security"))
-				)))
+				.apply(
+						List.of(
+								whenObject(
+										"vulnerabilityAlerts",
+										ifAbsent(
+												"addLabels",
+												a -> a.array(
+														"addLabels",
+														"security"
+												)
+										)
+								)
+						)
+				)
 				.asString();
 		assertThat(result).doesNotContain("security");
 	}
@@ -162,11 +238,27 @@ public class JsonMigrationsTest {
 				}
 				""";
 		var result = JsonBuilder.wrap(input)
-				.apply(List.of(whenObject(
-						"vulnerabilityAlerts",
-						ifAbsent("addLabels", a -> a.array("addLabels", "security")),
-						ifAbsent("schedule", s -> s.array("schedule", "at any time"))
-				)))
+				.apply(
+						List.of(
+								whenObject(
+										"vulnerabilityAlerts",
+										ifAbsent(
+												"addLabels",
+												a -> a.array(
+														"addLabels",
+														"security"
+												)
+										),
+										ifAbsent(
+												"schedule",
+												s -> s.array(
+														"schedule",
+														"at any time"
+												)
+										)
+								)
+						)
+				)
 				.asString();
 		assertThat(result).contains("\"security\"");
 		assertThat(result).contains("\"at any time\"");
@@ -194,12 +286,17 @@ public class JsonMigrationsTest {
 				""";
 		var migrations = List.of(
 				replaceString("minimumReleaseAge", "4 days", "7 days"),
-				ifAbsent("labels", root -> root
-						.array("labels", "dependencies")
-						.array("addLabels", "{{manager}}")),
+				ifAbsent(
+						"labels",
+						root -> root.array("labels", "dependencies")
+								.array("addLabels", "{{manager}}")
+				),
 				whenObject(
 						"vulnerabilityAlerts",
-						ifAbsent("addLabels", a -> a.array("addLabels", "security"))
+						ifAbsent(
+								"addLabels",
+								a -> a.array("addLabels", "security")
+						)
 				)
 		);
 		var result = JsonBuilder.wrap(input).apply(migrations).asString();
