@@ -5,6 +5,20 @@ import os
 import sys
 from urllib.parse import urlparse
 
+PROXY_ENTRY = """\
+        <proxy>
+            <id>{proxy_id}</id>
+            <active>true</active>
+            <protocol>{protocol}</protocol>
+            <host>{host}</host>
+            <port>{port}</port>{credentials}
+            <nonProxyHosts>{non_proxy_hosts}</nonProxyHosts>
+        </proxy>"""
+
+CREDENTIALS_SNIPPET = """
+            <username>{username}</username>
+            <password>{password}</password>"""
+
 SETTINGS_XML = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
@@ -12,22 +26,7 @@ SETTINGS_XML = """\
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
           http://maven.apache.org/xsd/settings-1.0.0.xsd">
     <proxies>
-        <proxy>
-            <id>http-proxy</id>
-            <active>true</active>
-            <protocol>http</protocol>
-            <host>{host}</host>
-            <port>{port}</port>
-            <nonProxyHosts>{non_proxy_hosts}</nonProxyHosts>
-        </proxy>
-        <proxy>
-            <id>https-proxy</id>
-            <active>true</active>
-            <protocol>https</protocol>
-            <host>{host}</host>
-            <port>{port}</port>
-            <nonProxyHosts>{non_proxy_hosts}</nonProxyHosts>
-        </proxy>
+{proxies}
     </proxies>
 </settings>
 """
@@ -45,14 +44,34 @@ if not host or not port:
     sys.exit(1)
 port = str(port)
 
+username = parsed.username
+password = parsed.password
+if username and password:
+    credentials = CREDENTIALS_SNIPPET.format(username=username, password=password)
+    print(f"Detected proxy: {username}@{host}:{port}")
+else:
+    credentials = ""
+    print(f"Detected proxy: {host}:{port}")
+
 non_proxy_hosts = os.environ.get("NO_PROXY", "localhost|127.0.0.1")
-print(f"Detected proxy: {host}:{port}")
+
+proxy_entries = "\n".join(
+    PROXY_ENTRY.format(
+        proxy_id=f"{protocol}-proxy",
+        protocol=protocol,
+        host=host,
+        port=port,
+        credentials=credentials,
+        non_proxy_hosts=non_proxy_hosts,
+    )
+    for protocol in ("http", "https")
+)
 
 settings_dir = os.path.join(os.path.expanduser("~"), ".m2")
 os.makedirs(settings_dir, exist_ok=True)
 settings_path = os.path.join(settings_dir, "settings.xml")
 
 with open(settings_path, "w") as f:
-    f.write(SETTINGS_XML.format(host=host, port=port, non_proxy_hosts=non_proxy_hosts))
+    f.write(SETTINGS_XML.format(proxies=proxy_entries))
 
-print(f"Maven settings.xml created with proxy configuration")
+print("Maven settings.xml created with proxy configuration")
