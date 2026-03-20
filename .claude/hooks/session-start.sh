@@ -25,8 +25,8 @@ echo "export JAVA_HOME=${JAVA_HOME}" >> "${CLAUDE_ENV_FILE}"
 echo "Installing Java..."
 python3 "${SCRIPTS_DIR}/install-graalvm.py"
 
-echo "Importing system CA certs into JVM truststore..."
-python3 "${SCRIPTS_DIR}/import-cacerts.py"
+# echo "Importing system CA certs into JVM truststore..."
+# python3 "${SCRIPTS_DIR}/import-cacerts.py"
 
 echo "export JAVA_TOOL_OPTIONS=\"\${JAVA_TOOL_OPTIONS} -Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts\"" >> "${CLAUDE_ENV_FILE}"
 
