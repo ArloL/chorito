@@ -12,6 +12,9 @@ fi
 
 SCRIPTS_DIR="${CLAUDE_PROJECT_DIR}/.claude/scripts"
 
+echo "Configuring Maven proxy..."
+python3 "${SCRIPTS_DIR}/configure-maven-proxy.py"
+
 export JAVA_HOME="${HOME}/.local/share/java/graalvm-community"
 echo "export JAVA_HOME=${JAVA_HOME}" >> "${CLAUDE_ENV_FILE}"
 
@@ -20,8 +23,5 @@ python3 "${SCRIPTS_DIR}/install-graalvm.py"
 
 echo "Importing system CA certs into JVM truststore..."
 python3 "${SCRIPTS_DIR}/import-cacerts.py"
-
-echo "Configuring Maven proxy..."
-python3 "${SCRIPTS_DIR}/configure-maven-proxy.py"
 
 echo "export X_SESSION_START_DONE=1" >> "${CLAUDE_ENV_FILE}"
