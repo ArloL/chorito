@@ -36,6 +36,42 @@ else
     echo "GraalVM CE 25.0.2 already installed"
 fi
 
+# Import system CA certs into JVM truststore so Maven can verify HTTPS connections
+echo "Importing system CA certs into JVM truststore..."
+python3 - <<'PYEOF'
+import subprocess, os, tempfile, re, sys
+
+ca_bundle = "/etc/ssl/certs/ca-certificates.crt"
+java_home = os.path.expandvars("$HOME/.local/share/mise/installs/java/graalvm-community-25.0.2")
+keytool = f"{java_home}/bin/keytool"
+cacerts = f"{java_home}/lib/security/cacerts"
+
+if not os.path.exists(keytool):
+    print(f"keytool not found at {keytool}, skipping CA import")
+    sys.exit(0)
+
+with open(ca_bundle) as f:
+    content = f.read()
+
+certs = re.findall(r'-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----', content, re.DOTALL)
+imported = 0
+for i, cert in enumerate(certs):
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.pem', delete=False) as f:
+        f.write(cert)
+        tmpfile = f.name
+    result = subprocess.run(
+        [keytool, '-importcert', '-trustcacerts', '-noprompt',
+         '-keystore', cacerts, '-storepass', 'changeit',
+         '-alias', f'system-ca-{i}', '-file', tmpfile],
+        capture_output=True, text=True
+    )
+    os.unlink(tmpfile)
+    if result.returncode == 0:
+        imported += 1
+
+print(f"Imported {imported} of {len(certs)} system CA certs into JVM truststore")
+PYEOF
+
 echo "Configuring Maven for Claude Code remote environment..."
 
 # Create Maven config directory
