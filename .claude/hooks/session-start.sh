@@ -6,6 +6,17 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
     exit 0
 fi
 
+echo "Installing mise..."
+if ! command -v mise &>/dev/null && ! [ -x "$HOME/.local/bin/mise" ]; then
+    MISE_VERSION=$(curl -fsSL "https://github.com/jdx/mise/releases/latest" -o /dev/null -w "%{url_effective}" | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+')
+    curl -fsSL "https://github.com/jdx/mise/releases/download/${MISE_VERSION}/mise-${MISE_VERSION}-linux-x64.tar.gz" \
+        | tar -xz -C /tmp
+    mkdir -p "$HOME/.local/bin"
+    cp /tmp/mise/bin/mise "$HOME/.local/bin/mise"
+    echo "mise ${MISE_VERSION} installed"
+fi
+echo 'eval "$(~/.local/bin/mise activate bash)"' >> "${CLAUDE_ENV_FILE}"
+
 echo "Setting up Maven proxy..."
 
 # Kill any stale proxy from a previous session (JWT token has rotated)
