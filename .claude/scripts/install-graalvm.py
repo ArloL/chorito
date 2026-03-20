@@ -36,6 +36,10 @@ graalvm_url = f"https://github.com/graalvm/graalvm-ce-builds/releases/download/{
 
 install_dir = os.environ["JAVA_HOME"]
 
+if os.path.isdir(install_dir):
+    print(f"GraalVM already installed at {install_dir}, skipping.")
+    sys.exit(0)
+
 print(f"Downloading GraalVM CE from {graalvm_url} ...")
 with tempfile.TemporaryDirectory() as tmp:
     archive = os.path.join(tmp, graalvm_file)
