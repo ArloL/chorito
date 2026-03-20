@@ -6,6 +6,10 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
     exit 0
 fi
 
+echo "=== session-start env ==="
+env | sort
+echo "========================="
+
 SCRIPTS_DIR="${CLAUDE_PROJECT_DIR}/.claude/scripts"
 
 echo "Configuring Maven proxy..."
