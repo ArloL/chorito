@@ -38,6 +38,7 @@ public class GitHubActionChore implements Chore {
 		migrateZipProjects(context);
 		removeNeedsVersionOutputsChangelog(context);
 		migrateEregonPublishRelease(context);
+		migrateNcipoploReleaseAction(context);
 		migrateSetupGraalvm(context);
 		return context;
 	}
@@ -688,6 +689,102 @@ public class GitHubActionChore implements Chore {
 					        updateOnlyUnreleased: true
 					""";
 			var updated = current.replaceAll("eregon/publish-release@.*$", "");
+			updated = updated.replace(target, replacement);
+			FilesSilent.writeString(path, updated);
+		});
+	}
+
+	private void migrateNcipoploReleaseAction(ChoreContext context) {
+		Path workflowsLocation = context.resolve(".github/workflows");
+		context.textFiles().stream().filter(path -> {
+			if (path.startsWith(workflowsLocation)) {
+				return path.toString().endsWith(".yaml");
+			}
+			return false;
+		}).map(context::resolve).forEach(path -> {
+			String current = FilesSilent.readString(path);
+			if (!current.contains("id: create_release") || !current
+					.contains("asset_content_type: application/x-executable")) {
+				return;
+			}
+			var target = """
+					    - name: Create Release
+					      id: create_release
+					      uses: ncipollo/release-action@
+					      with:
+					        draft: true
+					        name: Release ${{ needs.version.outputs.new_version }}
+					        tag: v${{ needs.version.outputs.new_version }}
+					    - name: Upload Release Asset
+					      uses: shogo82148/actions-upload-release-asset@
+					      with:
+					        asset_content_type: application/zip
+					        asset_name: ${{ env.ARTIFACT }}-linux-${{ needs.version.outputs.new_version }}.zip
+					        asset_path: ./target/linux.zip
+					        upload_url: ${{ steps.create_release.outputs.upload_url }}
+					    - name: Upload Release Asset
+					      uses: shogo82148/actions-upload-release-asset@
+					      with:
+					        asset_content_type: application/x-executable
+					        asset_name: ${{ env.ARTIFACT }}-linux
+					        asset_path: ./target/${{ env.ARTIFACT }}-linux-${{ needs.version.outputs.new_version }}/${{ env.ARTIFACT }}-linux-${{ needs.version.outputs.new_version }}
+					        upload_url: ${{ steps.create_release.outputs.upload_url }}
+					    - name: Upload Release Asset
+					      uses: shogo82148/actions-upload-release-asset@
+					      with:
+					        asset_content_type: application/zip
+					        asset_name: ${{ env.ARTIFACT }}-windows-${{ needs.version.outputs.new_version }}.zip
+					        asset_path: ./target/windows.zip
+					        upload_url: ${{ steps.create_release.outputs.upload_url }}
+					    - name: Upload Release Asset
+					      uses: shogo82148/actions-upload-release-asset@
+					      with:
+					        asset_content_type: application/vnd.microsoft.portable-executable
+					        asset_name: ${{ env.ARTIFACT }}-windows.exe
+					        asset_path: ./target/${{ env.ARTIFACT }}-windows-${{ needs.version.outputs.new_version }}/${{ env.ARTIFACT }}-windows-${{ needs.version.outputs.new_version }}.exe
+					        upload_url: ${{ steps.create_release.outputs.upload_url }}
+					    - name: Upload Release Asset
+					      uses: shogo82148/actions-upload-release-asset@
+					      with:
+					        asset_content_type: application/zip
+					        asset_name: ${{ env.ARTIFACT }}-macos-${{ needs.version.outputs.new_version }}.zip
+					        asset_path: ./target/macos.zip
+					        upload_url: ${{ steps.create_release.outputs.upload_url }}
+					    - name: Upload Release Asset
+					      uses: shogo82148/actions-upload-release-asset@
+					      with:
+					        asset_content_type: application/octet-stream
+					        asset_name: ${{ env.ARTIFACT }}-macos
+					        asset_path: ./target/${{ env.ARTIFACT }}-macos-${{ needs.version.outputs.new_version }}/${{ env.ARTIFACT }}-macos-${{ needs.version.outputs.new_version }}
+					        upload_url: ${{ steps.create_release.outputs.upload_url }}
+					    - uses: ncipollo/release-action@
+					      with:
+					        allowUpdates: true
+					        immutableCreate: true
+					        omitBodyDuringUpdate: true
+					        omitNameDuringUpdate: true
+					        tag: v${{ needs.version.outputs.new_version }}
+					        updateOnlyUnreleased: true
+					""";
+			var replacement = """
+					    - name: Create Release
+					      env:
+					        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+					        NEW_VERSION: ${{ needs.version.outputs.new_version }}
+					      run: |
+					        gh release create "v${NEW_VERSION}" \\
+					          --title "Release ${NEW_VERSION}" \\
+					          "./target/linux.zip#${ARTIFACT}-linux-${NEW_VERSION}.zip" \\
+					          "./target/${ARTIFACT}-linux-${NEW_VERSION}/${ARTIFACT}-linux-${NEW_VERSION}#${ARTIFACT}-linux" \\
+					          "./target/windows.zip#${ARTIFACT}-windows-${NEW_VERSION}.zip" \\
+					          "./target/${ARTIFACT}-windows-${NEW_VERSION}/${ARTIFACT}-windows-${NEW_VERSION}.exe#${ARTIFACT}-windows.exe" \\
+					          "./target/macos.zip#${ARTIFACT}-macos-${NEW_VERSION}.zip" \\
+					          "./target/${ARTIFACT}-macos-${NEW_VERSION}/${ARTIFACT}-macos-${NEW_VERSION}#${ARTIFACT}-macos"
+					""";
+			var updated = current.replaceAll(
+					"(ncipollo/release-action|shogo82148/actions-upload-release-asset)@[^\\n]+",
+					"$1@"
+			);
 			updated = updated.replace(target, replacement);
 			FilesSilent.writeString(path, updated);
 		});

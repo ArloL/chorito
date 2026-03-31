@@ -571,4 +571,83 @@ public class GitHubActionChoreTest {
 		assertThat(workflow).content().isEqualTo(expected);
 	}
 
+	@Test
+	void migrateNcipoploReleaseAction() throws Exception {
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(
+				workflow,
+				"""
+						permissions: {}
+						jobs:
+						  release:
+						    runs-on: ubuntu-latest
+						    permissions:
+						      contents: write
+						    steps:
+						    - name: Create Release
+						      id: create_release
+						      uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
+						      with:
+						        draft: true
+						        name: Release ${{ needs.version.outputs.new_version }}
+						        tag: v${{ needs.version.outputs.new_version }}
+						    - name: Upload Release Asset
+						      uses: shogo82148/actions-upload-release-asset@8f6863c6c894ba46f9e676ef5cccec4752723c1e # v1.9.2
+						      with:
+						        asset_content_type: application/zip
+						        asset_name: ${{ env.ARTIFACT }}-linux-${{ needs.version.outputs.new_version }}.zip
+						        asset_path: ./target/linux.zip
+						        upload_url: ${{ steps.create_release.outputs.upload_url }}
+						    - name: Upload Release Asset
+						      uses: shogo82148/actions-upload-release-asset@8f6863c6c894ba46f9e676ef5cccec4752723c1e # v1.9.2
+						      with:
+						        asset_content_type: application/x-executable
+						        asset_name: ${{ env.ARTIFACT }}-linux
+						        asset_path: ./target/${{ env.ARTIFACT }}-linux-${{ needs.version.outputs.new_version }}/${{ env.ARTIFACT }}-linux-${{ needs.version.outputs.new_version }}
+						        upload_url: ${{ steps.create_release.outputs.upload_url }}
+						    - name: Upload Release Asset
+						      uses: shogo82148/actions-upload-release-asset@8f6863c6c894ba46f9e676ef5cccec4752723c1e # v1.9.2
+						      with:
+						        asset_content_type: application/zip
+						        asset_name: ${{ env.ARTIFACT }}-windows-${{ needs.version.outputs.new_version }}.zip
+						        asset_path: ./target/windows.zip
+						        upload_url: ${{ steps.create_release.outputs.upload_url }}
+						    - name: Upload Release Asset
+						      uses: shogo82148/actions-upload-release-asset@8f6863c6c894ba46f9e676ef5cccec4752723c1e # v1.9.2
+						      with:
+						        asset_content_type: application/vnd.microsoft.portable-executable
+						        asset_name: ${{ env.ARTIFACT }}-windows.exe
+						        asset_path: ./target/${{ env.ARTIFACT }}-windows-${{ needs.version.outputs.new_version }}/${{ env.ARTIFACT }}-windows-${{ needs.version.outputs.new_version }}.exe
+						        upload_url: ${{ steps.create_release.outputs.upload_url }}
+						    - name: Upload Release Asset
+						      uses: shogo82148/actions-upload-release-asset@8f6863c6c894ba46f9e676ef5cccec4752723c1e # v1.9.2
+						      with:
+						        asset_content_type: application/zip
+						        asset_name: ${{ env.ARTIFACT }}-macos-${{ needs.version.outputs.new_version }}.zip
+						        asset_path: ./target/macos.zip
+						        upload_url: ${{ steps.create_release.outputs.upload_url }}
+						    - name: Upload Release Asset
+						      uses: shogo82148/actions-upload-release-asset@8f6863c6c894ba46f9e676ef5cccec4752723c1e # v1.9.2
+						      with:
+						        asset_content_type: application/octet-stream
+						        asset_name: ${{ env.ARTIFACT }}-macos
+						        asset_path: ./target/${{ env.ARTIFACT }}-macos-${{ needs.version.outputs.new_version }}/${{ env.ARTIFACT }}-macos-${{ needs.version.outputs.new_version }}
+						        upload_url: ${{ steps.create_release.outputs.upload_url }}
+						    - uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
+						      with:
+						        allowUpdates: true
+						        immutableCreate: true
+						        omitBodyDuringUpdate: true
+						        omitNameDuringUpdate: true
+						        tag: v${{ needs.version.outputs.new_version }}
+						        updateOnlyUnreleased: true
+						"""
+		);
+		new GitHubActionChore().doit(extension.choreContext());
+		assertThat(workflow).content()
+				.contains("gh release create")
+				.doesNotContain("ncipollo/release-action")
+				.doesNotContain("shogo82148/actions-upload-release-asset");
+	}
+
 }
