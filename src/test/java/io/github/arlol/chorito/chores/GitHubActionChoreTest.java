@@ -650,4 +650,62 @@ public class GitHubActionChoreTest {
 				.doesNotContain("shogo82148/actions-upload-release-asset");
 	}
 
+	@Test
+	void migrateNcipoploReleaseActionZipOnly() throws Exception {
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(
+				workflow,
+				"""
+						permissions: {}
+						jobs:
+						  release:
+						    runs-on: ubuntu-latest
+						    permissions:
+						      contents: write
+						    steps:
+						    - name: Create Release
+						      id: create_release
+						      uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
+						      with:
+						        draft: true
+						        name: Release ${{ needs.version.outputs.new_version }}
+						        tag: v${{ needs.version.outputs.new_version }}
+						    - name: Upload Release Asset
+						      uses: shogo82148/actions-upload-release-asset@96bc1f0cb850b65efd58a6b5eaa0a69f88d38077 # v1.10.0
+						      with:
+						        asset_content_type: application/zip
+						        asset_name: ${{ env.ARTIFACT }}-linux-${{ needs.version.outputs.new_version }}.zip
+						        asset_path: ./target/linux.zip
+						        upload_url: ${{ steps.create_release.outputs.upload_url }}
+						    - name: Upload Release Asset
+						      uses: shogo82148/actions-upload-release-asset@96bc1f0cb850b65efd58a6b5eaa0a69f88d38077 # v1.10.0
+						      with:
+						        asset_content_type: application/zip
+						        asset_name: ${{ env.ARTIFACT }}-windows-${{ needs.version.outputs.new_version }}.zip
+						        asset_path: ./target/windows.zip
+						        upload_url: ${{ steps.create_release.outputs.upload_url }}
+						    - name: Upload Release Asset
+						      uses: shogo82148/actions-upload-release-asset@96bc1f0cb850b65efd58a6b5eaa0a69f88d38077 # v1.10.0
+						      with:
+						        asset_content_type: application/zip
+						        asset_name: ${{ env.ARTIFACT }}-macos-${{ needs.version.outputs.new_version }}.zip
+						        asset_path: ./target/macos.zip
+						        upload_url: ${{ steps.create_release.outputs.upload_url }}
+						    - uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # v1.21.0
+						      with:
+						        allowUpdates: true
+						        immutableCreate: true
+						        omitBodyDuringUpdate: true
+						        omitNameDuringUpdate: true
+						        tag: v${{ needs.version.outputs.new_version }}
+						        updateOnlyUnreleased: true
+						"""
+		);
+		new GitHubActionChore().doit(extension.choreContext());
+		assertThat(workflow).content()
+				.contains("gh release create")
+				.doesNotContain("ncipollo/release-action")
+				.doesNotContain("shogo82148/actions-upload-release-asset");
+	}
+
 }
