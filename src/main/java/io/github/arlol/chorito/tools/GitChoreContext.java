@@ -73,6 +73,9 @@ public class GitChoreContext {
 				if (Files.isSymbolicLink(path)) {
 					continue;
 				}
+				if (Files.isDirectory(path)) {
+					continue;
+				}
 				if (!FileIsGoneFilter.fileIsGone(path)) {
 					files.add(path);
 				}
