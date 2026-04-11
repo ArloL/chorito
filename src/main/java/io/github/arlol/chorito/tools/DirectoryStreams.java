@@ -104,6 +104,13 @@ public final class DirectoryStreams {
 				.map(MyPaths::getParent);
 	}
 
+	public static Stream<Path> buildZigDirs(ChoreContext context) {
+		return context.textFiles()
+				.stream()
+				.filter(file -> file.endsWith("build.zig"))
+				.map(MyPaths::getParent);
+	}
+
 	public static Stream<Path> packageJsonDirs(ChoreContext context) {
 		return context.textFiles()
 				.stream()

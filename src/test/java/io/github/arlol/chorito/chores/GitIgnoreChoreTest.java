@@ -94,6 +94,16 @@ public class GitIgnoreChoreTest {
 			# Add custom entries after this line to be preserved during automated updates
 			""";
 
+	private static String DEFAULT_BUILD_ZIG = """
+			### Zig ###
+
+			.zig-cache/
+			zig-out/
+			*.o
+
+			# Add custom entries after this line to be preserved during automated updates
+			""";
+
 	private static String OLD_POM_XML = """
 			# Created by chorito https://github.com/ArloL/chorito
 
@@ -131,6 +141,16 @@ public class GitIgnoreChoreTest {
 		Path gitignore = extension.root().resolve(".gitignore");
 		doit();
 		assertThat(FilesSilent.exists(gitignore)).isFalse();
+	}
+
+	@Test
+	public void testWithBuildZig() throws Exception {
+		FilesSilent.touch(extension.root().resolve("build.zig"));
+
+		doit();
+
+		assertThat(extension.root().resolve(".gitignore")).content()
+				.isEqualTo(DEFAULT_BUILD_ZIG);
 	}
 
 	@Test
