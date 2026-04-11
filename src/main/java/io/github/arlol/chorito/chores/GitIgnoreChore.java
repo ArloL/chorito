@@ -118,9 +118,18 @@ public class GitIgnoreChore implements Chore {
 			!/versions/**/*
 			""";
 
+	private static String GITIGNORE_ZIG = """
+			### Zig ###
+
+			.zig-cache/
+			zig-out/
+			*.o
+			""";
+
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		createPythonIgnore(context);
+		createZigIgnore(context);
 		createPackageJsonIgnore(context);
 		createYarnIgnore(context);
 		createMavenAndGradleIgnore(context);
@@ -137,6 +146,12 @@ public class GitIgnoreChore implements Chore {
 			String newGitignoreContent
 	) {
 		ExistingFileUpdater.update(gitignore, newGitignoreContent);
+	}
+
+	private void createZigIgnore(ChoreContext context) {
+		DirectoryStreams.buildZigDirs(context).forEach(dir -> {
+			updateExistingGitignore(dir.resolve(".gitignore"), GITIGNORE_ZIG);
+		});
 	}
 
 	private void createPythonIgnore(ChoreContext context) {
