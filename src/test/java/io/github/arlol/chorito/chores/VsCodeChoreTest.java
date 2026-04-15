@@ -223,6 +223,52 @@ public class VsCodeChoreTest {
 	}
 
 	@Test
+	public void testMultiModuleChildDoesNotGetVsCodeSettings() {
+		// given — root pom has no code, child pom has relativePath + code
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
+		FilesSilent.writeString(extension.root().resolve("module/pom.xml"), """
+				<project>
+				    <parent>
+				        <groupId>io.github.arlol</groupId>
+				        <artifactId>parent</artifactId>
+				        <version>1.0</version>
+				        <relativePath>../pom.xml</relativePath>
+				    </parent>
+				</project>
+				""");
+		FilesSilent.touch(
+				extension.root().resolve("module/src/main/java/Main.java")
+		);
+
+		// when
+		doit();
+
+		// then — root gets settings, child does not
+		Path rootExtensions = extension.root()
+				.resolve(".vscode/extensions.json");
+		assertThat(FilesSilent.exists(rootExtensions)).isTrue();
+		assertThat(rootExtensions).content().isEqualTo("""
+				{
+				    "recommendations": [
+				        "editorconfig.editorconfig",
+				        "vscjava.vscode-java-pack",
+				    ],
+				}
+				""");
+		assertThat(
+				FilesSilent.exists(
+						extension.root()
+								.resolve("module/.vscode/extensions.json")
+				)
+		).isFalse();
+		assertThat(
+				FilesSilent.exists(
+						extension.root().resolve("module/.vscode/settings.json")
+				)
+		).isFalse();
+	}
+
+	@Test
 	public void testWithExistingJavaNullAnalysisSettings() {
 		// given
 		FilesSilent.touch(extension.root().resolve("pom.xml"));

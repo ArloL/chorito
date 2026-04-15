@@ -19,7 +19,7 @@ public class VsCodeChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		Stream.of(
-				DirectoryStreams.javaDirs(context),
+				DirectoryStreams.rootJavaDirs(context),
 				context.textFiles()
 						.stream()
 						.map(MyPaths::getParent)
