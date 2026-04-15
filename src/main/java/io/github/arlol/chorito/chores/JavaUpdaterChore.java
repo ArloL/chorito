@@ -48,7 +48,7 @@ public class JavaUpdaterChore implements Chore {
 	}
 
 	private void updatePomXmlJavaVersionProperty(ChoreContext context) {
-		DirectoryStreams.rootMavenPomsWhereProjectHasCode(context).forEach(pomXml -> {
+		DirectoryStreams.rootMavenPomsWithCode(context).forEach(pomXml -> {
 			Document doc = JsoupSilent
 					.parse(pomXml, "UTF-8", "", Parser.xmlParser());
 			Element project = doc.selectFirst("project");

@@ -49,17 +49,12 @@ public final class DirectoryStreams {
 	}
 
 	public static Stream<Path> rootMavenPomsWithCode(ChoreContext context) {
-		return rootMavenPoms(context)
-				.filter(pom -> withCode(context, MyPaths.getParent(pom)));
-	}
-
-	public static Stream<Path> rootMavenPomsWhereProjectHasCode(
-			ChoreContext context
-	) {
-		if (mavenPomsWithCode(context).findAny().isEmpty()) {
-			return Stream.empty();
-		}
-		return rootMavenPoms(context);
+		return rootMavenPoms(context).filter(rootPom -> {
+			Path rootDir = MyPaths.getParent(rootPom);
+			return mavenPomsWithCode(context).anyMatch(
+					pom -> MyPaths.getParent(pom).startsWith(rootDir)
+			);
+		});
 	}
 
 	public static Stream<Path> gradleWrapperDirs(ChoreContext context) {
