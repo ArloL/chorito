@@ -134,4 +134,40 @@ public class JavaUpdaterChoreTest {
 				""");
 	}
 
+	@Test
+	public void testMultiModuleChildIsSkipped() throws Exception {
+		Path rootPom = extension.root().resolve("pom.xml");
+		FilesSilent.writeString(rootPom, """
+				<project>
+				</project>
+				""");
+
+		Path childPom = extension.root().resolve("module/pom.xml");
+		String childContent = """
+				<project>
+					<parent>
+						<groupId>io.github.arlol</groupId>
+						<artifactId>parent</artifactId>
+						<version>1.0</version>
+						<relativePath>../pom.xml</relativePath>
+					</parent>
+				</project>
+				""";
+		FilesSilent.writeString(childPom, childContent);
+		FilesSilent.touch(
+				extension.root().resolve("module/src/main/java/Main.java")
+		);
+
+		doit();
+
+		assertThat(rootPom).content().isEqualTo("""
+				<project>
+					<properties>
+						<java.version>25</java.version>
+					</properties>
+				</project>
+				""");
+		assertThat(childPom).content().isEqualTo(childContent);
+	}
+
 }
