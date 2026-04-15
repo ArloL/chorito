@@ -10,7 +10,7 @@ public class IdiomaticVersionFileChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		DirectoryStreams.javaDirs(context).forEach(javaDir -> {
+		DirectoryStreams.rootJavaDirs(context).forEach(javaDir -> {
 			FilesSilent.deleteIfExists(javaDir.resolve(".java-version"));
 			Path toolVersions = javaDir.resolve(".tool-versions");
 			if (!FilesSilent.exists(toolVersions)) {
