@@ -290,6 +290,55 @@ public class DependabotChoreTest {
 	}
 
 	@Test
+	public void testMavenMultiModuleProject() throws Exception {
+		FilesSilent.writeString(extension.root().resolve("pom.xml"), """
+				<project>
+				    <modelVersion>4.0.0</modelVersion>
+				    <groupId>com.example</groupId>
+				    <artifactId>parent</artifactId>
+				    <version>1.0-SNAPSHOT</version>
+				    <packaging>pom</packaging>
+				    <modules>
+				        <module>module-a</module>
+				    </modules>
+				</project>
+				""");
+		FilesSilent
+				.writeString(extension.root().resolve("module-a/pom.xml"), """
+						<project>
+						    <modelVersion>4.0.0</modelVersion>
+						    <parent>
+						        <groupId>com.example</groupId>
+						        <artifactId>parent</artifactId>
+						        <version>1.0-SNAPSHOT</version>
+						        <relativePath>../pom.xml</relativePath>
+						    </parent>
+						    <artifactId>module-a</artifactId>
+						</project>
+						""");
+
+		doit();
+
+		Path dependabot = extension.root().resolve(".github/dependabot.yml");
+		assertThat(dependabot).content().isEqualTo("""
+				version: 2
+				updates:
+				- package-ecosystem: "maven"
+				  directory: "/"
+				  schedule:
+				    interval: "monthly"
+				  cooldown:
+				    default-days: 7
+				- package-ecosystem: "github-actions"
+				  directory: "/"
+				  schedule:
+				    interval: "monthly"
+				  cooldown:
+				    default-days: 7
+				""");
+	}
+
+	@Test
 	public void testMaintainSettingsWithTrailingSlash() throws Exception {
 		// given
 		FilesSilent.touch(extension.root().resolve("subdir/pom.xml"));
