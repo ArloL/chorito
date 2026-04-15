@@ -53,6 +53,15 @@ public final class DirectoryStreams {
 				.filter(pom -> withCode(context, MyPaths.getParent(pom)));
 	}
 
+	public static Stream<Path> rootMavenPomsWhereProjectHasCode(
+			ChoreContext context
+	) {
+		if (mavenPomsWithCode(context).findAny().isEmpty()) {
+			return Stream.empty();
+		}
+		return rootMavenPoms(context);
+	}
+
 	public static Stream<Path> gradleWrapperDirs(ChoreContext context) {
 		var gradleWrapperStream = context.textFiles()
 				.stream()
