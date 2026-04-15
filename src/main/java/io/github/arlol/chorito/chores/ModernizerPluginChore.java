@@ -13,7 +13,7 @@ public class ModernizerPluginChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		DirectoryStreams.mavenPomsWithCode(context).forEach(pomXml -> {
+		DirectoryStreams.rootMavenPoms(context).forEach(pomXml -> {
 			Document doc = JsoupSilent
 					.parse(pomXml, "UTF-8", "", Parser.xmlParser());
 
