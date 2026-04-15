@@ -28,7 +28,7 @@ public final class DirectoryStreams {
 		return Stream
 				.of(
 						rootMavenPomsWithCode(context).map(MyPaths::getParent),
-						javaGradleDirsWithCode(context)
+						rootJavaGradleDirs(context)
 				)
 				.flatMap(Function.identity())
 				.distinct();
