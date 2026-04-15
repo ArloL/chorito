@@ -122,6 +122,41 @@ public class IntellijChoreTest {
 	}
 
 	@Test
+	public void testMultiModuleChildDoesNotGetIntellijSettings() {
+		// given — root pom has no code, child pom has relativePath + code
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
+		FilesSilent.writeString(extension.root().resolve("module/pom.xml"), """
+				<project>
+				    <parent>
+				        <groupId>io.github.arlol</groupId>
+				        <artifactId>parent</artifactId>
+				        <version>1.0</version>
+				        <relativePath>../pom.xml</relativePath>
+				    </parent>
+				</project>
+				""");
+		FilesSilent.touch(
+				extension.root().resolve("module/src/main/java/Main.java")
+		);
+
+		// when
+		doit();
+
+		// then — root gets settings, child does not
+		assertThat(
+				extension.root().resolve(".idea/codeStyles/codeStyleConfig.xml")
+		).exists();
+		assertThat(
+				FilesSilent.exists(
+						extension.root()
+								.resolve(
+										"module/.idea/codeStyles/codeStyleConfig.xml"
+								)
+				)
+		).isFalse();
+	}
+
+	@Test
 	public void testAddLombok() throws Exception {
 
 		// given

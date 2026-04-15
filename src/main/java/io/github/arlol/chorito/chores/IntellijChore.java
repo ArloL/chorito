@@ -18,7 +18,7 @@ public class IntellijChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		DirectoryStreams.javaDirs(context).forEach(dir -> {
+		DirectoryStreams.rootJavaDirs(context).forEach(dir -> {
 			writeFromTemplate(context, dir, "eclipseCodeFormatter");
 			writeFromTemplate(context, dir, "saveactions_settings");
 			writeFromTemplate(context, dir, "codeStyles/codeStyleConfig");
