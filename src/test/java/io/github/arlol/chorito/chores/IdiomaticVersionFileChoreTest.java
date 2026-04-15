@@ -51,7 +51,8 @@ public class IdiomaticVersionFileChoreTest {
 	}
 
 	@Test
-	public void testMultiModuleMavenDoesNotCreateInChildModule() throws Exception {
+	public void testMultiModuleMavenDoesNotCreateInChildModule()
+			throws Exception {
 		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
 		FilesSilent.touch(extension.root().resolve("pom.xml"));
 		FilesSilent.writeString(extension.root().resolve("child/pom.xml"), """
@@ -61,12 +62,15 @@ public class IdiomaticVersionFileChoreTest {
 				</parent>
 				</project>
 				""");
-		FilesSilent.touch(extension.root().resolve("child/src/main/java/Child.java"));
+		FilesSilent.touch(
+				extension.root().resolve("child/src/main/java/Child.java")
+		);
 
 		doit();
 
 		assertThat(extension.root().resolve(".tool-versions")).exists();
-		assertThat(extension.root().resolve("child/.tool-versions")).doesNotExist();
+		assertThat(extension.root().resolve("child/.tool-versions"))
+				.doesNotExist();
 	}
 
 	@Test
