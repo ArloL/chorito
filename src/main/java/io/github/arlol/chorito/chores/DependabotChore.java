@@ -6,6 +6,7 @@ import java.util.function.Predicate;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.DependabotConfigFile;
+import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.MyPaths;
 
@@ -34,7 +35,16 @@ public class DependabotChore implements Chore {
 			dependabotConfigFile = new DependabotConfigFile();
 		}
 
-		addEcosystemIfFileExists("pom.xml", "maven", context);
+		DirectoryStreams.rootMavenPoms(context)
+				.map(path -> getRootRelativePath(context.root(), path))
+				.distinct()
+				.forEach(
+						rootRelativePath -> dependabotConfigFile
+								.addEcosystemInDirectory(
+										"maven",
+										rootRelativePath
+								)
+				);
 		addEcosystemIfFileExists("Gemfile.lock", "bundler", context);
 		dependabotConfigFile.addEcosystemInDirectory("github-actions", "/");
 		addEcosystemIfFileNameMatches("(?i).*dockerfile", "docker", context);
