@@ -24,6 +24,16 @@ public final class DirectoryStreams {
 				.distinct();
 	}
 
+	public static Stream<Path> rootJavaDirs(ChoreContext context) {
+		return Stream
+				.of(
+						rootMavenPomsWithCode(context).map(MyPaths::getParent),
+						javaGradleDirsWithCode(context)
+				)
+				.flatMap(Function.identity())
+				.distinct();
+	}
+
 	public static Stream<Path> mavenPoms(ChoreContext context) {
 		return context.textFiles()
 				.stream()
