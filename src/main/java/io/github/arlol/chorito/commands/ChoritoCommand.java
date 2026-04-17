@@ -42,6 +42,7 @@ public class ChoritoCommand {
 				new EclipseOptimizeImportSettingsChore(),
 				new SpotbugsPluginChore(),
 				new ModernizerPluginChore(),
+				new MavenJavadocSourcesPluginChore(),
 				new LifecycleMappingChore(),
 				new VsCodeChore(),
 				new IntellijChore(),
