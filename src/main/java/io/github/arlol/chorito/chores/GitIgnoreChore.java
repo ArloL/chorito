@@ -126,10 +126,17 @@ public class GitIgnoreChore implements Chore {
 			*.o
 			""";
 
+	private static String GITIGNORE_JEKYLL = """
+			### Jekyll ###
+
+			/_site/
+			""";
+
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		createPythonIgnore(context);
 		createZigIgnore(context);
+		createJekyllIgnore(context);
 		createPackageJsonIgnore(context);
 		createYarnIgnore(context);
 		createMavenAndGradleIgnore(context);
@@ -151,6 +158,15 @@ public class GitIgnoreChore implements Chore {
 	private void createZigIgnore(ChoreContext context) {
 		DirectoryStreams.buildZigDirs(context).forEach(dir -> {
 			updateExistingGitignore(dir.resolve(".gitignore"), GITIGNORE_ZIG);
+		});
+	}
+
+	private void createJekyllIgnore(ChoreContext context) {
+		DirectoryStreams.jekyllGemfileDirs(context).forEach(dir -> {
+			updateExistingGitignore(
+					dir.resolve(".gitignore"),
+					GITIGNORE_JEKYLL
+			);
 		});
 	}
 

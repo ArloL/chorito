@@ -104,6 +104,14 @@ public class GitIgnoreChoreTest {
 			# Add custom entries after this line to be preserved during automated updates
 			""";
 
+	private static String DEFAULT_JEKYLL_GEMFILE = """
+			### Jekyll ###
+
+			/_site/
+
+			# Add custom entries after this line to be preserved during automated updates
+			""";
+
 	private static String OLD_POM_XML = """
 			# Created by chorito https://github.com/ArloL/chorito
 
@@ -141,6 +149,32 @@ public class GitIgnoreChoreTest {
 		Path gitignore = extension.root().resolve(".gitignore");
 		doit();
 		assertThat(FilesSilent.exists(gitignore)).isFalse();
+	}
+
+	@Test
+	public void testWithJekyllGemfile() throws Exception {
+		FilesSilent.writeString(
+				extension.root().resolve("Gemfile"),
+				"gem 'jekyll'"
+		);
+
+		doit();
+
+		assertThat(extension.root().resolve(".gitignore")).content()
+				.isEqualTo(DEFAULT_JEKYLL_GEMFILE);
+	}
+
+	@Test
+	public void testWithNonJekyllGemfile() throws Exception {
+		FilesSilent.writeString(
+				extension.root().resolve("Gemfile"),
+				"gem 'rails'"
+		);
+
+		doit();
+
+		assertThat(FilesSilent.exists(extension.root().resolve(".gitignore")))
+				.isFalse();
 	}
 
 	@Test
