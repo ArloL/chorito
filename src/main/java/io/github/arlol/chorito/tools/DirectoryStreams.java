@@ -132,6 +132,17 @@ public final class DirectoryStreams {
 				.map(MyPaths::getParent);
 	}
 
+	public static Stream<Path> jekyllGemfileDirs(ChoreContext context) {
+		return context.textFiles()
+				.stream()
+				.filter(file -> file.endsWith("Gemfile"))
+				.filter(
+						gemfile -> FilesSilent.readString(gemfile)
+								.contains("jekyll")
+				)
+				.map(MyPaths::getParent);
+	}
+
 	public static Stream<Path> dotYarnDirs(ChoreContext context) {
 		return context.textFiles()
 				.stream()
