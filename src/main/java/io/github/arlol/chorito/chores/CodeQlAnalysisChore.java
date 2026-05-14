@@ -46,17 +46,7 @@ public class CodeQlAnalysisChore implements Chore {
 				)) {
 			languages.add("python");
 		}
-		Path workflowsLocation = context.resolve(".github/workflows");
-		if (context.textFiles()
-				.stream()
-				.anyMatch(path -> path.startsWith(workflowsLocation))) {
-			languages.add("actions");
-		}
-
-		// there is no code in this repository that can be analyzed
-		if (languages.isEmpty()) {
-			return context;
-		}
+		languages.add("actions");
 
 		RandomCronBuilder randomCronBuilder = new RandomCronBuilder(
 				context.randomGenerator()
