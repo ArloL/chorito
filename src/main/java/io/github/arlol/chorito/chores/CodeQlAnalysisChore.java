@@ -46,6 +46,11 @@ public class CodeQlAnalysisChore implements Chore {
 				)) {
 			languages.add("python");
 		}
+		if (context.textFiles()
+				.stream()
+				.anyMatch(path -> path.endsWith("go.mod"))) {
+			languages.add("go");
+		}
 		languages.add("actions");
 
 		RandomCronBuilder randomCronBuilder = new RandomCronBuilder(
