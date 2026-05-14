@@ -51,6 +51,7 @@ public class DependabotChore implements Chore {
 		addEcosystemIfFileExists("Pipfile", "pip", context);
 		addEcosystemIfFileExists("pyproject.toml", "pip", context);
 		addEcosystemIfFileExists("package.json", "npm", context);
+		addEcosystemIfFileExists("go.mod", "go", context);
 		addEcosystemIfFileExists("build.gradle", "gradle", context);
 		addEcosystemIfFileExists(".terraform.lock.hcl", "terraform", context);
 		addEcosystemIfFileExists(

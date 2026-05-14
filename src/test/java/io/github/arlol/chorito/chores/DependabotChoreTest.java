@@ -170,6 +170,57 @@ public class DependabotChoreTest {
 	}
 
 	@Test
+	public void testGoMod() throws Exception {
+		FilesSilent.touch(extension.root().resolve("go.mod"));
+
+		doit();
+
+		Path dependabot = extension.root().resolve(".github/dependabot.yml");
+		assertThat(dependabot).content().isEqualTo("""
+				version: 2
+				updates:
+				- package-ecosystem: "github-actions"
+				  directory: "/"
+				  schedule:
+				    interval: "monthly"
+				  cooldown:
+				    default-days: 7
+				- package-ecosystem: "go"
+				  directory: "/"
+				  schedule:
+				    interval: "monthly"
+				  cooldown:
+				    default-days: 7
+				""");
+	}
+
+	@Test
+	public void testGoModInSubdirectory() throws Exception {
+		FilesSilent.createDirectories(extension.root().resolve("services/api"));
+		FilesSilent.touch(extension.root().resolve("services/api/go.mod"));
+
+		doit();
+
+		Path dependabot = extension.root().resolve(".github/dependabot.yml");
+		assertThat(dependabot).content().isEqualTo("""
+				version: 2
+				updates:
+				- package-ecosystem: "github-actions"
+				  directory: "/"
+				  schedule:
+				    interval: "monthly"
+				  cooldown:
+				    default-days: 7
+				- package-ecosystem: "go"
+				  directory: "/services/api/"
+				  schedule:
+				    interval: "monthly"
+				  cooldown:
+				    default-days: 7
+				""");
+	}
+
+	@Test
 	public void testKeepExistingSettings() throws Exception {
 		Path dependabot = extension.root().resolve(".github/dependabot.yml");
 		FilesSilent.writeString(dependabot, """
