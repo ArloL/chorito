@@ -27,6 +27,27 @@ public class CodeQlAnalysisChoreTest {
 	}
 
 	@Test
+	public void testEmptyGithubProject() throws Exception {
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new CodeQlAnalysisChore().doit(context);
+
+		Path workflow = context
+				.resolve(".github/workflows/codeql-analysis.yaml");
+		assertTrue(FilesSilent.exists(workflow));
+		assertThat(removeVersions(FilesSilent.readString(workflow))).isEqualTo(
+				removeVersions(
+						ClassPathFiles
+								.readString("codeql/actions-expected.yaml")
+				)
+		);
+	}
+
+	@Test
 	public void testJava() throws Exception {
 		FilesSilent.touch(extension.root().resolve("pom.xml"));
 
