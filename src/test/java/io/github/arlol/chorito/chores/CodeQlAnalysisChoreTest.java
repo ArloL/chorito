@@ -146,6 +146,30 @@ public class CodeQlAnalysisChoreTest {
 	}
 
 	@Test
+	public void testGo() throws Exception {
+		FilesSilent.touch(extension.root().resolve("go.mod"));
+
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		Path workflow = context
+				.resolve(".github/workflows/codeql-analysis.yaml");
+
+		new CodeQlAnalysisChore().doit(context);
+
+		assertThat(removeVersions(FilesSilent.readString(workflow)))
+				.isEqualTo(
+						removeVersions(
+								ClassPathFiles
+										.readString("codeql/go-expected.yaml")
+						)
+				);
+	}
+
+	@Test
 	public void testActions() throws Exception {
 		FilesSilent
 				.touch(extension.root().resolve(".github/workflows/main.yaml"));
