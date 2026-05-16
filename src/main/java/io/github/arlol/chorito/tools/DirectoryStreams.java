@@ -1,6 +1,7 @@
 package io.github.arlol.chorito.tools;
 
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -78,10 +79,7 @@ public final class DirectoryStreams {
 	}
 
 	public static Stream<Path> rootGradleDirs(ChoreContext context) {
-		return context.textFiles()
-				.stream()
-				.filter(file -> file.endsWith("settings.gradle"))
-				.map(MyPaths::getParent);
+		return dirsContainingFile(context, "settings.gradle");
 	}
 
 	public static Stream<Path> rootJavaGradleDirs(ChoreContext context) {
@@ -93,13 +91,7 @@ public final class DirectoryStreams {
 	}
 
 	public static Stream<Path> gradleDirs(ChoreContext context) {
-		return context.textFiles()
-				.stream()
-				.filter(
-						file -> file.endsWith("build.gradle")
-								|| file.endsWith("settings.gradle")
-				)
-				.map(MyPaths::getParent)
+		return dirsContainingFile(context, "build.gradle", "settings.gradle")
 				.distinct();
 	}
 
@@ -112,24 +104,15 @@ public final class DirectoryStreams {
 	}
 
 	public static Stream<Path> pyprojectTomlDirs(ChoreContext context) {
-		return context.textFiles()
-				.stream()
-				.filter(file -> file.endsWith("pyproject.toml"))
-				.map(MyPaths::getParent);
+		return dirsContainingFile(context, "pyproject.toml");
 	}
 
 	public static Stream<Path> buildZigDirs(ChoreContext context) {
-		return context.textFiles()
-				.stream()
-				.filter(file -> file.endsWith("build.zig"))
-				.map(MyPaths::getParent);
+		return dirsContainingFile(context, "build.zig");
 	}
 
 	public static Stream<Path> packageJsonDirs(ChoreContext context) {
-		return context.textFiles()
-				.stream()
-				.filter(file -> file.endsWith("package.json"))
-				.map(MyPaths::getParent);
+		return dirsContainingFile(context, "package.json");
 	}
 
 	public static Stream<Path> jekyllGemfileDirs(ChoreContext context) {
@@ -155,6 +138,19 @@ public final class DirectoryStreams {
 						)
 				)
 				.distinct();
+	}
+
+	private static Stream<Path> dirsContainingFile(
+			ChoreContext context,
+			String... fileNames
+	) {
+		return context.textFiles()
+				.stream()
+				.filter(
+						file -> Arrays.stream(fileNames)
+								.anyMatch(file::endsWith)
+				)
+				.map(MyPaths::getParent);
 	}
 
 	private static boolean withCode(ChoreContext context, Path dir) {

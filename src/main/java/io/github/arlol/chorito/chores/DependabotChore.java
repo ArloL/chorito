@@ -110,23 +110,9 @@ public class DependabotChore implements Chore {
 			String ecosystem,
 			ChoreContext context
 	) {
-		addEcosystemIfFileNameMatches(
-				fileNamePattern,
-				ecosystem,
-				context,
-				Function.identity()
-		);
-	}
-
-	private void addEcosystemIfFileNameMatches(
-			String fileNamePattern,
-			String ecosystem,
-			ChoreContext context,
-			Function<Path, Path> transformFilePathToDirectory
-	) {
 		addEcosystemIfFilterMatches(context, path -> {
 			return MyPaths.getFileNameAsString(path).matches(fileNamePattern);
-		}, ecosystem, transformFilePathToDirectory);
+		}, ecosystem, Function.identity());
 	}
 
 	private void addEcosystemIfFilterMatches(
