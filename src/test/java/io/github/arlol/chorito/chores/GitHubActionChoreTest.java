@@ -162,6 +162,26 @@ public class GitHubActionChoreTest {
 	}
 
 	@Test
+	public void testReusableWorkflowJobKeepsNoSteps() throws Exception {
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+
+		FilesSilent.writeString(workflow, """
+				jobs:
+				  call:
+				    uses: ./.github/workflows/reusable.yaml
+				""");
+
+		new GitHubActionChore().doit(extension.choreContext());
+
+		assertThat(workflow).content().isEqualTo("""
+				permissions: {}
+				jobs:
+				  call:
+				    uses: ./.github/workflows/reusable.yaml
+				""");
+	}
+
+	@Test
 	public void testVsShellWorkflowFile() throws Exception {
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(workflow, """

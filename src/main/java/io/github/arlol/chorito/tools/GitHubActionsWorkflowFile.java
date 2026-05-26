@@ -216,17 +216,14 @@ public class GitHubActionsWorkflowFile {
 
 	public void removeActionFromJob(String jobName, String actionName) {
 		var jobNode = getJob(jobName);
-		List<Node> nodes = getKeyAsSequence(jobNode, "steps")
-				.map(SequenceNode::getValue)
-				.orElse(List.of())
-				.stream()
-				.filter(step -> {
-					return scalarValue(getKeyAsNode(nodeAsMap(step), "uses"))
-							.filter(uses -> uses.startsWith(actionName))
-							.isEmpty();
-				})
-				.toList();
-		setKey(jobNode.orElseThrow(), "steps", newSequence(nodes));
+		getKeyAsSequence(jobNode, "steps").ifPresent(stepsNode -> {
+			List<Node> nodes = stepsNode.getValue().stream().filter(step -> {
+				return scalarValue(getKeyAsNode(nodeAsMap(step), "uses"))
+						.filter(uses -> uses.startsWith(actionName))
+						.isEmpty();
+			}).toList();
+			setKey(jobNode.orElseThrow(), "steps", newSequence(nodes));
+		});
 	}
 
 	public void setJobMatrixKey(String job, String key, List<String> values) {
@@ -251,35 +248,31 @@ public class GitHubActionsWorkflowFile {
 				.orElse(List.of())) {
 			var jobNode = nodeAsMap(jobTuple.getValueNode());
 
-			List<Node> steps = getKeyAsSequence(jobNode, "steps")
-					.map(SequenceNode::getValue)
-					.orElse(List.of())
-					.stream()
-					.map(step -> {
-						var stepNode = nodeAsMap(step);
-						if (scalarValue(getKeyAsNode(stepNode, "uses"))
-								.filter(
-										uses -> uses
-												.startsWith("actions/checkout@")
-								)
-								.isPresent()) {
-							var withNode = getKeyAsMap(stepNode, "with")
-									.orElse(newMap());
-							var persistCredentialsNode = getKeyAsNode(
-									withNode,
-									"persist-credentials"
-							).orElse(newScalar(false));
-							setKey(
-									withNode,
-									"persist-credentials",
-									persistCredentialsNode
-							);
-							setKey(stepNode, "with", withNode);
-						}
-						return step;
-					})
-					.toList();
-			setKey(jobNode, "steps", newSequence(steps));
+			getKeyAsSequence(jobNode, "steps").ifPresent(stepsNode -> {
+				List<Node> steps = stepsNode.getValue().stream().map(step -> {
+					var stepNode = nodeAsMap(step);
+					if (scalarValue(getKeyAsNode(stepNode, "uses"))
+							.filter(
+									uses -> uses.startsWith("actions/checkout@")
+							)
+							.isPresent()) {
+						var withNode = getKeyAsMap(stepNode, "with")
+								.orElse(newMap());
+						var persistCredentialsNode = getKeyAsNode(
+								withNode,
+								"persist-credentials"
+						).orElse(newScalar(false));
+						setKey(
+								withNode,
+								"persist-credentials",
+								persistCredentialsNode
+						);
+						setKey(stepNode, "with", withNode);
+					}
+					return step;
+				}).toList();
+				setKey(jobNode, "steps", newSequence(steps));
+			});
 		}
 	}
 
@@ -291,26 +284,20 @@ public class GitHubActionsWorkflowFile {
 				.orElse(List.of())) {
 			var jobNode = nodeAsMap(jobTuple.getValueNode());
 
-			List<Node> steps = getKeyAsSequence(jobNode, "steps")
-					.map(SequenceNode::getValue)
-					.orElse(List.of())
-					.stream()
-					.peek(step -> {
-						var stepNode = nodeAsMap(step);
-						if (scalarValue(getKeyAsNode(stepNode, "uses"))
-								.filter(
-										uses -> uses
-												.startsWith(actionName + "@")
-								)
-								.isPresent()) {
-							removeKey(
-									getKeyAsMap(stepNode, "with"),
-									inputParameter
-							);
-						}
-					})
-					.toList();
-			setKey(jobNode, "steps", newSequence(steps));
+			getKeyAsSequence(jobNode, "steps").ifPresent(stepsNode -> {
+				List<Node> steps = stepsNode.getValue().stream().peek(step -> {
+					var stepNode = nodeAsMap(step);
+					if (scalarValue(getKeyAsNode(stepNode, "uses"))
+							.filter(uses -> uses.startsWith(actionName + "@"))
+							.isPresent()) {
+						removeKey(
+								getKeyAsMap(stepNode, "with"),
+								inputParameter
+						);
+					}
+				}).toList();
+				setKey(jobNode, "steps", newSequence(steps));
+			});
 		}
 	}
 
@@ -323,29 +310,23 @@ public class GitHubActionsWorkflowFile {
 				.orElse(List.of())) {
 			var jobNode = nodeAsMap(jobTuple.getValueNode());
 
-			List<Node> steps = getKeyAsSequence(jobNode, "steps")
-					.map(SequenceNode::getValue)
-					.orElse(List.of())
-					.stream()
-					.peek(step -> {
-						var stepNode = nodeAsMap(step);
-						if (scalarValue(getKeyAsNode(stepNode, "uses"))
-								.filter(
-										uses -> uses
-												.startsWith(actionName + "@")
-								)
-								.isPresent()) {
-							var withNode = getKeyAsMap(stepNode, "with")
-									.orElseGet(() -> {
-										var with = newMap();
-										setKey(stepNode, "with", with);
-										return with;
-									});
-							setKey(withNode, inputParameter, newScalar(value));
-						}
-					})
-					.toList();
-			setKey(jobNode, "steps", newSequence(steps));
+			getKeyAsSequence(jobNode, "steps").ifPresent(stepsNode -> {
+				List<Node> steps = stepsNode.getValue().stream().peek(step -> {
+					var stepNode = nodeAsMap(step);
+					if (scalarValue(getKeyAsNode(stepNode, "uses"))
+							.filter(uses -> uses.startsWith(actionName + "@"))
+							.isPresent()) {
+						var withNode = getKeyAsMap(stepNode, "with")
+								.orElseGet(() -> {
+									var with = newMap();
+									setKey(stepNode, "with", with);
+									return with;
+								});
+						setKey(withNode, inputParameter, newScalar(value));
+					}
+				}).toList();
+				setKey(jobNode, "steps", newSequence(steps));
+			});
 		}
 	}
 
@@ -442,50 +423,47 @@ public class GitHubActionsWorkflowFile {
 				.orElse(List.of())) {
 			var jobNode = nodeAsMap(jobTuple.getValueNode());
 
-			List<Node> steps = getKeyAsSequence(jobNode, "steps")
-					.map(SequenceNode::getValue)
-					.orElse(List.of())
-					.stream()
-					.map(step -> {
-						var stepNode = nodeAsMap(step);
+			getKeyAsSequence(jobNode, "steps").ifPresent(stepsNode -> {
+				List<Node> steps = stepsNode.getValue().stream().map(step -> {
+					var stepNode = nodeAsMap(step);
 
-						getKeyAsMap(stepNode, "with").ifPresent(mappingNode -> {
-							var workflowList = mappingNode.getValue()
-									.stream()
-									.sorted(Comparator.comparing(tuple -> {
-										if (tuple
-												.getKeyNode() instanceof ScalarNode keyNode) {
-											return keyNode.getValue();
-										}
-										return tuple.getKeyNode().toString();
-									}))
-									.toList();
-							mappingNode.setValue(workflowList);
-						});
-
-						var stepList = stepNode.getValue()
+					getKeyAsMap(stepNode, "with").ifPresent(mappingNode -> {
+						var withList = mappingNode.getValue()
 								.stream()
-								.sorted(Comparator.comparingInt(tuple -> {
+								.sorted(Comparator.comparing(tuple -> {
 									if (tuple
 											.getKeyNode() instanceof ScalarNode keyNode) {
-										return switch (keyNode.getValue()) {
-										case "name" -> 10;
-										case "id" -> 11;
-										case "if" -> 12;
-										case "uses" -> 20;
-										case "with" -> 2000;
-										case "run" -> 2000;
-										default -> 1000;
-										};
+										return keyNode.getValue();
 									}
-									return 1000;
+									return tuple.getKeyNode().toString();
 								}))
 								.toList();
-						stepNode.setValue(stepList);
-						return step;
-					})
-					.toList();
-			setKey(jobNode, "steps", newSequence(steps));
+						mappingNode.setValue(withList);
+					});
+
+					var stepList = stepNode.getValue()
+							.stream()
+							.sorted(Comparator.comparingInt(tuple -> {
+								if (tuple
+										.getKeyNode() instanceof ScalarNode keyNode) {
+									return switch (keyNode.getValue()) {
+									case "name" -> 10;
+									case "id" -> 11;
+									case "if" -> 12;
+									case "uses" -> 20;
+									case "with" -> 2000;
+									case "run" -> 2000;
+									default -> 1000;
+									};
+								}
+								return 1000;
+							}))
+							.toList();
+					stepNode.setValue(stepList);
+					return step;
+				}).toList();
+				setKey(jobNode, "steps", newSequence(steps));
+			});
 
 			var jobList = jobNode.getValue()
 					.stream()
@@ -521,37 +499,34 @@ public class GitHubActionsWorkflowFile {
 				.orElse(List.of())) {
 			var jobNode = nodeAsMap(jobTuple.getValueNode());
 
-			List<Node> steps = getKeyAsSequence(jobNode, "steps")
-					.map(SequenceNode::getValue)
-					.orElse(List.of())
-					.stream()
-					.peek(step -> {
-						var stepNode = nodeAsMap(step);
-						getKeyAsScalar(stepNode, "uses")
-								.filter(
-										uses -> uses.getValue()
-												.startsWith(oldAction + "@")
-								)
-								.ifPresent(uses -> {
-									var scalarNode = newScalar(
-											newActionRef,
-											uses.getScalarStyle()
-									);
-									scalarNode.setInLineComments(
-											List.of(
-													new CommentLine(
-															Optional.empty(),
-															Optional.empty(),
-															" " + newActionVersion,
-															CommentType.IN_LINE
-													)
-											)
-									);
-									setKey(stepNode, "uses", scalarNode);
-								});
-					})
-					.toList();
-			setKey(jobNode, "steps", newSequence(steps));
+			getKeyAsSequence(jobNode, "steps").ifPresent(stepsNode -> {
+				List<Node> steps = stepsNode.getValue().stream().peek(step -> {
+					var stepNode = nodeAsMap(step);
+					getKeyAsScalar(stepNode, "uses")
+							.filter(
+									uses -> uses.getValue()
+											.startsWith(oldAction + "@")
+							)
+							.ifPresent(uses -> {
+								var scalarNode = newScalar(
+										newActionRef,
+										uses.getScalarStyle()
+								);
+								scalarNode.setInLineComments(
+										List.of(
+												new CommentLine(
+														Optional.empty(),
+														Optional.empty(),
+														" " + newActionVersion,
+														CommentType.IN_LINE
+												)
+										)
+								);
+								setKey(stepNode, "uses", scalarNode);
+							});
+				}).toList();
+				setKey(jobNode, "steps", newSequence(steps));
+			});
 		}
 	}
 
