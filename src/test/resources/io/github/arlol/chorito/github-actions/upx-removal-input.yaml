@@ -187,7 +187,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         cache: 'maven'
     - name: Remove WindowsImageHeapProviderFeature
-      run: '& 7z d "$env:JAVA_HOME\lib\svm\builder\svm.jar" com/oracle/svm/core/windows/WindowsImageHeapProviderFeature.class' 
+      run: '& 7z d "$env:JAVA_HOME\lib\svm\builder\svm.jar" com/oracle/svm/core/windows/WindowsImageHeapProviderFeature.class'
     - name: Install upx
       run: choco install upx --version=3.96 --no-progress
     - name: Build with Maven
@@ -317,7 +317,7 @@ jobs:
           --batch-mode \
           -Dsha1="${GITHUB_SHA}" \
           -Drevision="${REVISION}" \
-          -DaltDeploymentRepository="github::default::https://maven.pkg.github.com/${GITHUB_REPOSITORY}" \
+          -DaltDeploymentRepository="github::https://maven.pkg.github.com/${GITHUB_REPOSITORY}" \
           deploy
     - name: Make sure build did not change anything
       run: git diff --exit-code
