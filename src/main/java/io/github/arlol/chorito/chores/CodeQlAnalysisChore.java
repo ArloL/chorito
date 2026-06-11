@@ -2,6 +2,7 @@ package io.github.arlol.chorito.chores;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import io.github.arlol.chorito.tools.ChoreContext;
@@ -52,6 +53,7 @@ public class CodeQlAnalysisChore implements Chore {
 			languages.add("go");
 		}
 		languages.add("actions");
+		languages.sort(Comparator.naturalOrder());
 
 		RandomCronBuilder randomCronBuilder = new RandomCronBuilder(
 				context.randomGenerator()
