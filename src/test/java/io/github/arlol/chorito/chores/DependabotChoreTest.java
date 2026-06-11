@@ -185,7 +185,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
-				- package-ecosystem: "go"
+				- package-ecosystem: "gomod"
 				  directory: "/"
 				  schedule:
 				    interval: "monthly"
@@ -211,8 +211,49 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
-				- package-ecosystem: "go"
+				- package-ecosystem: "gomod"
 				  directory: "/services/api/"
+				  schedule:
+				    interval: "monthly"
+				  cooldown:
+				    default-days: 7
+				""");
+	}
+
+	@Test
+	public void testRenameGoToGomod() throws Exception {
+		FilesSilent.touch(extension.root().resolve("go.mod"));
+		Path dependabot = extension.root().resolve(".github/dependabot.yml");
+		FilesSilent.writeString(dependabot, """
+				version: 2
+				updates:
+				  - package-ecosystem: "github-actions"
+				    directory: "/"
+				    schedule:
+				      interval: "monthly"
+				    cooldown:
+				      default-days: 7
+				  - package-ecosystem: "go"
+				    directory: "/"
+				    schedule:
+				      interval: "monthly"
+				    cooldown:
+				      default-days: 7
+				""");
+
+		doit();
+
+		assertThat(dependabot).content().isEqualTo("""
+				version: 2
+				updates:
+				- package-ecosystem: "github-actions"
+				  directory: "/"
+				  schedule:
+				    interval: "monthly"
+				  cooldown:
+				    default-days: 7
+				- package-ecosystem: "gomod"
+				  directory: "/"
 				  schedule:
 				    interval: "monthly"
 				  cooldown:

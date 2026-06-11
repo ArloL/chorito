@@ -45,13 +45,14 @@ public class DependabotChore implements Chore {
 										rootRelativePath
 								)
 				);
+		dependabotConfigFile.renameEcosystem("go", "gomod");
 		addEcosystemIfFileExists("Gemfile.lock", "bundler", context);
 		dependabotConfigFile.addEcosystemInDirectory("github-actions", "/");
 		addEcosystemIfFileNameMatches("(?i).*dockerfile", "docker", context);
 		addEcosystemIfFileExists("Pipfile", "pip", context);
 		addEcosystemIfFileExists("pyproject.toml", "pip", context);
 		addEcosystemIfFileExists("package.json", "npm", context);
-		addEcosystemIfFileExists("go.mod", "go", context);
+		addEcosystemIfFileExists("go.mod", "gomod", context);
 		addEcosystemIfFileExists("build.gradle", "gradle", context);
 		addEcosystemIfFileExists(".terraform.lock.hcl", "terraform", context);
 		addEcosystemIfFileExists(
