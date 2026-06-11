@@ -88,6 +88,16 @@ public class DependabotConfigFile {
 		getUpdates().add(newMap(nodes));
 	}
 
+	public void renameEcosystem(String from, String to) {
+		getUpdatesAsMappingNode().filter(update -> {
+			return scalarValue(getKeyAsNode(update, "package-ecosystem"))
+					.filter(from::equals)
+					.isPresent();
+		}).forEach(update -> {
+			setKey(update, "package-ecosystem", newScalar(to));
+		});
+	}
+
 	public void changeDailyScheduleToMonthly() {
 		getYamlPath(root.orElseThrow(), "/updates/schedule[interval=daily]")
 				.forEach(node -> {
