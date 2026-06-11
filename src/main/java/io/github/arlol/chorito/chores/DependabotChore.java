@@ -45,7 +45,6 @@ public class DependabotChore implements Chore {
 										rootRelativePath
 								)
 				);
-		dependabotConfigFile.renameEcosystem("go", "gomod");
 		addEcosystemIfFileExists("Gemfile.lock", "bundler", context);
 		dependabotConfigFile.addEcosystemInDirectory("github-actions", "/");
 		addEcosystemIfFileNameMatches("(?i).*dockerfile", "docker", context);
