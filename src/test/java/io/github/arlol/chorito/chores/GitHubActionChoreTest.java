@@ -416,60 +416,6 @@ public class GitHubActionChoreTest {
 	}
 
 	@Test
-	public void testTestExectuableCreation() {
-		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
-		FilesSilent.writeString(
-				workflow,
-				ClassPathFiles
-						.readString("github-actions/upx-removal-output.yaml")
-		);
-
-		ChoreContext context = extension.choreContext()
-				.toBuilder()
-				.remotes(List.of("https://github.com/example/example"))
-				.randomGenerator(new FakeRandomGenerator())
-				.build();
-
-		new GitHubActionChore().doit(context);
-
-		Path testExecutable = extension.root()
-				.resolve("src/test/native/test-executable.sh");
-		String expected = ClassPathFiles
-				.readString("github-actions/test-executable-expected.sh");
-		assertThat(testExecutable).content().isEqualTo(expected);
-	}
-
-	@Test
-	public void testTestExectuableUpdate() {
-		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
-		FilesSilent.writeString(
-				workflow,
-				ClassPathFiles
-						.readString("github-actions/upx-removal-output.yaml")
-		);
-		Path testExecutable = extension.root()
-				.resolve("src/test/native/test-executable.sh");
-		FilesSilent.writeString(testExecutable, """
-				lol
-				# add custom tests here:
-				lololol
-				""");
-
-		ChoreContext context = extension.choreContext()
-				.toBuilder()
-				.remotes(List.of("https://github.com/example/example"))
-				.randomGenerator(new FakeRandomGenerator())
-				.build();
-
-		new GitHubActionChore().doit(context);
-
-		String expected = ClassPathFiles.readString(
-				"github-actions/test-executable-expected-update.sh"
-		);
-		assertThat(testExecutable).content().isEqualTo(expected);
-	}
-
-	@Test
 	public void testPermissionUpdate() {
 		Path pom = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(

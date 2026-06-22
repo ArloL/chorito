@@ -70,7 +70,6 @@ public class GitHubActionChore implements Chore {
 		if (!main.hasJob("version")) {
 			return;
 		}
-		updateTestExecutable(context);
 
 		var currentMain = new GitHubActionsWorkflowFile(
 				ClassPathFiles.readString("github-settings/workflows/main.yaml")
@@ -83,28 +82,6 @@ public class GitHubActionChore implements Chore {
 		if (!after.equals(before)) {
 			FilesSilent.writeString(mainYaml, main.asString());
 		}
-	}
-
-	private void updateTestExecutable(ChoreContext context) {
-		List<String> templateLines = ClassPathFiles
-				.readAllLines("native-test/test-executable.sh");
-		templateLines = templateLines.subList(
-				0,
-				templateLines.indexOf("# add custom tests here:") + 1
-		);
-		Path testExectuable = context
-				.resolve("src/test/native/test-executable.sh");
-		if (FilesSilent.exists(testExectuable)) {
-			List<String> testExecutableLines = FilesSilent
-					.readAllLines(testExectuable);
-			testExecutableLines = testExecutableLines.subList(
-					testExecutableLines.indexOf("# add custom tests here:") + 1,
-					testExecutableLines.size()
-			);
-			templateLines.addAll(testExecutableLines);
-		}
-		FilesSilent.write(testExectuable, templateLines, "\n");
-		ExecutableFlagger.makeExecutableIfPossible(testExectuable);
 	}
 
 	private void updateDebugSteps(ChoreContext context) {
