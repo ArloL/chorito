@@ -29,6 +29,7 @@ public class ChoritoCommand {
 				new DockerfileChore(),
 				new DockerIgnoreChore(),
 				new DependabotChore(),
+				new NpmrcChore(),
 				new CodeQlAnalysisChore(),
 				new GitHubActionChore(),
 				new GitIgnoreChore(),
