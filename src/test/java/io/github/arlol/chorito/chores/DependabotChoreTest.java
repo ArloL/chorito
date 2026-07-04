@@ -50,6 +50,10 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				- package-ecosystem: "npm"
 				  directory: "/test-projects/vite-project/"
 				  schedule:
@@ -79,6 +83,10 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				- package-ecosystem: "npm"
 				  directory: "/"
 				  schedule:
@@ -110,6 +118,10 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				- package-ecosystem: "terraform"
 				  directory: "/"
 				  schedule:
@@ -135,6 +147,10 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				- package-ecosystem: "docker"
 				  directory: "/"
 				  schedule:
@@ -160,6 +176,10 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				- package-ecosystem: "docker"
 				  directory: "/"
 				  schedule:
@@ -185,6 +205,10 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				- package-ecosystem: "gomod"
 				  directory: "/"
 				  schedule:
@@ -211,6 +235,10 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				- package-ecosystem: "gomod"
 				  directory: "/services/api/"
 				  schedule:
@@ -247,6 +275,10 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				""");
 	}
 
@@ -288,18 +320,30 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				- package-ecosystem: "github-actions"
 				  directory: "/.github/actions/hello/"
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				- package-ecosystem: "github-actions"
 				  directory: "/.github/actions/bye/"
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				""");
 	}
 
@@ -337,6 +381,10 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				""");
 	}
 
@@ -386,6 +434,10 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				""");
 	}
 
@@ -423,6 +475,10 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				""");
 	}
 
@@ -451,6 +507,10 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				""");
 	}
 
@@ -470,6 +530,10 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				- package-ecosystem: "pip"
 				  directory: "/"
 				  schedule:
@@ -497,6 +561,10 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
 				- package-ecosystem: "devcontainers"
 				  directory: "/"
 				  schedule:

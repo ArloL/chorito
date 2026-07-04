@@ -98,6 +98,64 @@ public class DependabotConfigFileTest {
 	}
 
 	@Test
+	void testAddGitHubCodeQlActionGroupIfMissing() throws Exception {
+		var dependabotConfigFile = new DependabotConfigFile("""
+				updates:
+				- package-ecosystem: "github-actions"
+				- package-ecosystem: "maven"
+				""");
+		dependabotConfigFile.addGitHubCodeQlActionGroupIfMissing();
+		assertEquals("""
+				updates:
+				- package-ecosystem: "github-actions"
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
+				- package-ecosystem: "maven"
+				""", dependabotConfigFile.asString());
+	}
+
+	@Test
+	void testAddGitHubCodeQlActionGroupKeepsExistingGroups() throws Exception {
+		var dependabotConfigFile = new DependabotConfigFile("""
+				updates:
+				- package-ecosystem: "github-actions"
+				  groups:
+				    docker-actions:
+				      patterns:
+				      - "docker/*"
+				""");
+		dependabotConfigFile.addGitHubCodeQlActionGroupIfMissing();
+		assertEquals("""
+				updates:
+				- package-ecosystem: "github-actions"
+				  groups:
+				    docker-actions:
+				      patterns:
+				      - "docker/*"
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action*"
+				""", dependabotConfigFile.asString());
+	}
+
+	@Test
+	void testAddGitHubCodeQlActionGroupIsIdempotent() throws Exception {
+		var content = """
+				updates:
+				- package-ecosystem: "github-actions"
+				  groups:
+				    github-codeql-action:
+				      patterns:
+				      - "github/codeql-action-custom*"
+				""";
+		var dependabotConfigFile = new DependabotConfigFile(content);
+		dependabotConfigFile.addGitHubCodeQlActionGroupIfMissing();
+		assertEquals(content, dependabotConfigFile.asString());
+	}
+
+	@Test
 	void testAddCooldownIfTooLow() throws Exception {
 		var dependabotConfigFile = new DependabotConfigFile("""
 				updates:

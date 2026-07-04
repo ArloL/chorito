@@ -95,6 +95,33 @@ public class DependabotConfigFile {
 				});
 	}
 
+	public void addGitHubCodeQlActionGroupIfMissing() {
+		getUpdatesAsMappingNode().forEach(update -> {
+			if (scalarValue(getKeyAsNode(update, "package-ecosystem"))
+					.filter("github-actions"::equals)
+					.isEmpty()) {
+				return;
+			}
+			var group = newMap(
+					newTuple(
+							"patterns",
+							newSequence(newScalar("github/codeql-action*"))
+					)
+			);
+			getKeyAsMap(update, "groups").ifPresentOrElse(groups -> {
+				if (getKeyAsNode(groups, "github-codeql-action").isEmpty()) {
+					setKey(groups, "github-codeql-action", group);
+				}
+			}, () -> {
+				setKey(
+						update,
+						"groups",
+						newMap(newTuple("github-codeql-action", group))
+				);
+			});
+		});
+	}
+
 	public void addCooldownIfMissing() {
 		getUpdatesAsMappingNode().forEach(update -> {
 			getKeyAsMap(update, "cooldown").ifPresentOrElse(cooldown -> {
