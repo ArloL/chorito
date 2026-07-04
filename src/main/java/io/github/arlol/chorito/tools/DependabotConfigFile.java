@@ -122,6 +122,27 @@ public class DependabotConfigFile {
 		});
 	}
 
+	public void addOpenPullRequestsLimitIfMissing() {
+		getUpdatesAsMappingNode().forEach(update -> {
+			getKeyAsScalar(update, "open-pull-requests-limit")
+					.ifPresentOrElse(limit -> {
+						if (Integer.parseInt(limit.getValue()) < 10) {
+							setKey(
+									update,
+									"open-pull-requests-limit",
+									newScalar(10)
+							);
+						}
+					}, () -> {
+						setKey(
+								update,
+								"open-pull-requests-limit",
+								newScalar(10)
+						);
+					});
+		});
+	}
+
 	public void addCooldownIfMissing() {
 		getUpdatesAsMappingNode().forEach(update -> {
 			getKeyAsMap(update, "cooldown").ifPresentOrElse(cooldown -> {

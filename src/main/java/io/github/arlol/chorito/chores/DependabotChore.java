@@ -65,6 +65,7 @@ public class DependabotChore implements Chore {
 
 		dependabotConfigFile.changeDailyScheduleToMonthly();
 		dependabotConfigFile.addCooldownIfMissing();
+		dependabotConfigFile.addOpenPullRequestsLimitIfMissing();
 		dependabotConfigFile.addGitHubCodeQlActionGroupIfMissing();
 
 		FilesSilent.writeString(dependabotYml, dependabotConfigFile.asString());
