@@ -50,6 +50,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				  groups:
 				    github-codeql-action:
 				      patterns:
@@ -60,6 +61,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				""");
 	}
 
@@ -83,6 +85,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				  groups:
 				    github-codeql-action:
 				      patterns:
@@ -93,12 +96,14 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				- package-ecosystem: "npm"
 				  directory: "/test-projects/vite-project/"
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				""");
 	}
 
@@ -118,6 +123,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				  groups:
 				    github-codeql-action:
 				      patterns:
@@ -128,6 +134,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				""");
 	}
 
@@ -147,6 +154,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				  groups:
 				    github-codeql-action:
 				      patterns:
@@ -157,6 +165,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				""");
 	}
 
@@ -176,6 +185,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				  groups:
 				    github-codeql-action:
 				      patterns:
@@ -186,6 +196,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				""");
 	}
 
@@ -205,6 +216,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				  groups:
 				    github-codeql-action:
 				      patterns:
@@ -215,6 +227,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				""");
 	}
 
@@ -235,6 +248,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				  groups:
 				    github-codeql-action:
 				      patterns:
@@ -245,6 +259,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				""");
 	}
 
@@ -255,7 +270,7 @@ public class DependabotChoreTest {
 				version: 2
 				updates:
 				  - package-ecosystem: "github-actions"
-				    open-pull-requests-limit: 1
+				    open-pull-requests-limit: 15
 				    directory: "/"
 				    schedule:
 				      interval: "monthly"
@@ -269,7 +284,7 @@ public class DependabotChoreTest {
 				version: 2
 				updates:
 				- package-ecosystem: "github-actions"
-				  open-pull-requests-limit: 1
+				  open-pull-requests-limit: 15
 				  directory: "/"
 				  schedule:
 				    interval: "monthly"
@@ -320,6 +335,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				  groups:
 				    github-codeql-action:
 				      patterns:
@@ -330,6 +346,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				  groups:
 				    github-codeql-action:
 				      patterns:
@@ -340,6 +357,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				  groups:
 				    github-codeql-action:
 				      patterns:
@@ -381,6 +399,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				  groups:
 				    github-codeql-action:
 				      patterns:
@@ -428,12 +447,14 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				- package-ecosystem: "github-actions"
 				  directory: "/"
 				  schedule:
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				  groups:
 				    github-codeql-action:
 				      patterns:
@@ -450,7 +471,7 @@ public class DependabotChoreTest {
 				version: 2
 				updates:
 				  - package-ecosystem: "maven"
-				    open-pull-requests-limit: 1
+				    open-pull-requests-limit: 15
 				    directory: "/subdir"
 				    schedule:
 				      interval: "monthly"
@@ -463,7 +484,7 @@ public class DependabotChoreTest {
 				version: 2
 				updates:
 				- package-ecosystem: "maven"
-				  open-pull-requests-limit: 1
+				  open-pull-requests-limit: 15
 				  directory: "/subdir"
 				  schedule:
 				    interval: "monthly"
@@ -475,6 +496,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				  groups:
 				    github-codeql-action:
 				      patterns:
@@ -501,7 +523,7 @@ public class DependabotChoreTest {
 				version: 2
 				updates:
 				- package-ecosystem: "github-actions"
-				  open-pull-requests-limit: 1
+				  open-pull-requests-limit: 10
 				  directory: "/"
 				  schedule:
 				    interval: "monthly"
@@ -530,6 +552,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				  groups:
 				    github-codeql-action:
 				      patterns:
@@ -540,6 +563,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				""");
 	}
 
@@ -561,6 +585,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				  groups:
 				    github-codeql-action:
 				      patterns:
@@ -571,6 +596,7 @@ public class DependabotChoreTest {
 				    interval: "monthly"
 				  cooldown:
 				    default-days: 7
+				  open-pull-requests-limit: 10
 				""");
 	}
 

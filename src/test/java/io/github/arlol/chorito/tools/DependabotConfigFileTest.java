@@ -156,6 +156,47 @@ public class DependabotConfigFileTest {
 	}
 
 	@Test
+	void testAddOpenPullRequestsLimitIfMissing() throws Exception {
+		var dependabotConfigFile = new DependabotConfigFile("""
+				updates:
+				- package-ecosystem: "github-actions"
+				""");
+		dependabotConfigFile.addOpenPullRequestsLimitIfMissing();
+		assertEquals("""
+				updates:
+				- package-ecosystem: "github-actions"
+				  open-pull-requests-limit: 10
+				""", dependabotConfigFile.asString());
+	}
+
+	@Test
+	void testAddOpenPullRequestsLimitIfTooLow() throws Exception {
+		var dependabotConfigFile = new DependabotConfigFile("""
+				updates:
+				- package-ecosystem: "github-actions"
+				  open-pull-requests-limit: 1
+				""");
+		dependabotConfigFile.addOpenPullRequestsLimitIfMissing();
+		assertEquals("""
+				updates:
+				- package-ecosystem: "github-actions"
+				  open-pull-requests-limit: 10
+				""", dependabotConfigFile.asString());
+	}
+
+	@Test
+	void testAddOpenPullRequestsLimitKeepsHigherLimit() throws Exception {
+		var content = """
+				updates:
+				- package-ecosystem: "github-actions"
+				  open-pull-requests-limit: 15
+				""";
+		var dependabotConfigFile = new DependabotConfigFile(content);
+		dependabotConfigFile.addOpenPullRequestsLimitIfMissing();
+		assertEquals(content, dependabotConfigFile.asString());
+	}
+
+	@Test
 	void testAddCooldownIfTooLow() throws Exception {
 		var dependabotConfigFile = new DependabotConfigFile("""
 				updates:
