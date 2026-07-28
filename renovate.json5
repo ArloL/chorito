@@ -18,6 +18,20 @@
             "depNameTemplate": "com.github.spotbugs:spotbugs-maven-plugin",
             "datasourceTemplate": "maven",
         },
+        {
+            // Keeps the modernizer-maven-plugin version that
+            // ModernizerPluginChore writes into other repositories up to date.
+            "customType": "regex",
+            "managerFilePatterns": [
+                "/^src/main/java/io/github/arlol/chorito/chores/ModernizerPluginChore\\.java$/",
+                "/^src/test/resources/io/github/arlol/chorito/modernizer-plugin/expected\\.xml$/",
+            ],
+            "matchStrings": [
+                "<groupId>org\\.gaul</groupId>\\s*<artifactId>modernizer-maven-plugin</artifactId>\\s*<version>(?<currentValue>.*?)</version>",
+            ],
+            "depNameTemplate": "org.gaul:modernizer-maven-plugin",
+            "datasourceTemplate": "maven",
+        },
     ],
     "extends": [
         "config:recommended",
