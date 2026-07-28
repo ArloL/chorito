@@ -3,6 +3,22 @@
     "addLabels": [
         "{{manager}}",
     ],
+    "customManagers": [
+        {
+            // Keeps the spotbugs-maven-plugin version that SpotbugsPluginChore
+            // writes into other repositories up to date.
+            "customType": "regex",
+            "managerFilePatterns": [
+                "/^src/main/java/io/github/arlol/chorito/chores/SpotbugsPluginChore\\.java$/",
+                "/^src/test/resources/io/github/arlol/chorito/spotbugs-plugin/expected\\.xml$/",
+            ],
+            "matchStrings": [
+                "<groupId>com\\.github\\.spotbugs</groupId>\\s*<artifactId>spotbugs-maven-plugin</artifactId>\\s*<version>(?<currentValue>.*?)</version>",
+            ],
+            "depNameTemplate": "com.github.spotbugs:spotbugs-maven-plugin",
+            "datasourceTemplate": "maven",
+        },
+    ],
     "extends": [
         "config:recommended",
     ],
