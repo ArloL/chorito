@@ -37,61 +37,61 @@ public class LicenseChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		Path license = context.resolve("LICENSE");
+		moveIfExists(context.resolve("LICENSE.md"), license);
+		moveIfExists(context.resolve("LICENSE.txt"), license);
 
-		Path licenseMd = context.resolve("LICENSE.md");
-		if (FilesSilent.exists(licenseMd)) {
-			FilesSilent.move(licenseMd, license);
+		if (!isGitHubProject(context)) {
+			return context;
 		}
+		checkPom(context);
 
-		Path licenseTxt = context.resolve("LICENSE.txt");
-		if (FilesSilent.exists(licenseTxt)) {
-			FilesSilent.move(licenseTxt, license);
-		}
-
-		if (context.remotes()
-				.stream()
-				.anyMatch(s -> s.startsWith("https://github.com"))) {
-			checkPom(context);
-			final String currentYear = ""
-					+ Year.now(context.clock()).getValue();
-			String newLicenseContent = MIT_LICENSE
-					.replace("${YEAR}", currentYear);
-			if (FilesSilent.exists(license)) {
-				String currentLicenseContent = FilesSilent.readString(license);
-				Optional<String> currentRange = readYearRangeFromFile(
-						currentLicenseContent
-				);
-				if (currentRange.isPresent()) {
-					String newRange;
-					String existingRange = currentRange.orElseThrow();
-					String startYear;
-					String endYear;
-					if (existingRange.contains("-")) {
-						String[] split = existingRange.split("-");
-						startYear = split[0];
-						endYear = split[1];
-					} else {
-						startYear = existingRange;
-						endYear = existingRange;
-					}
-					if (!endYear.equals(currentYear)) {
-						endYear = currentYear;
-					}
-					if (startYear.equals(endYear)) {
-						newRange = startYear;
-					} else {
-						newRange = startYear + "-" + endYear;
-					}
-					newLicenseContent = currentLicenseContent
-							.replace(existingRange, newRange);
-					FilesSilent.writeString(license, newLicenseContent);
-				}
-			} else {
-				FilesSilent.writeString(license, newLicenseContent);
-			}
-
+		String currentYear = "" + Year.now(context.clock()).getValue();
+		if (FilesSilent.exists(license)) {
+			updateCopyrightYear(license, currentYear);
+		} else {
+			FilesSilent.writeString(
+					license,
+					MIT_LICENSE.replace("${YEAR}", currentYear)
+			);
 		}
 		return context;
+	}
+
+	private static void moveIfExists(Path source, Path target) {
+		if (FilesSilent.exists(source)) {
+			FilesSilent.move(source, target);
+		}
+	}
+
+	private static boolean isGitHubProject(ChoreContext context) {
+		return context.remotes()
+				.stream()
+				.anyMatch(s -> s.startsWith("https://github.com"));
+	}
+
+	private void updateCopyrightYear(Path license, String currentYear) {
+		String content = FilesSilent.readString(license);
+		Optional<String> existingRange = readYearRangeFromFile(content);
+		if (existingRange.isEmpty()) {
+			return;
+		}
+		String range = existingRange.orElseThrow();
+		FilesSilent.writeString(
+				license,
+				content.replace(range, endYearRangeAt(range, currentYear))
+		);
+	}
+
+	/**
+	 * Keeps the start of an existing copyright range and moves its end to the
+	 * current year, collapsing it to a single year when they are the same.
+	 */
+	private static String endYearRangeAt(String range, String currentYear) {
+		String startYear = range.contains("-") ? range.split("-")[0] : range;
+		if (startYear.equals(currentYear)) {
+			return startYear;
+		}
+		return startYear + "-" + currentYear;
 	}
 
 	private void checkPom(ChoreContext context) {
