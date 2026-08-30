@@ -225,7 +225,7 @@ public abstract class Yamls {
 		return scalarValue(Optional.of(node));
 	}
 
-	public static Consumer<? super MappingNode> copyValue(
+	public static Consumer<MappingNode> copyValue(
 			Optional<MappingNode> template
 	) {
 		return node -> template

@@ -43,7 +43,7 @@ public class GitHubActionsWorkflowFile {
 	private static final String PERMISSIONS = "permissions";
 
 	public static String removeVersions(String input) {
-		return input.replaceAll("(?m)^([\\s-]*uses:.*?)@.*$", "$1@\n");
+		return input.replaceAll("(?m)^([ \\t-]*uses:.*?)@.*$", "$1@\n");
 	}
 
 	private Optional<Node> root;

@@ -24,6 +24,7 @@ public class ProcessBuilderSilent {
 			try {
 				process.waitFor(timeout, unit);
 			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 				throw new IllegalStateException(e);
 			}
 		}
