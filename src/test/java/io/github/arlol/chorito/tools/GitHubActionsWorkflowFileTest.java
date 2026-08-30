@@ -25,6 +25,14 @@ public class GitHubActionsWorkflowFileTest {
 	}
 
 	@Test
+	public void removeVersionsCutsAtFirstAt() {
+		assertThat(
+				GitHubActionsWorkflowFile
+						.removeVersions("      - uses: a/b@c # d@e\n")
+		).isEqualTo("      - uses: a/b@\n\n");
+	}
+
+	@Test
 	public void removeVersionsHandlesBlankLinesBeforeUses() {
 		assertThat(
 				GitHubActionsWorkflowFile

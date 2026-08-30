@@ -21,6 +21,7 @@ public class GitHubActionChore implements Chore {
 	private static final String SETUP_GRAALVM_ACTION = "graalvm/setup-graalvm";
 	private static final String DISTRIBUTION_TEMURIN = "distribution: temurin";
 	private static final String VERSION_JOB = "version";
+	private static final String VERSION_INPUT_PARAMETER = "version";
 	private static final String DEBUG_JOB = "debug";
 
 	@Override
@@ -851,7 +852,7 @@ public class GitHubActionChore implements Chore {
 			);
 			workflow.removeInputParameterFromAction(
 					SETUP_GRAALVM_ACTION,
-					"version"
+					VERSION_INPUT_PARAMETER
 			);
 			workflow.removeInputParameterFromAction(
 					SETUP_GRAALVM_ACTION,
