@@ -14,6 +14,15 @@ import io.github.arlol.chorito.tools.RandomCronBuilder;
 
 public class GitHubActionChore implements Chore {
 
+	private static final String WORKFLOWS_DIRECTORY = ".github/workflows";
+	private static final String YAML_EXTENSION = ".yaml";
+	private static final String MAIN_WORKFLOW = ".github/workflows/main.yaml";
+	private static final String MAIN_WORKFLOW_TEMPLATE = "github-settings/workflows/main.yaml";
+	private static final String SETUP_GRAALVM_ACTION = "graalvm/setup-graalvm";
+	private static final String DISTRIBUTION_TEMURIN = "distribution: temurin";
+	private static final String VERSION_JOB = "version";
+	private static final String DEBUG_JOB = "debug";
+
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		updateChoresWorkflow(context);
@@ -44,21 +53,21 @@ public class GitHubActionChore implements Chore {
 	}
 
 	public void updatePermissions(ChoreContext context) {
-		Path mainYaml = context.resolve(".github/workflows/main.yaml");
+		Path mainYaml = context.resolve(MAIN_WORKFLOW);
 		if (!FilesSilent.exists(mainYaml)) {
 			return;
 		}
 		String string = FilesSilent.readString(mainYaml);
 		var main = new GitHubActionsWorkflowFile(string);
 		var template = new GitHubActionsWorkflowFile(
-				ClassPathFiles.readString("github-settings/workflows/main.yaml")
+				ClassPathFiles.readString(MAIN_WORKFLOW_TEMPLATE)
 		);
 		main.updatePermissionsFromTemplate(template);
 		FilesSilent.writeString(mainYaml, main.asString());
 	}
 
 	public void updateGraalSteps(ChoreContext context) {
-		Path mainYaml = context.resolve(".github/workflows/main.yaml");
+		Path mainYaml = context.resolve(MAIN_WORKFLOW);
 		if (!FilesSilent.exists(mainYaml)) {
 			return;
 		}
@@ -67,12 +76,12 @@ public class GitHubActionChore implements Chore {
 			return;
 		}
 		var main = new GitHubActionsWorkflowFile(string);
-		if (!main.hasJob("version")) {
+		if (!main.hasJob(VERSION_JOB)) {
 			return;
 		}
 
 		var currentMain = new GitHubActionsWorkflowFile(
-				ClassPathFiles.readString("github-settings/workflows/main.yaml")
+				ClassPathFiles.readString(MAIN_WORKFLOW_TEMPLATE)
 		);
 		String before = main.asStringWithoutVersions();
 		main.setJob("macos", currentMain.getJob("macos"));
@@ -89,20 +98,20 @@ public class GitHubActionChore implements Chore {
 				ClassPathFiles
 						.readString("github-settings/workflows/chores.yaml")
 		);
-		var debugJob = currentMain.getJob("debug");
-		Path workflowsLocation = context.resolve(".github/workflows");
+		var debugJob = currentMain.getJob(DEBUG_JOB);
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				return path.toString().endsWith(YAML_EXTENSION);
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {
 			var workflow = new GitHubActionsWorkflowFile(
 					FilesSilent.readString(path)
 			);
-			if (workflow.hasJob("debug")) {
+			if (workflow.hasJob(DEBUG_JOB)) {
 				String before = workflow.asStringWithoutVersions();
-				workflow.setJob("debug", debugJob);
+				workflow.setJob(DEBUG_JOB, debugJob);
 				String after = workflow.asStringWithoutVersions();
 				if (!after.equals(before)) {
 					FilesSilent.writeString(path, workflow.asString());
@@ -113,22 +122,22 @@ public class GitHubActionChore implements Chore {
 
 	private void updateVersionSteps(ChoreContext context) {
 		var currentMain = new GitHubActionsWorkflowFile(
-				ClassPathFiles.readString("github-settings/workflows/main.yaml")
+				ClassPathFiles.readString(MAIN_WORKFLOW_TEMPLATE)
 		);
-		var versionJob = currentMain.getJob("version");
-		Path workflowsLocation = context.resolve(".github/workflows");
+		var versionJob = currentMain.getJob(VERSION_JOB);
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				return path.toString().endsWith(YAML_EXTENSION);
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {
 			var workflow = new GitHubActionsWorkflowFile(
 					FilesSilent.readString(path)
 			);
-			if (workflow.hasJob("version")) {
+			if (workflow.hasJob(VERSION_JOB)) {
 				String before = workflow.asStringWithoutVersions();
-				workflow.setJob("version", versionJob);
+				workflow.setJob(VERSION_JOB, versionJob);
 				String after = workflow.asStringWithoutVersions();
 				if (!after.equals(before)) {
 					FilesSilent.writeString(path, workflow.asString());
@@ -138,10 +147,10 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateActionsCreateRelease(ChoreContext context) {
-		Path workflowsLocation = context.resolve(".github/workflows");
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				return path.toString().endsWith(YAML_EXTENSION);
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {
@@ -164,10 +173,10 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateActionsUploadReleaseAsset(ChoreContext context) {
-		Path workflowsLocation = context.resolve(".github/workflows");
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				return path.toString().endsWith(YAML_EXTENSION);
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {
@@ -250,7 +259,7 @@ public class GitHubActionChore implements Chore {
 				context.randomGenerator()
 		);
 		String randomDayOfMonth = randomCronBuilder.randomDayOfMonth();
-		Path yaml = context.resolve(".github/workflows/main.yaml");
+		Path yaml = context.resolve(MAIN_WORKFLOW);
 		if (FilesSilent.exists(yaml)) {
 			String content = FilesSilent.readString(yaml);
 			readCurrentCron(content).ifPresent(currentCron -> {
@@ -281,31 +290,29 @@ public class GitHubActionChore implements Chore {
 	private void migrateJavaDistributionFromAdoptToTemurin(
 			ChoreContext context
 	) {
-		Path workflowsLocation = context.resolve(".github/workflows");
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				return path.toString().endsWith(YAML_EXTENSION);
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			updated = updated
-					.replace("distribution: adopt", "distribution: temurin");
+					.replace("distribution: adopt", DISTRIBUTION_TEMURIN);
 			updated = updated
-					.replace("distribution: 'adopt'", "distribution: temurin");
-			updated = updated.replace(
-					"distribution: \"adopt\"",
-					"distribution: temurin"
-			);
+					.replace("distribution: 'adopt'", DISTRIBUTION_TEMURIN);
+			updated = updated
+					.replace("distribution: \"adopt\"", DISTRIBUTION_TEMURIN);
 			FilesSilent.writeString(path, updated);
 		});
 	}
 
 	private void migrateToGraalSetupAction(ChoreContext context) {
-		Path workflowsLocation = context.resolve(".github/workflows");
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				return path.toString().endsWith(YAML_EXTENSION);
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {
@@ -367,10 +374,10 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void useSpecificActionVersions(ChoreContext context) {
-		Path workflowsLocation = context.resolve(".github/workflows");
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				return path.toString().endsWith(YAML_EXTENSION);
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {
@@ -424,10 +431,10 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void removeSetupJava370(ChoreContext context) {
-		Path workflowsLocation = context.resolve(".github/workflows");
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				return path.toString().endsWith(YAML_EXTENSION);
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {
@@ -441,10 +448,10 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void replaceSetOutput(ChoreContext context) {
-		Path workflowsLocation = context.resolve(".github/workflows");
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				return path.toString().endsWith(YAML_EXTENSION);
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {
@@ -464,7 +471,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void updateGraalVmVersion(ChoreContext context) {
-		Path main = context.resolve(".github/workflows/main.yaml");
+		Path main = context.resolve(MAIN_WORKFLOW);
 		if (FilesSilent.exists(main)) {
 			List<String> updated = FilesSilent.readAllLines(main)
 					.stream()
@@ -483,7 +490,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void removeCustomGithubPackagesMavenSettings(ChoreContext context) {
-		Path main = context.resolve(".github/workflows/main.yaml");
+		Path main = context.resolve(MAIN_WORKFLOW);
 		if (FilesSilent.exists(main)) {
 			List<String> updated = FilesSilent.readAllLines(main)
 					.stream()
@@ -553,10 +560,10 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void actionsCheckoutWithPersistCredentials(ChoreContext context) {
-		Path workflowsLocation = context.resolve(".github/workflows");
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				return path.toString().endsWith(YAML_EXTENSION);
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {
@@ -572,10 +579,10 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void quoteRedirects(ChoreContext context) {
-		Path workflowsLocation = context.resolve(".github/workflows");
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				return path.toString().endsWith(YAML_EXTENSION);
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {
@@ -590,10 +597,10 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateZipProjects(ChoreContext context) {
-		Path workflowsLocation = context.resolve(".github/workflows");
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				return path.toString().endsWith(YAML_EXTENSION);
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {
@@ -622,10 +629,10 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void removeNeedsVersionOutputsChangelog(ChoreContext context) {
-		Path workflowsLocation = context.resolve(".github/workflows");
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				return path.toString().endsWith(YAML_EXTENSION);
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {
@@ -639,10 +646,10 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateEregonPublishRelease(ChoreContext context) {
-		Path workflowsLocation = context.resolve(".github/workflows");
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				return path.toString().endsWith(YAML_EXTENSION);
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {
@@ -672,10 +679,10 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateNcipoploReleaseAction(ChoreContext context) {
-		Path workflowsLocation = context.resolve(".github/workflows");
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				return path.toString().endsWith(YAML_EXTENSION);
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {
@@ -824,10 +831,10 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateSetupGraalvm(ChoreContext context) {
-		Path workflowsLocation = context.resolve(".github/workflows");
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				return path.toString().endsWith(YAML_EXTENSION);
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {
@@ -839,19 +846,19 @@ public class GitHubActionChore implements Chore {
 			workflow.removeEnv("JAVA_VERSION");
 
 			workflow.removeInputParameterFromAction(
-					"graalvm/setup-graalvm",
+					SETUP_GRAALVM_ACTION,
 					"github-token"
 			);
 			workflow.removeInputParameterFromAction(
-					"graalvm/setup-graalvm",
+					SETUP_GRAALVM_ACTION,
 					"version"
 			);
 			workflow.removeInputParameterFromAction(
-					"graalvm/setup-graalvm",
+					SETUP_GRAALVM_ACTION,
 					"components"
 			);
 			workflow.replaceActionWith(
-					"graalvm/setup-graalvm",
+					SETUP_GRAALVM_ACTION,
 					"actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165",
 					"v5.0.0"
 			);

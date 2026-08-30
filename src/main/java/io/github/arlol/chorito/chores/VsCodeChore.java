@@ -16,6 +16,10 @@ import io.github.arlol.chorito.tools.MyPaths;
 
 public class VsCodeChore implements Chore {
 
+	private static final String RECOMMENDATIONS = "recommendations";
+	private static final String NULL_ANALYSIS_NULLABLE = "java.compile.nullAnalysis.nullable";
+	private static final String NULL_ANALYSIS_NONNULL = "java.compile.nullAnalysis.nonnull";
+
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		Stream.of(
@@ -52,20 +56,20 @@ public class VsCodeChore implements Chore {
 					: JsonBuilder.wrap(extensionsContent);
 
 			if (FilesSilent.anyChildExists(dir, "mvnw", "pom.xml")) {
-				builder.arrayAdd("recommendations", "vscjava.vscode-java-pack");
+				builder.arrayAdd(RECOMMENDATIONS, "vscjava.vscode-java-pack");
 			}
 
 			if (FilesSilent.anyChildExists(dir, "gradlew", "build.gradle")) {
 				builder.arrayAdd(
-						"recommendations",
+						RECOMMENDATIONS,
 						"vscjava.vscode-gradle",
 						"vscjava.vscode-java-pack"
 				);
 			}
 
 			var newExtensionsContent = builder
-					.arrayAdd("recommendations", "editorconfig.editorconfig")
-					.arrayDistinctSort("recommendations")
+					.arrayAdd(RECOMMENDATIONS, "editorconfig.editorconfig")
+					.arrayDistinctSort(RECOMMENDATIONS)
 					.asString();
 
 			if (!extensionsContent.equals(newExtensionsContent)) {
@@ -89,14 +93,14 @@ public class VsCodeChore implements Chore {
 		Jsons.parse(settings).ifPresent(node -> {
 			if (node instanceof ObjectNode objectNode) {
 				if (objectNode.has(
-						"java.compile.nullAnalysis.nullable"
-				) && objectNode.get("java.compile.nullAnalysis.nullable").toString().equalsIgnoreCase("[\"jakarta.annotation.Nullable\",\"edu.umd.cs.findbugs.annotations.Nullable\",\"javax.annotation.Nullable\",\"javax.annotation.CheckForNull\",\"org.jspecify.annotations.Nullable\",\"org.checkerframework.checker.nullness.qual.Nullable\",\"org.checkerframework.checker.nullness.compatqual.NullableDecl\",\"org.checkerframework.checker.nullness.compatqual.NullableType\",\"org.springframework.lang.Nullable\",\"android.support.annotation.Nullable\",\"androidx.annotation.Nullable\",\"androidx.annotation.RecentlyNullable\",\"com.android.annotations.Nullable\",\"org.eclipse.jdt.annotation.Nullable\",\"org.jetbrains.annotations.Nullable\"]")) {
-					objectNode.remove("java.compile.nullAnalysis.nullable");
+						NULL_ANALYSIS_NULLABLE
+				) && objectNode.get(NULL_ANALYSIS_NULLABLE).toString().equalsIgnoreCase("[\"jakarta.annotation.Nullable\",\"edu.umd.cs.findbugs.annotations.Nullable\",\"javax.annotation.Nullable\",\"javax.annotation.CheckForNull\",\"org.jspecify.annotations.Nullable\",\"org.checkerframework.checker.nullness.qual.Nullable\",\"org.checkerframework.checker.nullness.compatqual.NullableDecl\",\"org.checkerframework.checker.nullness.compatqual.NullableType\",\"org.springframework.lang.Nullable\",\"android.support.annotation.Nullable\",\"androidx.annotation.Nullable\",\"androidx.annotation.RecentlyNullable\",\"com.android.annotations.Nullable\",\"org.eclipse.jdt.annotation.Nullable\",\"org.jetbrains.annotations.Nullable\"]")) {
+					objectNode.remove(NULL_ANALYSIS_NULLABLE);
 				}
 				if (objectNode.has(
-						"java.compile.nullAnalysis.nonnull"
-				) && objectNode.get("java.compile.nullAnalysis.nonnull").toString().equalsIgnoreCase("[\"jakarta.annotation.Nonnull\",\"edu.umd.cs.findbugs.annotations.NonNull\",\"javax.annotation.Nonnull\",\"lombok.NonNull\",\"org.jspecify.annotations.NonNull\",\"org.checkerframework.checker.nullness.qual.NonNull\",\"org.checkerframework.checker.nullness.compatqual.NonNullDecl\",\"org.checkerframework.checker.nullness.compatqual.NonNullType\",\"org.springframework.lang.NonNull\",\"android.support.annotation.NonNull\",\"androidx.annotation.NonNull\",\"androidx.annotation.RecentlyNonNull\",\"com.android.annotations.NonNull\",\"org.eclipse.jdt.annotation.NonNull\",\"org.jetbrains.annotations.NotNull\"]")) {
-					objectNode.remove("java.compile.nullAnalysis.nonnull");
+						NULL_ANALYSIS_NONNULL
+				) && objectNode.get(NULL_ANALYSIS_NONNULL).toString().equalsIgnoreCase("[\"jakarta.annotation.Nonnull\",\"edu.umd.cs.findbugs.annotations.NonNull\",\"javax.annotation.Nonnull\",\"lombok.NonNull\",\"org.jspecify.annotations.NonNull\",\"org.checkerframework.checker.nullness.qual.NonNull\",\"org.checkerframework.checker.nullness.compatqual.NonNullDecl\",\"org.checkerframework.checker.nullness.compatqual.NonNullType\",\"org.springframework.lang.NonNull\",\"android.support.annotation.NonNull\",\"androidx.annotation.NonNull\",\"androidx.annotation.RecentlyNonNull\",\"com.android.annotations.NonNull\",\"org.eclipse.jdt.annotation.NonNull\",\"org.jetbrains.annotations.NotNull\"]")) {
+					objectNode.remove(NULL_ANALYSIS_NONNULL);
 				}
 			}
 			Jsons.merge(template, node);

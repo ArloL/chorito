@@ -17,6 +17,8 @@ import io.github.arlol.chorito.tools.PropertiesSilent;
 
 public class JavaUpdaterChore implements Chore {
 
+	private static final String OPENJDK_25 = "openjdk25";
+
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		updatePomXmlJavaVersionProperty(context);
@@ -57,16 +59,16 @@ public class JavaUpdaterChore implements Chore {
 			}
 			Element properties = doc.selectFirst("project > properties");
 			if (properties == null) {
-				project.append("""
-							<properties>
-								<java.version>25</java.version>
-							</properties>
-						""");
+				project.append(
+						"\t<properties>\n"
+								+ "\t\t<java.version>25</java.version>\n"
+								+ "\t</properties>\n"
+				);
 			} else {
 				Elements javaVersionElements = properties
 						.getElementsByTag("java.version");
 				if (javaVersionElements.isEmpty()) {
-					properties.append("	<java.version>25</java.version>\n	");
+					properties.append("\t<java.version>25</java.version>\n\t");
 				} else {
 					javaVersionElements.stream()
 							.filter(e -> e.text().equals("11"))
@@ -118,16 +120,16 @@ public class JavaUpdaterChore implements Chore {
 					.stream()
 					.map(s -> {
 						if (s.trim().equals("- openjdk8")) {
-							return s.replace("openjdk8", "openjdk25");
+							return s.replace("openjdk8", OPENJDK_25);
 						}
 						if (s.trim().equals("- openjdk11")) {
-							return s.replace("openjdk11", "openjdk25");
+							return s.replace("openjdk11", OPENJDK_25);
 						}
 						if (s.trim().equals("- openjdk17")) {
-							return s.replace("openjdk17", "openjdk25");
+							return s.replace("openjdk17", OPENJDK_25);
 						}
 						if (s.trim().equals("- openjdk21")) {
-							return s.replace("openjdk21", "openjdk25");
+							return s.replace("openjdk21", OPENJDK_25);
 						}
 						return s;
 					})

@@ -14,16 +14,20 @@ import io.github.arlol.chorito.tools.JsonMigration;
 
 public class RenovateChore implements Chore {
 
+	private static final String MINIMUM_RELEASE_AGE = "minimumReleaseAge";
+	private static final String LABELS = "labels";
+	private static final String ADD_LABELS = "addLabels";
+
 	static final List<JsonMigration> MIGRATIONS = List.of(
-			replaceString("minimumReleaseAge", "4 days", "7 days"),
+			replaceString(MINIMUM_RELEASE_AGE, "4 days", "7 days"),
 			ifAbsent(
-					"labels",
-					root -> root.array("labels", "dependencies")
-							.array("addLabels", "{{manager}}")
+					LABELS,
+					root -> root.array(LABELS, "dependencies")
+							.array(ADD_LABELS, "{{manager}}")
 			),
 			whenObject(
 					"vulnerabilityAlerts",
-					ifAbsent("addLabels", a -> a.array("addLabels", "security"))
+					ifAbsent(ADD_LABELS, a -> a.array(ADD_LABELS, "security"))
 			)
 	);
 
@@ -52,15 +56,15 @@ public class RenovateChore implements Chore {
 							"https://docs.renovatebot.com/renovate-schema.json"
 					)
 					.array("extends", "config:recommended")
-					.array("labels", "dependencies")
-					.array("addLabels", "{{manager}}")
-					.put("minimumReleaseAge", "7 days")
+					.array(LABELS, "dependencies")
+					.array(ADD_LABELS, "{{manager}}")
+					.put(MINIMUM_RELEASE_AGE, "7 days")
 					.array("schedule", "on the 20th day of the month")
 					.object(
 							"vulnerabilityAlerts",
 							v -> v.array("schedule", "at any time")
-									.put("minimumReleaseAge", "0 days")
-									.array("addLabels", "security")
+									.put(MINIMUM_RELEASE_AGE, "0 days")
+									.array(ADD_LABELS, "security")
 					)
 					.asString();
 			FilesSilent.writeString(renovateJson5, content);

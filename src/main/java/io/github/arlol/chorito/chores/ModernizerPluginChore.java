@@ -28,24 +28,20 @@ public class ModernizerPluginChore implements Chore {
 					throw new IllegalStateException("No spotbugs plugin");
 				}
 				spotbugsPlugin.after(
-						"""
-
-											<plugin>
-												<groupId>org.gaul</groupId>
-												<artifactId>modernizer-maven-plugin</artifactId>
-												<version>3.5.0</version>
-												<configuration>
-													<javaVersion>${java.version}</javaVersion>
-												</configuration>
-												<executions>
-													<execution>
-														<goals>
-															<goal>modernizer</goal>
-														</goals>
-													</execution>
-												</executions>
-											</plugin>\
-								"""
+						"\n" + "\t\t\t<plugin>\n"
+								+ "\t\t\t\t<groupId>org.gaul</groupId>\n"
+								+ "\t\t\t\t<artifactId>modernizer-maven-plugin</artifactId>\n"
+								+ "\t\t\t\t<version>3.5.0</version>\n"
+								+ "\t\t\t\t<configuration>\n"
+								+ "\t\t\t\t\t<javaVersion>${java.version}</javaVersion>\n"
+								+ "\t\t\t\t</configuration>\n"
+								+ "\t\t\t\t<executions>\n"
+								+ "\t\t\t\t\t<execution>\n"
+								+ "\t\t\t\t\t\t<goals>\n"
+								+ "\t\t\t\t\t\t\t<goal>modernizer</goal>\n"
+								+ "\t\t\t\t\t\t</goals>\n"
+								+ "\t\t\t\t\t</execution>\n"
+								+ "\t\t\t\t</executions>\n" + "\t\t\t</plugin>"
 				);
 			}
 

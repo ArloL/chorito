@@ -16,6 +16,9 @@ import io.github.arlol.chorito.tools.JsoupSilent;
 
 public class IntellijChore implements Chore {
 
+	private static final String IDEA_DIRECTORY = ".idea/";
+	private static final String IDEA_SETTINGS_RESOURCES = "idea-settings/";
+
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		DirectoryStreams.rootJavaDirs(context).forEach(dir -> {
@@ -33,9 +36,9 @@ public class IntellijChore implements Chore {
 			Path dir,
 			String name
 	) {
-		Path path = dir.resolve(".idea/" + name + ".xml");
+		Path path = dir.resolve(IDEA_DIRECTORY + name + ".xml");
 		String template = ClassPathFiles
-				.readString("idea-settings/" + name + ".xml");
+				.readString(IDEA_SETTINGS_RESOURCES + name + ".xml");
 		if (!FilesSilent.exists(path)) {
 			FilesSilent.writeString(path, template);
 			context.setDirty();
@@ -47,9 +50,9 @@ public class IntellijChore implements Chore {
 			Path dir
 	) {
 		String name = "externalDependencies";
-		Path path = dir.resolve(".idea/" + name + ".xml");
+		Path path = dir.resolve(IDEA_DIRECTORY + name + ".xml");
 		String templateString = ClassPathFiles
-				.readString("idea-settings/" + name + ".xml");
+				.readString(IDEA_SETTINGS_RESOURCES + name + ".xml");
 		if (!FilesSilent.exists(path)) {
 			FilesSilent.writeString(path, templateString);
 			context.setDirty();
@@ -109,9 +112,9 @@ public class IntellijChore implements Chore {
 			Path dir
 	) {
 		String fileName = "codeStyles/Project";
-		Path path = dir.resolve(".idea/" + fileName + ".xml");
+		Path path = dir.resolve(IDEA_DIRECTORY + fileName + ".xml");
 		String templateString = ClassPathFiles
-				.readString("idea-settings/" + fileName + ".xml");
+				.readString(IDEA_SETTINGS_RESOURCES + fileName + ".xml");
 
 		if (!FilesSilent.exists(path)) {
 			FilesSilent.writeString(path, templateString);

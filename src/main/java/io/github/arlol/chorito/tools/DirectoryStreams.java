@@ -11,6 +11,8 @@ import org.jsoup.parser.Parser;
 
 public final class DirectoryStreams {
 
+	private static final String BUILD_GRADLE_FILENAME = "build.gradle";
+
 	private DirectoryStreams() {
 	}
 
@@ -86,7 +88,7 @@ public final class DirectoryStreams {
 
 	public static Stream<Path> rootJavaGradleDirs(ChoreContext context) {
 		return rootGradleDirs(context).filter(dir -> {
-			Path buildGradle = dir.resolve("build.gradle");
+			Path buildGradle = dir.resolve(BUILD_GRADLE_FILENAME);
 			return FilesSilent.exists(buildGradle)
 					&& FilesSilent.readString(buildGradle).contains("java");
 		});
@@ -96,7 +98,7 @@ public final class DirectoryStreams {
 		return context.textFiles()
 				.stream()
 				.filter(
-						file -> file.endsWith("build.gradle")
+						file -> file.endsWith(BUILD_GRADLE_FILENAME)
 								|| file.endsWith("settings.gradle")
 				)
 				.map(MyPaths::getParent)
@@ -105,7 +107,7 @@ public final class DirectoryStreams {
 
 	public static Stream<Path> javaGradleDirsWithCode(ChoreContext context) {
 		return gradleDirs(context).filter(dir -> {
-			Path buildGradle = dir.resolve("build.gradle");
+			Path buildGradle = dir.resolve(BUILD_GRADLE_FILENAME);
 			return FilesSilent.exists(buildGradle)
 					&& FilesSilent.readString(buildGradle).contains("java");
 		}).filter(dir -> withCode(context, dir));

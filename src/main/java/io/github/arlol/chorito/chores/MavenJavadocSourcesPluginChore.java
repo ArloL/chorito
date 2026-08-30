@@ -28,36 +28,31 @@ public class MavenJavadocSourcesPluginChore implements Chore {
 					throw new IllegalStateException("No modernizer plugin");
 				}
 				modernizerPlugin.after(
-						"""
-
-											<plugin>
-												<groupId>org.apache.maven.plugins</groupId>
-												<artifactId>maven-source-plugin</artifactId>
-												<executions>
-													<execution>
-														<id>attach-sources</id>
-														<goals>
-															<goal>jar-no-fork</goal>
-														</goals>
-													</execution>
-												</executions>
-											</plugin>
-											<plugin>
-												<groupId>org.apache.maven.plugins</groupId>
-												<artifactId>maven-javadoc-plugin</artifactId>
-												<configuration>
-													<doclint>-missing</doclint>
-												</configuration>
-												<executions>
-													<execution>
-														<id>attach-javadocs</id>
-														<goals>
-															<goal>jar</goal>
-														</goals>
-													</execution>
-												</executions>
-											</plugin>\
-								"""
+						"\n" + "\t\t\t<plugin>\n"
+								+ "\t\t\t\t<groupId>org.apache.maven.plugins</groupId>\n"
+								+ "\t\t\t\t<artifactId>maven-source-plugin</artifactId>\n"
+								+ "\t\t\t\t<executions>\n"
+								+ "\t\t\t\t\t<execution>\n"
+								+ "\t\t\t\t\t\t<id>attach-sources</id>\n"
+								+ "\t\t\t\t\t\t<goals>\n"
+								+ "\t\t\t\t\t\t\t<goal>jar-no-fork</goal>\n"
+								+ "\t\t\t\t\t\t</goals>\n"
+								+ "\t\t\t\t\t</execution>\n"
+								+ "\t\t\t\t</executions>\n"
+								+ "\t\t\t</plugin>\n" + "\t\t\t<plugin>\n"
+								+ "\t\t\t\t<groupId>org.apache.maven.plugins</groupId>\n"
+								+ "\t\t\t\t<artifactId>maven-javadoc-plugin</artifactId>\n"
+								+ "\t\t\t\t<configuration>\n"
+								+ "\t\t\t\t\t<doclint>-missing</doclint>\n"
+								+ "\t\t\t\t</configuration>\n"
+								+ "\t\t\t\t<executions>\n"
+								+ "\t\t\t\t\t<execution>\n"
+								+ "\t\t\t\t\t\t<id>attach-javadocs</id>\n"
+								+ "\t\t\t\t\t\t<goals>\n"
+								+ "\t\t\t\t\t\t\t<goal>jar</goal>\n"
+								+ "\t\t\t\t\t\t</goals>\n"
+								+ "\t\t\t\t\t</execution>\n"
+								+ "\t\t\t\t</executions>\n" + "\t\t\t</plugin>"
 				);
 			}
 
