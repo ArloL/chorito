@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.ToIntFunction;
 
 import org.snakeyaml.engine.v2.api.DumpSettings;
 import org.snakeyaml.engine.v2.api.LoadSettings;
@@ -164,53 +165,55 @@ public class GitHubActionsWorkflowFile {
 		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
 				.orElse(List.of())) {
 			String jobName = scalarValue(jobTuple.getKeyNode()).orElseThrow();
-			var job = nodeAsMap(jobTuple.getValueNode());
-			if (template.hasJob(jobName)) {
-				var templatePermissions = getKeyAsMap(
-						template.getJob(jobName),
-						PERMISSIONS
-				);
-				if (templatePermissions.isPresent()) {
-					Optional<MappingNode> permissions = getKeyAsMap(
-							job,
-							PERMISSIONS
-					);
-					permissions.ifPresent(copyValue(templatePermissions));
+			if (!template.hasJob(jobName)) {
+				continue;
+			}
+			var templatePermissions = getKeyAsMap(
+					template.getJob(jobName),
+					PERMISSIONS
+			);
+			if (templatePermissions.isEmpty()) {
+				continue;
+			}
+			applyPermissions(
+					nodeAsMap(jobTuple.getValueNode()),
+					templatePermissions
+			);
+		}
+	}
 
-					if (permissions.isEmpty()) {
-						var permissionsKeyNode = new ScalarNode(
-								Tag.STR,
-								PERMISSIONS,
-								ScalarStyle.PLAIN
-						);
-						var permissionsTuple = new NodeTuple(
-								permissionsKeyNode,
-								templatePermissions.orElseThrow()
-						);
+	private static void applyPermissions(
+			MappingNode job,
+			Optional<MappingNode> templatePermissions
+	) {
+		Optional<MappingNode> permissions = getKeyAsMap(job, PERMISSIONS);
+		if (permissions.isPresent()) {
+			permissions.ifPresent(copyValue(templatePermissions));
+			return;
+		}
+		var permissionsTuple = new NodeTuple(
+				new ScalarNode(Tag.STR, PERMISSIONS, ScalarStyle.PLAIN),
+				templatePermissions.orElseThrow()
+		);
+		job.getValue().add(permissionsInsertionIndex(job), permissionsTuple);
+	}
 
-						int index = 0;
-						for (; index < job.getValue().size(); index++) {
-							NodeTuple jobDetailsTuple = job.getValue()
-									.get(index);
-							String detailKey = scalarValue(
-									jobDetailsTuple.getKeyNode()
-							).orElseThrow();
-							if ("runs-on".equals(detailKey)) {
-								continue;
-							}
-							if ("if".equals(detailKey)) {
-								continue;
-							}
-							if ("needs".equals(detailKey)) {
-								continue;
-							}
-							break;
-						}
-						job.getValue().add(index, permissionsTuple);
-					}
-				}
+	/**
+	 * Permissions belong after the keys that introduce a job, so this skips
+	 * over them and stops at the first other key.
+	 */
+	private static int permissionsInsertionIndex(MappingNode job) {
+		List<String> jobIntroduction = List.of("runs-on", "if", "needs");
+		int index = 0;
+		for (; index < job.getValue().size(); index++) {
+			String detailKey = scalarValue(
+					job.getValue().get(index).getKeyNode()
+			).orElseThrow();
+			if (!jobIntroduction.contains(detailKey)) {
+				break;
 			}
 		}
+		return index;
 	}
 
 	public void removeEnv() {
@@ -401,96 +404,107 @@ public class GitHubActionsWorkflowFile {
 		};
 	}
 
-	public void sortKeys() {
-		nodeAsMap(root).ifPresent(mappingNode -> {
-			var workflowList = mappingNode.getValue()
-					.stream()
-					.sorted(Comparator.comparingInt(tuple -> {
-						if (tuple.getKeyNode() instanceof ScalarNode keyNode) {
-							return switch (keyNode.getValue()) {
-							case "name" -> 10;
-							case "on" -> 50;
-							case PERMISSIONS -> 70;
-							case "env" -> 80;
-							case "jobs" -> 200;
-							default -> 100;
-							};
-						}
-						return 100;
-					}))
-					.toList();
-			mappingNode.setValue(workflowList);
-		});
+	private static final Comparator<NodeTuple> WORKFLOW_KEY_ORDER = keyOrder(
+			key -> switch (key) {
+			case "name" -> 10;
+			case "on" -> 50;
+			case PERMISSIONS -> 70;
+			case "env" -> 80;
+			case "jobs" -> 200;
+			default -> 100;
+			},
+			100
+	);
 
+	private static final Comparator<NodeTuple> JOB_KEY_ORDER = keyOrder(
+			key -> switch (key) {
+			case "name" -> 10;
+			case "needs" -> 15;
+			case "if" -> 20;
+			case "strategy" -> 30;
+			case "runs-on" -> 50;
+			case "environment" -> 60;
+			case "timeout-minutes" -> 70;
+			case PERMISSIONS -> 80;
+			case "outputs" -> 90;
+			case STEPS -> 2000;
+			default -> 1000;
+			},
+			1000
+	);
+
+	private static final Comparator<NodeTuple> STEP_KEY_ORDER = keyOrder(
+			key -> switch (key) {
+			case "name" -> 10;
+			case "id" -> 11;
+			case "if" -> 12;
+			case "uses" -> 20;
+			case "with" -> 2000;
+			case "run" -> 2000;
+			default -> 1000;
+			},
+			1000
+	);
+
+	/**
+	 * Orders tuples by the rank of their key, with {@code fallback} for the
+	 * keys that are not plain scalars.
+	 */
+	private static Comparator<NodeTuple> keyOrder(
+			ToIntFunction<String> ranking,
+			int fallback
+	) {
+		return Comparator.comparingInt(tuple -> {
+			if (tuple.getKeyNode() instanceof ScalarNode keyNode) {
+				return ranking.applyAsInt(keyNode.getValue());
+			}
+			return fallback;
+		});
+	}
+
+	public void sortKeys() {
+		nodeAsMap(root).ifPresent(
+				workflow -> sortTuples(workflow, WORKFLOW_KEY_ORDER)
+		);
 		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
 				.orElse(List.of())) {
-			var jobNode = nodeAsMap(jobTuple.getValueNode());
-
-			getKeyAsSequence(jobNode, STEPS).ifPresent(stepsNode -> {
-				List<Node> steps = stepsNode.getValue().stream().map(step -> {
-					var stepNode = nodeAsMap(step);
-
-					getKeyAsMap(stepNode, "with").ifPresent(mappingNode -> {
-						var withList = mappingNode.getValue()
-								.stream()
-								.sorted(Comparator.comparing(tuple -> {
-									if (tuple
-											.getKeyNode() instanceof ScalarNode keyNode) {
-										return keyNode.getValue();
-									}
-									return tuple.getKeyNode().toString();
-								}))
-								.toList();
-						mappingNode.setValue(withList);
-					});
-
-					var stepList = stepNode.getValue()
-							.stream()
-							.sorted(Comparator.comparingInt(tuple -> {
-								if (tuple
-										.getKeyNode() instanceof ScalarNode keyNode) {
-									return switch (keyNode.getValue()) {
-									case "name" -> 10;
-									case "id" -> 11;
-									case "if" -> 12;
-									case "uses" -> 20;
-									case "with" -> 2000;
-									case "run" -> 2000;
-									default -> 1000;
-									};
-								}
-								return 1000;
-							}))
-							.toList();
-					stepNode.setValue(stepList);
-					return step;
-				}).toList();
-				setKey(jobNode, STEPS, newSequence(steps));
-			});
-
-			var jobList = jobNode.getValue()
-					.stream()
-					.sorted(Comparator.comparingInt(tuple -> {
-						if (tuple.getKeyNode() instanceof ScalarNode keyNode) {
-							return switch (keyNode.getValue()) {
-							case "name" -> 10;
-							case "needs" -> 15;
-							case "if" -> 20;
-							case "strategy" -> 30;
-							case "runs-on" -> 50;
-							case "environment" -> 60;
-							case "timeout-minutes" -> 70;
-							case PERMISSIONS -> 80;
-							case "outputs" -> 90;
-							case STEPS -> 2000;
-							default -> 1000;
-							};
-						}
-						return 1000;
-					}))
-					.toList();
-			jobNode.setValue(jobList);
+			sortJobKeys(nodeAsMap(jobTuple.getValueNode()));
 		}
+	}
+
+	private static void sortJobKeys(MappingNode jobNode) {
+		getKeyAsSequence(jobNode, STEPS).ifPresent(stepsNode -> {
+			List<Node> steps = stepsNode.getValue().stream().map(step -> {
+				sortStepKeys(nodeAsMap(step));
+				return step;
+			}).toList();
+			setKey(jobNode, STEPS, newSequence(steps));
+		});
+		sortTuples(jobNode, JOB_KEY_ORDER);
+	}
+
+	private static void sortStepKeys(MappingNode stepNode) {
+		getKeyAsMap(stepNode, "with").ifPresent(
+				with -> sortTuples(
+						with,
+						Comparator.comparing(GitHubActionsWorkflowFile::keyName)
+				)
+		);
+		sortTuples(stepNode, STEP_KEY_ORDER);
+	}
+
+	private static String keyName(NodeTuple tuple) {
+		if (tuple.getKeyNode() instanceof ScalarNode keyNode) {
+			return keyNode.getValue();
+		}
+		return tuple.getKeyNode().toString();
+	}
+
+	private static void sortTuples(
+			MappingNode node,
+			Comparator<NodeTuple> order
+	) {
+		node.setValue(node.getValue().stream().sorted(order).toList());
 	}
 
 	public void replaceActionWith(
