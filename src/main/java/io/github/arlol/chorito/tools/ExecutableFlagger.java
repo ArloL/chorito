@@ -9,6 +9,9 @@ public abstract class ExecutableFlagger {
 	public ExecutableFlagger() {
 	}
 
+	// 0755 is the mode this exists to produce. Git reads 100755 from the
+	// owner bit alone, so 0750 would only break other users, not the commit.
+	@SuppressWarnings("java:S2612")
 	public static void makeExecutableIfPossible(Path path) {
 		var view = FilesSilent
 				.getFileAttributeView(path, PosixFileAttributeView.class);
