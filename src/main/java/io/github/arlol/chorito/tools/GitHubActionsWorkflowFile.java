@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.ToIntFunction;
+import java.util.regex.Pattern;
 
 import org.snakeyaml.engine.v2.api.DumpSettings;
 import org.snakeyaml.engine.v2.api.LoadSettings;
@@ -42,9 +43,11 @@ public class GitHubActionsWorkflowFile {
 
 	private static final String STEPS = "steps";
 	private static final String PERMISSIONS = "permissions";
+	private static final Pattern USES_VERSION = Pattern
+			.compile("(?m)^([ \\t-]*uses:[^@\\n]*)@[^\\n]*");
 
 	public static String removeVersions(String input) {
-		return input.replaceAll("(?m)^([ \\t-]*uses:.*?)@.*$", "$1@\n");
+		return USES_VERSION.matcher(input).replaceAll("$1@\n");
 	}
 
 	private Optional<Node> root;
