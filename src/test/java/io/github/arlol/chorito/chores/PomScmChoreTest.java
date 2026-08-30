@@ -39,6 +39,8 @@ public class PomScmChoreTest {
 	@Test
 	public void testWithNothing() {
 		new PomScmChore().doit(extension.choreContext());
+
+		assertThat(extension.relativePaths()).isEmpty();
 	}
 
 	@Test

@@ -30,6 +30,8 @@ public class EclipseOptimizeImportSettingsChoreTest {
 	@Test
 	public void testWithNothing() {
 		doit();
+
+		assertThat(extension.relativePaths()).isEmpty();
 	}
 
 	@Test

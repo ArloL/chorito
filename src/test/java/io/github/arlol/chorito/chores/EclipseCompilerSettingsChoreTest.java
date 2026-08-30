@@ -150,6 +150,8 @@ public class EclipseCompilerSettingsChoreTest {
 	@Test
 	public void testWithNothing() {
 		doit();
+
+		assertThat(extension.relativePaths()).isEmpty();
 	}
 
 	@Test

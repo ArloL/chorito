@@ -18,6 +18,8 @@ public class XmlPreambleChoreTest {
 	@Test
 	public void testWithNothing() {
 		new XmlPreambleChore().doit(extension.choreContext());
+
+		assertThat(extension.relativePaths()).isEmpty();
 	}
 
 	@Test

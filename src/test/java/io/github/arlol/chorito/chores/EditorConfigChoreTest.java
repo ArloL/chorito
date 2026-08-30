@@ -63,6 +63,8 @@ public class EditorConfigChoreTest {
 	@Test
 	public void testWithNothing() {
 		doit();
+
+		assertThat(extension.relativePaths()).containsExactly(".editorconfig");
 	}
 
 	@Test

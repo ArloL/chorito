@@ -1,5 +1,6 @@
 package io.github.arlol.chorito.chores;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -21,6 +22,8 @@ public class MavenWrapperChoreTest {
 	@Test
 	public void testWithNothing() {
 		new MavenWrapperChore().doit(extension.choreContext());
+
+		assertThat(extension.relativePaths()).isEmpty();
 	}
 
 	@Test
@@ -30,6 +33,8 @@ public class MavenWrapperChoreTest {
 				.processBuilderFactory(FakeProcessBuilderSilent.factory())
 				.build();
 		new MavenWrapperChore().doit(context);
+
+		assertThat(extension.relativePaths()).isEmpty();
 	}
 
 	@Test

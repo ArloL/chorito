@@ -27,6 +27,8 @@ public class RenovateChoreTest {
 	@Test
 	public void testWithNothing() {
 		new RenovateChore().doit(extension.choreContext());
+
+		assertThat(extension.relativePaths()).isEmpty();
 	}
 
 	@Test

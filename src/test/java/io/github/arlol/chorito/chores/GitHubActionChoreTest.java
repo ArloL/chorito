@@ -125,6 +125,8 @@ public class GitHubActionChoreTest {
 	@Test
 	public void testWithNothing() {
 		new GitHubActionChore().doit(extension.choreContext());
+
+		assertThat(extension.relativePaths()).isEmpty();
 	}
 
 	@Test

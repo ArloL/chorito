@@ -25,6 +25,8 @@ public class LicenseChoreTest {
 	@Test
 	public void testWithNothing() {
 		new LicenseChore().doit(extension.choreContext());
+
+		assertThat(extension.relativePaths()).isEmpty();
 	}
 
 	@Test
