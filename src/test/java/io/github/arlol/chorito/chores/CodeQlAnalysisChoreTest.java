@@ -24,6 +24,8 @@ public class CodeQlAnalysisChoreTest {
 	@Test
 	public void testWithNothing() {
 		new CodeQlAnalysisChore().doit(extension.choreContext());
+
+		assertThat(extension.relativePaths()).isEmpty();
 	}
 
 	@Test

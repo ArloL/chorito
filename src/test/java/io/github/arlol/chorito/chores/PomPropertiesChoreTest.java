@@ -59,6 +59,8 @@ public class PomPropertiesChoreTest {
 	@Test
 	public void testWithNothing() {
 		new PomPropertiesChore().doit(extension.choreContext());
+
+		assertThat(extension.relativePaths()).isEmpty();
 	}
 
 	@Test

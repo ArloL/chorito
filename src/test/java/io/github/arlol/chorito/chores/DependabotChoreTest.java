@@ -29,6 +29,25 @@ public class DependabotChoreTest {
 	@Test
 	public void testWithNothing() {
 		doit();
+
+		assertThat(extension.relativePaths())
+				.containsExactly(".github", ".github/dependabot.yml");
+		assertThat(extension.root().resolve(".github/dependabot.yml")).content()
+				.isEqualTo("""
+						version: 2
+						updates:
+						- package-ecosystem: "github-actions"
+						  directory: "/"
+						  schedule:
+						    interval: "monthly"
+						  cooldown:
+						    default-days: 7
+						  open-pull-requests-limit: 10
+						  groups:
+						    github-codeql-action:
+						      patterns:
+						      - "github/codeql-action*"
+						""");
 	}
 
 	@Test

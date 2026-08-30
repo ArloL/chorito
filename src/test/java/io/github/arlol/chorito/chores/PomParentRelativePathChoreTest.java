@@ -38,6 +38,8 @@ public class PomParentRelativePathChoreTest {
 	@Test
 	public void testWithNothing() {
 		new PomParentRelativePathChore().doit(extension.choreContext());
+
+		assertThat(extension.relativePaths()).isEmpty();
 	}
 
 	@Test

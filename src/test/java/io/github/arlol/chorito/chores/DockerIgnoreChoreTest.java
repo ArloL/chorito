@@ -62,6 +62,8 @@ public class DockerIgnoreChoreTest {
 	@Test
 	public void testWithNothing() {
 		doit();
+
+		assertThat(extension.relativePaths()).isEmpty();
 	}
 
 	@Test

@@ -18,6 +18,8 @@ public class JavaUpdaterChoreTest {
 	@Test
 	public void testWithNothing() {
 		doit();
+
+		assertThat(extension.relativePaths()).isEmpty();
 	}
 
 	private void doit() {

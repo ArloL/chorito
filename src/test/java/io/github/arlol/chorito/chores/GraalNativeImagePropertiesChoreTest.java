@@ -20,6 +20,8 @@ public class GraalNativeImagePropertiesChoreTest {
 	@Test
 	public void testWithNothing() {
 		new GraalNativeImagePropertiesChore().doit(extension.choreContext());
+
+		assertThat(extension.relativePaths()).isEmpty();
 	}
 
 	@Test

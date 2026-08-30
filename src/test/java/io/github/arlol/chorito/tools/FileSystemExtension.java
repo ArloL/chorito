@@ -3,6 +3,8 @@ package io.github.arlol.chorito.tools;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFileAttributeView;
+import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -27,6 +29,20 @@ public class FileSystemExtension
 
 	public ChoreContext choreContext() {
 		return PathChoreContext.newBuilder(root()).build();
+	}
+
+	/**
+	 * Every file and directory below {@link #root()}, relative to it and
+	 * sorted, so that a test can pin down exactly what a chore created.
+	 */
+	public List<String> relativePaths() {
+		Path root = root();
+		try (Stream<Path> walk = FilesSilent.walk(root)) {
+			return walk.filter(path -> !path.equals(root))
+					.map(path -> root.relativize(path).toString())
+					.sorted()
+					.toList();
+		}
 	}
 
 	@Override

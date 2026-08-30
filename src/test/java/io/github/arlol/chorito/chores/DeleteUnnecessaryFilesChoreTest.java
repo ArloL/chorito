@@ -1,5 +1,6 @@
 package io.github.arlol.chorito.chores;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.nio.file.Path;
@@ -18,6 +19,8 @@ public class DeleteUnnecessaryFilesChoreTest {
 	@Test
 	public void testWithNothing() {
 		new DeleteUnnecessaryFilesChore().doit(extension.choreContext());
+
+		assertThat(extension.relativePaths()).isEmpty();
 	}
 
 	@Test
