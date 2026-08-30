@@ -23,6 +23,7 @@ public class FakeProcessBuilderSilent extends ProcessBuilderSilent {
 
 		@Override
 		public void waitFor(int timeout, TimeUnit unit) {
+			// no process was started, so there is nothing to wait for
 		}
 
 	}
