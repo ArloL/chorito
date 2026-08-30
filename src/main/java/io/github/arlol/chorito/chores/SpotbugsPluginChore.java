@@ -28,25 +28,21 @@ public class SpotbugsPluginChore implements Chore {
 					throw new IllegalStateException("No formatter plugin");
 				}
 				formatterPlugin.after(
-						"""
-
-											<plugin>
-												<groupId>com.github.spotbugs</groupId>
-												<artifactId>spotbugs-maven-plugin</artifactId>
-												<version>4.10.3.0</version>
-												<configuration>
-													<effort>Max</effort>
-													<threshold>Low</threshold>
-												</configuration>
-												<executions>
-													<execution>
-														<goals>
-															<goal>check</goal>
-														</goals>
-													</execution>
-												</executions>
-											</plugin>\
-								"""
+						"\n" + "\t\t\t<plugin>\n"
+								+ "\t\t\t\t<groupId>com.github.spotbugs</groupId>\n"
+								+ "\t\t\t\t<artifactId>spotbugs-maven-plugin</artifactId>\n"
+								+ "\t\t\t\t<version>4.10.3.0</version>\n"
+								+ "\t\t\t\t<configuration>\n"
+								+ "\t\t\t\t\t<effort>Max</effort>\n"
+								+ "\t\t\t\t\t<threshold>Low</threshold>\n"
+								+ "\t\t\t\t</configuration>\n"
+								+ "\t\t\t\t<executions>\n"
+								+ "\t\t\t\t\t<execution>\n"
+								+ "\t\t\t\t\t\t<goals>\n"
+								+ "\t\t\t\t\t\t\t<goal>check</goal>\n"
+								+ "\t\t\t\t\t\t</goals>\n"
+								+ "\t\t\t\t\t</execution>\n"
+								+ "\t\t\t\t</executions>\n" + "\t\t\t</plugin>"
 				);
 			}
 

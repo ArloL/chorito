@@ -23,6 +23,11 @@ import org.snakeyaml.engine.v2.nodes.SequenceNode;
 
 public class DependabotConfigFile {
 
+	private static final String PACKAGE_ECOSYSTEM = "package-ecosystem";
+	private static final String GITHUB_CODEQL_ACTION = "github-codeql-action";
+	private static final String OPEN_PULL_REQUESTS_LIMIT = "open-pull-requests-limit";
+	private static final String DEFAULT_DAYS = "default-days";
+
 	private final Optional<Node> root;
 
 	public DependabotConfigFile() {
@@ -59,7 +64,7 @@ public class DependabotConfigFile {
 		var directoryWithoutTrailingSlash = directory
 				.substring(0, directory.length() - 1);
 		return getUpdatesAsMappingNode().anyMatch(step -> {
-			return scalarValue(getKeyAsNode(step, "package-ecosystem"))
+			return scalarValue(getKeyAsNode(step, PACKAGE_ECOSYSTEM))
 					.filter(packageEcosystem::equals)
 					.isPresent()
 					&& scalarValue(getKeyAsNode(step, "directory"))
@@ -78,7 +83,7 @@ public class DependabotConfigFile {
 		}
 
 		var nodes = List.of(
-				newTuple("package-ecosystem", newScalar(ecosystem)),
+				newTuple(PACKAGE_ECOSYSTEM, newScalar(ecosystem)),
 				newTuple("directory", newScalar(directory)),
 				newTuple(
 						"schedule",
@@ -97,7 +102,7 @@ public class DependabotConfigFile {
 
 	public void addGitHubCodeQlActionGroupIfMissing() {
 		getUpdatesAsMappingNode().forEach(update -> {
-			if (scalarValue(getKeyAsNode(update, "package-ecosystem"))
+			if (scalarValue(getKeyAsNode(update, PACKAGE_ECOSYSTEM))
 					.filter("github-actions"::equals)
 					.isEmpty()) {
 				return;
@@ -109,14 +114,14 @@ public class DependabotConfigFile {
 					)
 			);
 			getKeyAsMap(update, "groups").ifPresentOrElse(groups -> {
-				if (getKeyAsNode(groups, "github-codeql-action").isEmpty()) {
-					setKey(groups, "github-codeql-action", group);
+				if (getKeyAsNode(groups, GITHUB_CODEQL_ACTION).isEmpty()) {
+					setKey(groups, GITHUB_CODEQL_ACTION, group);
 				}
 			}, () -> {
 				setKey(
 						update,
 						"groups",
-						newMap(newTuple("github-codeql-action", group))
+						newMap(newTuple(GITHUB_CODEQL_ACTION, group))
 				);
 			});
 		});
@@ -124,21 +129,17 @@ public class DependabotConfigFile {
 
 	public void addOpenPullRequestsLimitIfMissing() {
 		getUpdatesAsMappingNode().forEach(update -> {
-			getKeyAsScalar(update, "open-pull-requests-limit")
+			getKeyAsScalar(update, OPEN_PULL_REQUESTS_LIMIT)
 					.ifPresentOrElse(limit -> {
 						if (Integer.parseInt(limit.getValue()) < 10) {
 							setKey(
 									update,
-									"open-pull-requests-limit",
+									OPEN_PULL_REQUESTS_LIMIT,
 									newScalar(10)
 							);
 						}
 					}, () -> {
-						setKey(
-								update,
-								"open-pull-requests-limit",
-								newScalar(10)
-						);
+						setKey(update, OPEN_PULL_REQUESTS_LIMIT, newScalar(10));
 					});
 		});
 	}
@@ -146,19 +147,19 @@ public class DependabotConfigFile {
 	public void addCooldownIfMissing() {
 		getUpdatesAsMappingNode().forEach(update -> {
 			getKeyAsMap(update, "cooldown").ifPresentOrElse(cooldown -> {
-				getKeyAsScalar(cooldown, "default-days")
+				getKeyAsScalar(cooldown, DEFAULT_DAYS)
 						.ifPresentOrElse(defaultDays -> {
 							if (Integer.parseInt(defaultDays.getValue()) < 7) {
-								setKey(cooldown, "default-days", newScalar(7));
+								setKey(cooldown, DEFAULT_DAYS, newScalar(7));
 							}
 						}, () -> {
-							setKey(cooldown, "default-days", newScalar(7));
+							setKey(cooldown, DEFAULT_DAYS, newScalar(7));
 						});
 			}, () -> {
 				setKey(
 						update,
 						"cooldown",
-						newMap(newTuple("default-days", newScalar(7)))
+						newMap(newTuple(DEFAULT_DAYS, newScalar(7)))
 				);
 			});
 		});

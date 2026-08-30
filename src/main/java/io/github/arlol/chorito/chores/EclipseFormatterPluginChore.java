@@ -31,21 +31,20 @@ public class EclipseFormatterPluginChore implements Chore {
 					}
 				}
 				flattenPlugin.after(
-						"\n			<plugin>\n"
-								+ "				<groupId>net.revelc.code.formatter</groupId>\n"
-								+ "				<artifactId>formatter-maven-plugin</artifactId>\n"
-								+ "				<version>2.24.1</version>\n"
-								+ "				<configuration>\n"
-								+ "					<configFile>${project.basedir}/.settings/code-formatter-profile.xml</configFile>\n"
-								+ "				</configuration>\n"
-								+ "				<executions>\n"
-								+ "					<execution>\n"
-								+ "						<goals>\n"
-								+ "							<goal>format</goal>\n"
-								+ "						</goals>\n"
-								+ "					</execution>\n"
-								+ "				</executions>\n"
-								+ "			</plugin>"
+						"\n\t\t\t<plugin>\n"
+								+ "\t\t\t\t<groupId>net.revelc.code.formatter</groupId>\n"
+								+ "\t\t\t\t<artifactId>formatter-maven-plugin</artifactId>\n"
+								+ "\t\t\t\t<version>2.24.1</version>\n"
+								+ "\t\t\t\t<configuration>\n"
+								+ "\t\t\t\t\t<configFile>${project.basedir}/.settings/code-formatter-profile.xml</configFile>\n"
+								+ "\t\t\t\t</configuration>\n"
+								+ "\t\t\t\t<executions>\n"
+								+ "\t\t\t\t\t<execution>\n"
+								+ "\t\t\t\t\t\t<goals>\n"
+								+ "\t\t\t\t\t\t\t<goal>format</goal>\n"
+								+ "\t\t\t\t\t\t</goals>\n"
+								+ "\t\t\t\t\t</execution>\n"
+								+ "\t\t\t\t</executions>\n" + "\t\t\t</plugin>"
 				);
 			}
 

@@ -12,6 +12,8 @@ import io.github.arlol.chorito.tools.MyPaths;
 
 public class GitIgnoreChore implements Chore {
 
+	private static final String GITIGNORE_FILENAME = ".gitignore";
+
 	private static String GITIGNORE_ECLIPSE = """
 			### Eclipse ###
 
@@ -157,14 +159,17 @@ public class GitIgnoreChore implements Chore {
 
 	private void createZigIgnore(ChoreContext context) {
 		DirectoryStreams.buildZigDirs(context).forEach(dir -> {
-			updateExistingGitignore(dir.resolve(".gitignore"), GITIGNORE_ZIG);
+			updateExistingGitignore(
+					dir.resolve(GITIGNORE_FILENAME),
+					GITIGNORE_ZIG
+			);
 		});
 	}
 
 	private void createJekyllIgnore(ChoreContext context) {
 		DirectoryStreams.jekyllGemfileDirs(context).forEach(dir -> {
 			updateExistingGitignore(
-					dir.resolve(".gitignore"),
+					dir.resolve(GITIGNORE_FILENAME),
 					GITIGNORE_JEKYLL
 			);
 		});
@@ -174,7 +179,7 @@ public class GitIgnoreChore implements Chore {
 		DirectoryStreams.pyprojectTomlDirs(context).forEach(dir -> {
 			String newGitignoreContent = GITIGNORE_PYTHON;
 			updateExistingGitignore(
-					dir.resolve(".gitignore"),
+					dir.resolve(GITIGNORE_FILENAME),
 					newGitignoreContent
 			);
 		});
@@ -184,7 +189,7 @@ public class GitIgnoreChore implements Chore {
 		DirectoryStreams.packageJsonDirs(context).forEach(dir -> {
 			String newGitignoreContent = GITIGNORE_PACKAGE_JSON;
 			updateExistingGitignore(
-					dir.resolve(".gitignore"),
+					dir.resolve(GITIGNORE_FILENAME),
 					newGitignoreContent
 			);
 		});
@@ -194,7 +199,7 @@ public class GitIgnoreChore implements Chore {
 		DirectoryStreams.dotYarnDirs(context).forEach(dir -> {
 			String newGitignoreContent = GITIGNORE_YARN;
 			updateExistingGitignore(
-					dir.resolve(".gitignore"),
+					dir.resolve(GITIGNORE_FILENAME),
 					newGitignoreContent
 			);
 		});
@@ -214,7 +219,7 @@ public class GitIgnoreChore implements Chore {
 				newGitignoreContent += "\n" + GITIGNORE_GRADLE;
 			}
 			updateExistingGitignore(
-					dir.resolve(".gitignore"),
+					dir.resolve(GITIGNORE_FILENAME),
 					newGitignoreContent
 			);
 		});
