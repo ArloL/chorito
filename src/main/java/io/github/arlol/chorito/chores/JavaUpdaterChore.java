@@ -90,7 +90,8 @@ public class JavaUpdaterChore implements Chore {
 		Path workflowsLocation = context.resolve(".github/workflows");
 		context.textFiles().stream().filter(path -> {
 			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(".yaml");
+				String fileName = path.toString();
+				return fileName.endsWith(".yaml") || fileName.endsWith(".yml");
 			}
 			return false;
 		}).map(context::resolve).forEach(path -> {

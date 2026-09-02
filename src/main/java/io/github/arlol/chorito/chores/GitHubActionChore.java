@@ -3,6 +3,7 @@ package io.github.arlol.chorito.chores;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
@@ -15,8 +16,10 @@ import io.github.arlol.chorito.tools.RandomCronBuilder;
 public class GitHubActionChore implements Chore {
 
 	private static final String WORKFLOWS_DIRECTORY = ".github/workflows";
-	private static final String YAML_EXTENSION = ".yaml";
-	private static final String MAIN_WORKFLOW = ".github/workflows/main.yaml";
+	private static final List<String> WORKFLOW_EXTENSIONS = List
+			.of(".yaml", ".yml");
+	private static final List<String> MAIN_WORKFLOWS = List
+			.of(".github/workflows/main.yaml", ".github/workflows/main.yml");
 	private static final String MAIN_WORKFLOW_TEMPLATE = "github-settings/workflows/main.yaml";
 	private static final String SETUP_GRAALVM_ACTION = "graalvm/setup-graalvm";
 	private static final String DISTRIBUTION_TEMURIN = "distribution: temurin";
@@ -54,10 +57,11 @@ public class GitHubActionChore implements Chore {
 	}
 
 	public void updatePermissions(ChoreContext context) {
-		Path mainYaml = context.resolve(MAIN_WORKFLOW);
-		if (!FilesSilent.exists(mainYaml)) {
+		Optional<Path> mainWorkflow = mainWorkflow(context);
+		if (mainWorkflow.isEmpty()) {
 			return;
 		}
+		Path mainYaml = mainWorkflow.orElseThrow();
 		String string = FilesSilent.readString(mainYaml);
 		var main = new GitHubActionsWorkflowFile(string);
 		var template = new GitHubActionsWorkflowFile(
@@ -68,10 +72,11 @@ public class GitHubActionChore implements Chore {
 	}
 
 	public void updateGraalSteps(ChoreContext context) {
-		Path mainYaml = context.resolve(MAIN_WORKFLOW);
-		if (!FilesSilent.exists(mainYaml)) {
+		Optional<Path> mainWorkflow = mainWorkflow(context);
+		if (mainWorkflow.isEmpty()) {
 			return;
 		}
+		Path mainYaml = mainWorkflow.orElseThrow();
 		String string = FilesSilent.readString(mainYaml);
 		if (!string.contains("graalvm") || string.contains("gluonfx")) {
 			return;
@@ -100,13 +105,7 @@ public class GitHubActionChore implements Chore {
 						.readString("github-settings/workflows/chores.yaml")
 		);
 		var debugJob = currentMain.getJob(DEBUG_JOB);
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(YAML_EXTENSION);
-			}
-			return false;
-		}).map(context::resolve).forEach(path -> {
+		workflowFiles(context).forEach(path -> {
 			var workflow = new GitHubActionsWorkflowFile(
 					FilesSilent.readString(path)
 			);
@@ -126,13 +125,7 @@ public class GitHubActionChore implements Chore {
 				ClassPathFiles.readString(MAIN_WORKFLOW_TEMPLATE)
 		);
 		var versionJob = currentMain.getJob(VERSION_JOB);
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(YAML_EXTENSION);
-			}
-			return false;
-		}).map(context::resolve).forEach(path -> {
+		workflowFiles(context).forEach(path -> {
 			var workflow = new GitHubActionsWorkflowFile(
 					FilesSilent.readString(path)
 			);
@@ -148,13 +141,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateActionsCreateRelease(ChoreContext context) {
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(YAML_EXTENSION);
-			}
-			return false;
-		}).map(context::resolve).forEach(path -> {
+		workflowFiles(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			String target = """
 					uses: actions/create-release@v1.1.4
@@ -174,13 +161,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateActionsUploadReleaseAsset(ChoreContext context) {
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(YAML_EXTENSION);
-			}
-			return false;
-		}).map(context::resolve).forEach(path -> {
+		workflowFiles(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			String target = """
 					uses: actions/upload-release-asset@v1.0.2
@@ -260,8 +241,7 @@ public class GitHubActionChore implements Chore {
 				context.randomGenerator()
 		);
 		String randomDayOfMonth = randomCronBuilder.randomDayOfMonth();
-		Path yaml = context.resolve(MAIN_WORKFLOW);
-		if (FilesSilent.exists(yaml)) {
+		mainWorkflow(context).ifPresent(yaml -> {
 			String content = FilesSilent.readString(yaml);
 			readCurrentCron(content).ifPresent(currentCron -> {
 				if (currentCron.equals("17 4 5 * *")) {
@@ -271,7 +251,7 @@ public class GitHubActionChore implements Chore {
 					);
 				}
 			});
-		}
+		});
 	}
 
 	private Optional<String> readCurrentCron(String yaml) {
@@ -291,13 +271,7 @@ public class GitHubActionChore implements Chore {
 	private void migrateJavaDistributionFromAdoptToTemurin(
 			ChoreContext context
 	) {
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(YAML_EXTENSION);
-			}
-			return false;
-		}).map(context::resolve).forEach(path -> {
+		workflowFiles(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			updated = updated
 					.replace("distribution: adopt", DISTRIBUTION_TEMURIN);
@@ -310,13 +284,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateToGraalSetupAction(ChoreContext context) {
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(YAML_EXTENSION);
-			}
-			return false;
-		}).map(context::resolve).forEach(path -> {
+		workflowFiles(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			updated = updated.replace("""
 
@@ -375,13 +343,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void useSpecificActionVersions(ChoreContext context) {
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(YAML_EXTENSION);
-			}
-			return false;
-		}).map(context::resolve).forEach(path -> {
+		workflowFiles(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			updated = updated.replace(
 					"uses: actions/checkout@v3\n",
@@ -432,13 +394,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void removeSetupJava370(ChoreContext context) {
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(YAML_EXTENSION);
-			}
-			return false;
-		}).map(context::resolve).forEach(path -> {
+		workflowFiles(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			updated = updated.replace(
 					"uses: actions/setup-java@v3.7.0\n",
@@ -449,13 +405,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void replaceSetOutput(ChoreContext context) {
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(YAML_EXTENSION);
-			}
-			return false;
-		}).map(context::resolve).forEach(path -> {
+		workflowFiles(context).forEach(path -> {
 			List<String> updated = FilesSilent.readAllLines(path)
 					.stream()
 					.map(s -> {
@@ -472,8 +422,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void updateGraalVmVersion(ChoreContext context) {
-		Path main = context.resolve(MAIN_WORKFLOW);
-		if (FilesSilent.exists(main)) {
+		mainWorkflow(context).ifPresent(main -> {
 			List<String> updated = FilesSilent.readAllLines(main)
 					.stream()
 					.map(s -> {
@@ -487,12 +436,11 @@ public class GitHubActionChore implements Chore {
 					})
 					.toList();
 			FilesSilent.write(main, updated, "\n");
-		}
+		});
 	}
 
 	private void removeCustomGithubPackagesMavenSettings(ChoreContext context) {
-		Path main = context.resolve(MAIN_WORKFLOW);
-		if (FilesSilent.exists(main)) {
+		mainWorkflow(context).ifPresent(main -> {
 			List<String> updated = FilesSilent.readAllLines(main)
 					.stream()
 					.map(s -> {
@@ -513,7 +461,7 @@ public class GitHubActionChore implements Chore {
 					})
 					.toList();
 			FilesSilent.write(main, updated, "\n");
-		}
+		});
 	}
 
 	private void addCheckActionWorkflow(ChoreContext context) {
@@ -561,13 +509,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void actionsCheckoutWithPersistCredentials(ChoreContext context) {
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(YAML_EXTENSION);
-			}
-			return false;
-		}).map(context::resolve).forEach(path -> {
+		workflowFiles(context).forEach(path -> {
 			String input = FilesSilent.readString(path);
 			var checkActionsWorkflow = new GitHubActionsWorkflowFile(input);
 			checkActionsWorkflow.clearPermissions();
@@ -580,13 +522,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void quoteRedirects(ChoreContext context) {
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(YAML_EXTENSION);
-			}
-			return false;
-		}).map(context::resolve).forEach(path -> {
+		workflowFiles(context).forEach(path -> {
 			var yaml = FilesSilent.readString(path);
 			yaml = yaml.replace("> $GITHUB_ENV", "> \"${GITHUB_ENV}\"");
 			yaml = yaml.replace("> $GITHUB_OUTPUT", "> \"${GITHUB_OUTPUT}\"");
@@ -598,13 +534,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateZipProjects(ChoreContext context) {
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(YAML_EXTENSION);
-			}
-			return false;
-		}).map(context::resolve).forEach(path -> {
+		workflowFiles(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			String target = """
 					    - name: Build project
@@ -630,13 +560,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void removeNeedsVersionOutputsChangelog(ChoreContext context) {
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(YAML_EXTENSION);
-			}
-			return false;
-		}).map(context::resolve).forEach(path -> {
+		workflowFiles(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			String target = """
 					        body: ${{ needs.version.outputs.changelog }}
@@ -647,13 +571,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateEregonPublishRelease(ChoreContext context) {
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(YAML_EXTENSION);
-			}
-			return false;
-		}).map(context::resolve).forEach(path -> {
+		workflowFiles(context).forEach(path -> {
 			var current = FilesSilent.readString(path);
 
 			var target = """
@@ -680,13 +598,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateNcipoploReleaseAction(ChoreContext context) {
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(YAML_EXTENSION);
-			}
-			return false;
-		}).map(context::resolve).forEach(path -> {
+		workflowFiles(context).forEach(path -> {
 			String current = FilesSilent.readString(path);
 			if (!current.contains("id: create_release")) {
 				return;
@@ -832,13 +744,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateSetupGraalvm(ChoreContext context) {
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		context.textFiles().stream().filter(path -> {
-			if (path.startsWith(workflowsLocation)) {
-				return path.toString().endsWith(YAML_EXTENSION);
-			}
-			return false;
-		}).map(context::resolve).forEach(path -> {
+		workflowFiles(context).forEach(path -> {
 			String current = FilesSilent.readString(path);
 			var workflow = new GitHubActionsWorkflowFile(current);
 			String before = workflow.asStringWithoutVersions();
@@ -881,6 +787,33 @@ public class GitHubActionChore implements Chore {
 				FilesSilent.writeString(path, workflow.asString());
 			}
 		});
+	}
+
+	/**
+	 * Every workflow file below {@code .github/workflows}, whether it uses the
+	 * {@code .yaml} or the {@code .yml} extension, resolved against the context
+	 * root.
+	 */
+	private static Stream<Path> workflowFiles(ChoreContext context) {
+		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
+		return context.textFiles().stream().filter(path -> {
+			if (!path.startsWith(workflowsLocation)) {
+				return false;
+			}
+			String fileName = path.toString();
+			return WORKFLOW_EXTENSIONS.stream().anyMatch(fileName::endsWith);
+		}).map(context::resolve);
+	}
+
+	/**
+	 * The main workflow, preferring {@code main.yaml} over {@code main.yml}
+	 * when both exist.
+	 */
+	private static Optional<Path> mainWorkflow(ChoreContext context) {
+		return MAIN_WORKFLOWS.stream()
+				.map(context::resolve)
+				.filter(FilesSilent::exists)
+				.findFirst();
 	}
 
 }
