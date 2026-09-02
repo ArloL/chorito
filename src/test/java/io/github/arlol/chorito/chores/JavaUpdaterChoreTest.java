@@ -73,6 +73,16 @@ public class JavaUpdaterChoreTest {
 	}
 
 	@Test
+	public void testWorkflowWithYmlExtension() throws Exception {
+		Path workflow = extension.root().resolve(".github/workflows/ci.yml");
+		FilesSilent.writeString(workflow, "  JAVA_VERSION: 11");
+
+		doit();
+
+		assertThat(workflow).content().isEqualTo("  JAVA_VERSION: 25\n");
+	}
+
+	@Test
 	public void testJitpackJdk8() throws Exception {
 		Path jitpack = extension.root().resolve("jitpack.yml");
 		FilesSilent.writeString(jitpack, "- openjdk8");

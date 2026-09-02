@@ -528,6 +528,42 @@ public class GitHubActionChoreTest {
 	}
 
 	@Test
+	void actionsCheckoutWithPersistCredentialsInYmlWorkflow() throws Exception {
+		String input = ClassPathFiles
+				.readString("github-actions/actions-checkout-input.yaml");
+		Path workflow = extension.root().resolve(".github/workflows/ci.yml");
+		FilesSilent.writeString(workflow, input);
+		new GitHubActionChore().doit(extension.choreContext());
+		String expected = ClassPathFiles
+				.readString("github-actions/actions-checkout-output.yaml");
+		assertThat(workflow).content().isEqualTo(expected);
+	}
+
+	@Test
+	public void testBasicWorkflowFileWithYmlExtension() throws Exception {
+		Path workflow = extension.root().resolve(".github/workflows/main.yml");
+
+		FilesSilent.writeString(workflow, """
+				jobs:
+				  linux:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - run: whoami
+				""");
+
+		new GitHubActionChore().doit(extension.choreContext());
+
+		assertThat(workflow).content().isEqualTo("""
+				permissions: {}
+				jobs:
+				  linux:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - run: whoami
+				""");
+	}
+
+	@Test
 	void quotedRedirects() throws Exception {
 		String input = ClassPathFiles
 				.readString("github-actions/quoted-redirects-input.yaml");
