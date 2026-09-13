@@ -1,14 +1,13 @@
 package io.github.arlol.chorito.tools;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.util.DefaultIndenter;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.core.util.Separators;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.util.DefaultIndenter;
+import tools.jackson.core.util.DefaultPrettyPrinter;
+import tools.jackson.core.util.Separators;
 
 /**
  * Lays out json the way chorito writes it, and emits the comments Jackson
@@ -22,8 +21,10 @@ import com.fasterxml.jackson.core.util.Separators;
  * single-use, which is why {@link Jsons#prettyPrinter()} hands out a new one
  * per call.
  *
- * Jackson 3.2 adds {@code JsonGenerator.writeComment}, which would replace the
- * raw writes below.
+ * Jackson 3.2 does add {@code JsonGenerator.writeComment}, but only as a hook
+ * for the formats that have comments: the json backend leaves
+ * {@code canWriteComments()} at false and the call throws, so the raw writes
+ * below stay.
  */
 public class CustomPrettyPrinter extends DefaultPrettyPrinter {
 
@@ -69,13 +70,13 @@ public class CustomPrettyPrinter extends DefaultPrettyPrinter {
 	}
 
 	@Override
-	public void beforeObjectEntries(JsonGenerator g) throws IOException {
+	public void beforeObjectEntries(JsonGenerator g) {
 		writePendingLeading(g);
 		super.beforeObjectEntries(g);
 	}
 
 	@Override
-	public void writeObjectEntrySeparator(JsonGenerator g) throws IOException {
+	public void writeObjectEntrySeparator(JsonGenerator g) {
 		g.writeRaw(_objectEntrySeparator);
 		writePendingTrailing(g);
 		writePendingLeading(g);
@@ -83,17 +84,15 @@ public class CustomPrettyPrinter extends DefaultPrettyPrinter {
 	}
 
 	@Override
-	public void writeEndArray(JsonGenerator g, int nrOfValues)
-			throws IOException {
+	public void writeEndArray(JsonGenerator g, int nrOfValues) {
 		if (nrOfValues > 0) {
-			g.writeRaw(_arrayValueSeparator);
+			g.writeRaw(_arrayElementSeparator);
 		}
 		super.writeEndArray(g, nrOfValues);
 	}
 
 	@Override
-	public void writeEndObject(JsonGenerator g, int nrOfEntries)
-			throws IOException {
+	public void writeEndObject(JsonGenerator g, int nrOfEntries) {
 		if (nrOfEntries > 0) {
 			g.writeRaw(_objectEntrySeparator);
 			writePendingTrailing(g);
@@ -106,7 +105,7 @@ public class CustomPrettyPrinter extends DefaultPrettyPrinter {
 		return new CustomPrettyPrinter(this);
 	}
 
-	private void writePendingLeading(JsonGenerator g) throws IOException {
+	private void writePendingLeading(JsonGenerator g) {
 		String comments = pendingLeading;
 		pendingLeading = null;
 		if (comments == null) {
@@ -118,7 +117,7 @@ public class CustomPrettyPrinter extends DefaultPrettyPrinter {
 		}
 	}
 
-	private void writePendingTrailing(JsonGenerator g) throws IOException {
+	private void writePendingTrailing(JsonGenerator g) {
 		String comment = pendingTrailing;
 		pendingTrailing = null;
 		if (comment == null) {

@@ -1,7 +1,5 @@
 package io.github.arlol.chorito.tools;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -9,22 +7,24 @@ import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.ObjectReadContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Reads json5, building the tree and collecting the comments Jackson drops on
  * the way in.
  *
- * Jackson's {@code ALLOW_COMMENTS} only makes the tokenizer tolerate a comment,
- * so the tree alone cannot be read back into the source it came from. Parsing
- * therefore happens twice over the same text: once scanning for comment spans,
- * once building the tree while recording where every field name and brace sits.
- * Each comment is then placed by where it sits relative to those offsets.
+ * Jackson's {@code ALLOW_JAVA_COMMENTS} only makes the tokenizer tolerate a
+ * comment, so the tree alone cannot be read back into the source it came from.
+ * Parsing therefore happens twice over the same text: once scanning for comment
+ * spans, once building the tree while recording where every field name and
+ * brace sits. Each comment is then placed by where it sits relative to those
+ * offsets.
  *
  * The comments go into a collector the caller owns rather than coming back
  * alongside the tree, because they go on being written to: the caller hands the
@@ -157,21 +157,17 @@ public abstract class JsonCommentParser {
 	 * goes by.
 	 */
 	private static JsonNode readTree(String content, Positions positions) {
-		try (JsonParser parser = Jsons.objectMapper()
-				.getFactory()
-				.createParser(content)) {
+		try (JsonParser parser = Jsons.jsonFactory()
+				.createParser(ObjectReadContext.empty(), content)) {
 			if (parser.nextToken() == null) {
 				throw new IllegalArgumentException("No json value to read");
 			}
 			positions.rootStart = start(parser);
 			return readValue(parser, positions);
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
 		}
 	}
 
-	private static JsonNode readValue(JsonParser parser, Positions positions)
-			throws IOException {
+	private static JsonNode readValue(JsonParser parser, Positions positions) {
 		return switch (parser.currentToken()) {
 		case START_OBJECT -> readObject(parser, positions);
 		case START_ARRAY -> readArray(parser, positions);
@@ -179,8 +175,10 @@ public abstract class JsonCommentParser {
 		};
 	}
 
-	private static ObjectNode readObject(JsonParser parser, Positions positions)
-			throws IOException {
+	private static ObjectNode readObject(
+			JsonParser parser,
+			Positions positions
+	) {
 		ObjectNode node = JsonNodeFactory.instance.objectNode();
 		int start = start(parser);
 		while (parser.nextToken() != JsonToken.END_OBJECT) {
@@ -194,8 +192,7 @@ public abstract class JsonCommentParser {
 		return node;
 	}
 
-	private static ArrayNode readArray(JsonParser parser, Positions positions)
-			throws IOException {
+	private static ArrayNode readArray(JsonParser parser, Positions positions) {
 		ArrayNode node = JsonNodeFactory.instance.arrayNode();
 		int start = start(parser);
 		while (parser.nextToken() != JsonToken.END_ARRAY) {
@@ -205,10 +202,10 @@ public abstract class JsonCommentParser {
 		return node;
 	}
 
-	private static JsonNode readScalar(JsonParser parser) throws IOException {
+	private static JsonNode readScalar(JsonParser parser) {
 		JsonNodeFactory factory = JsonNodeFactory.instance;
 		return switch (parser.currentToken()) {
-		case VALUE_STRING -> factory.textNode(parser.getText());
+		case VALUE_STRING -> factory.stringNode(parser.getString());
 		case VALUE_NUMBER_INT -> switch (parser.getNumberType()) {
 		case INT -> factory.numberNode(parser.getIntValue());
 		case LONG -> factory.numberNode(parser.getLongValue());

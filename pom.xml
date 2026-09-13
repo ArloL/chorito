@@ -167,6 +167,16 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<!-- Ahead of the 3.1.x spring-boot-starter-parent manages, so
+				chorito owns the version. Drop the import once the parent
+				catches up. -->
+			<dependency>
+				<groupId>tools.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>3.2.2</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -211,7 +221,7 @@
 			<version>1.23.1</version>
 		</dependency>
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
+			<groupId>tools.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
 		<dependency>
