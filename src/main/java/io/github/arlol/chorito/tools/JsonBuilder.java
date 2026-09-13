@@ -91,6 +91,38 @@ public final class JsonBuilder {
 		return this;
 	}
 
+	public JsonBuilder arrayAddObject(String key, Consumer<JsonBuilder> body) {
+		JsonNode child = node.get(key);
+		ArrayNode arr = child instanceof ArrayNode a ? a : node.putArray(key);
+		body.accept(new JsonBuilder(arr.addObject()));
+		return this;
+	}
+
+	/**
+	 * Whether the array at {@code key} already holds an object whose
+	 * {@code childKey} array contains {@code value}.
+	 */
+	public boolean arrayHasObjectContaining(
+			String key,
+			String childKey,
+			String value
+	) {
+		if (!(node.get(key) instanceof ArrayNode arr)) {
+			return false;
+		}
+		return StreamSupport.stream(arr.spliterator(), false)
+				.map(element -> element.get(childKey))
+				.anyMatch(
+						child -> child instanceof ArrayNode values
+								&& StreamSupport
+										.stream(values.spliterator(), false)
+										.anyMatch(
+												v -> v.isTextual() && value
+														.equals(v.asText())
+										)
+				);
+	}
+
 	public JsonBuilder arrayDistinctSort(String key) {
 		return array(
 				key,

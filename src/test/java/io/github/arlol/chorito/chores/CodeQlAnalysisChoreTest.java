@@ -15,6 +15,7 @@ import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FakeRandomGenerator;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.JavaVersions;
 
 public class CodeQlAnalysisChoreTest {
 
@@ -193,6 +194,62 @@ public class CodeQlAnalysisChoreTest {
 								.readString("codeql/actions-expected.yaml")
 				)
 		);
+	}
+
+	@Test
+	public void testGraalProjectPinsTemurinVersion() throws Exception {
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
+		FilesSilent.writeString(
+				extension.root().resolve(".tool-versions"),
+				"java graalvm-community-25.0.2\n"
+		);
+
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new CodeQlAnalysisChore().doit(context);
+
+		Path workflow = context
+				.resolve(".github/workflows/codeql-analysis.yaml");
+		assertThat(removeVersions(FilesSilent.readString(workflow))).isEqualTo(
+				removeVersions(
+						ClassPathFiles.readString("codeql/graal-expected.yaml")
+				)
+		);
+	}
+
+	@Test
+	public void testGraalProjectKeepsTheVersionRenovateBumped()
+			throws Exception {
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
+		FilesSilent.writeString(
+				extension.root().resolve(".tool-versions"),
+				"java graalvm-community-25.0.2\n"
+		);
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+		new CodeQlAnalysisChore().doit(context);
+		Path workflow = context
+				.resolve(".github/workflows/codeql-analysis.yaml");
+		FilesSilent.writeString(
+				workflow,
+				FilesSilent.readString(workflow)
+						.replace(
+								"java-version: " + JavaVersions.TEMURIN,
+								"java-version: 26.0.1"
+						)
+		);
+
+		new CodeQlAnalysisChore().doit(context);
+
+		assertThat(FilesSilent.readString(workflow))
+				.contains("java-version: 26.0.1");
 	}
 
 }

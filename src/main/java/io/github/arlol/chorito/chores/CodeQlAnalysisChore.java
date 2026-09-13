@@ -4,11 +4,13 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.GitHubActionsWorkflowFile;
+import io.github.arlol.chorito.tools.JavaVersions;
 import io.github.arlol.chorito.tools.MyPaths;
 import io.github.arlol.chorito.tools.RandomCronBuilder;
 
@@ -68,6 +70,7 @@ public class CodeQlAnalysisChore implements Chore {
 		Path codeqlWorkflow = context
 				.resolve(".github/workflows/codeql-analysis.yaml");
 		String before = "";
+		Optional<String> pinnedJavaVersion = Optional.empty();
 		if (FilesSilent.exists(codeqlWorkflow)) {
 			var workflowFile = new GitHubActionsWorkflowFile(
 					FilesSilent.readString(codeqlWorkflow)
@@ -75,6 +78,7 @@ public class CodeQlAnalysisChore implements Chore {
 			before = workflowFile.asStringWithoutVersions();
 			template.setOn(workflowFile.getOn());
 			template.setEnv(workflowFile.getEnv());
+			pinnedJavaVersion = workflowFile.getPinnedJavaVersion();
 		} else {
 			context.setDirty();
 		}
@@ -82,6 +86,14 @@ public class CodeQlAnalysisChore implements Chore {
 		if (!languages.contains("java-kotlin")) {
 			template.removeActionFromJob("analyze", "actions/setup-java");
 			template.removeEnv();
+		}
+
+		// Analysis builds no native image, so .tool-versions would install a
+		// GraalVM it never uses. Renovate owns the pin once it is written.
+		if (JavaVersions.buildsOnGraalVm(context)) {
+			template.pinTemurinJavaVersion(
+					pinnedJavaVersion.orElse(JavaVersions.TEMURIN)
+			);
 		}
 
 		template.setJobMatrixKey("analyze", "language", languages);
