@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 
@@ -369,56 +370,87 @@ public class GitHubActionsWorkflowFile {
 		return Optional.empty();
 	}
 
+	/**
+	 * Pins every Temurin setup-java step to {@code version}, replacing whatever
+	 * the step said before. Carrying a version across belongs to the caller,
+	 * which reads it with {@link #getPinnedJavaVersion()} first: a chore that
+	 * rebuilds a workflow from a template must not inherit the template's own
+	 * pin, and chorito's template for this file is a symlink to the workflow it
+	 * runs itself.
+	 */
 	public void pinTemurinJavaVersion(String version) {
+		forEachTemurinSetupJavaWith(with -> {
+			var withNode = with.orElseThrow();
+			removeKey(with, "java-version-file");
+			removeKey(with, JAVA_VERSION);
+			var keyNode = newScalar(JAVA_VERSION, ScalarStyle.PLAIN);
+			keyNode.setBlockComments(
+					List.of(
+							new CommentLine(
+									Optional.empty(),
+									Optional.empty(),
+									" " + RENOVATE_JAVA_VERSION_COMMENT,
+									CommentType.BLOCK
+							)
+					)
+			);
+			var tuples = new ArrayList<>(withNode.getValue());
+			tuples.add(
+					new NodeTuple(
+							keyNode,
+							newScalar(version, ScalarStyle.PLAIN)
+					)
+			);
+			withNode.setValue(tuples);
+		});
+	}
+
+	/**
+	 * Runs {@code body} against the {@code with} of every setup-java step
+	 * asking for Temurin. Those are the steps that build no native image, so
+	 * they are the ones whose JDK is chorito's to decide.
+	 */
+	private void forEachTemurinSetupJavaWith(
+			Consumer<Optional<MappingNode>> body
+	) {
 		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
 				.orElse(List.of())) {
 			var jobNode = nodeAsMap(jobTuple.getValueNode());
-
-			getKeyAsSequence(jobNode, STEPS).ifPresent(stepsNode -> {
-				for (Node step : stepsNode.getValue()) {
-					var stepNode = nodeAsMap(step);
-					if (scalarValue(getKeyAsNode(stepNode, "uses"))
-							.filter(
-									uses -> uses
-											.startsWith(SETUP_JAVA_ACTION + "@")
-							)
-							.isEmpty()) {
-						continue;
-					}
-					var with = getKeyAsMap(stepNode, "with");
-					if (scalarValue(getKeyAsNode(with, "distribution"))
-							.filter(DISTRIBUTION_TEMURIN::equals)
-							.isEmpty()) {
-						continue;
-					}
-					var withNode = with.orElseThrow();
-					removeKey(with, "java-version-file");
-					var keyNode = newScalar(JAVA_VERSION, ScalarStyle.PLAIN);
-					keyNode.setBlockComments(
-							List.of(
-									new CommentLine(
-											Optional.empty(),
-											Optional.empty(),
-											" " + RENOVATE_JAVA_VERSION_COMMENT,
-											CommentType.BLOCK
-									)
-							)
-					);
-					String pinned = getKeyAsScalar(withNode, JAVA_VERSION)
-							.map(ScalarNode::getValue)
-							.orElse(version);
-					removeKey(with, JAVA_VERSION);
-					var tuples = new ArrayList<>(withNode.getValue());
-					tuples.add(
-							new NodeTuple(
-									keyNode,
-									newScalar(pinned, ScalarStyle.PLAIN)
-							)
-					);
-					withNode.setValue(tuples);
+			for (Node step : getKeyAsSequence(jobNode, STEPS)
+					.map(SequenceNode::getValue)
+					.orElse(List.of())) {
+				var stepNode = nodeAsMap(step);
+				if (scalarValue(getKeyAsNode(stepNode, "uses"))
+						.filter(
+								uses -> uses.startsWith(SETUP_JAVA_ACTION + "@")
+						)
+						.isEmpty()) {
+					continue;
 				}
-			});
+				var with = getKeyAsMap(stepNode, "with");
+				if (scalarValue(getKeyAsNode(with, "distribution"))
+						.filter(DISTRIBUTION_TEMURIN::equals)
+						.isEmpty()) {
+					continue;
+				}
+				body.accept(with);
+			}
 		}
+	}
+
+	/**
+	 * Points every Temurin setup-java step back at {@code .tool-versions},
+	 * dropping a pin and the renovate comment above it.
+	 */
+	public void useToolVersionsFile() {
+		forEachTemurinSetupJavaWith(with -> {
+			removeKey(with, JAVA_VERSION);
+			setKey(
+					with.orElseThrow(),
+					"java-version-file",
+					newScalar(".tool-versions", ScalarStyle.PLAIN)
+			);
+		});
 	}
 
 	public void clearPermissions() {

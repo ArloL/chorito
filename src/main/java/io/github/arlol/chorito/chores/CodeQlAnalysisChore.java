@@ -90,10 +90,16 @@ public class CodeQlAnalysisChore implements Chore {
 
 		// Analysis builds no native image, so .tool-versions would install a
 		// GraalVM it never uses. Renovate owns the pin once it is written.
+		// Both branches are spelled out because the template is a symlink to
+		// the workflow chorito runs on itself: whatever chorito's own JDK
+		// setup happens to say must not decide what every other repository
+		// gets.
 		if (JavaVersions.buildsOnGraalVm(context)) {
 			template.pinTemurinJavaVersion(
 					pinnedJavaVersion.orElse(JavaVersions.TEMURIN)
 			);
+		} else {
+			template.useToolVersionsFile();
 		}
 
 		template.setJobMatrixKey("analyze", "language", languages);
