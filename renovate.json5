@@ -3,17 +3,51 @@
     "addLabels": [
         "{{manager}}",
     ],
+    // The custom managers below read chorito's own source as data. Each one
+    // matches a named constant in tools/MavenPluginVersions.java or
+    // tools/JavaVersions.java -- never XML a chore assembles -- so a rename or
+    // a reformat inside a chore cannot silently stop an update. The second
+    // pattern in each manager keeps the test fixture that asserts the written
+    // pom in step with the constant; the test in MavenPluginVersionsTest fails
+    // the build if the two ever drift.
     "customManagers": [
+        {
+            "customType": "regex",
+            "datasourceTemplate": "maven",
+            "depNameTemplate": "net.revelc.code.formatter:formatter-maven-plugin",
+            "managerFilePatterns": [
+                "/^src/main/java/io/github/arlol/chorito/tools/MavenPluginVersions\\.java$/",
+                "/^src/test/resources/io/github/arlol/chorito/eclipse-formatter-plugin/expected\\.xml$/",
+            ],
+            "matchStrings": [
+                "FORMATTER = \"(?<currentValue>.*?)\"",
+                "<groupId>net\\.revelc\\.code\\.formatter</groupId>\\s*<artifactId>formatter-maven-plugin</artifactId>\\s*<version>(?<currentValue>.*?)</version>",
+            ],
+        },
         {
             "customType": "regex",
             "datasourceTemplate": "maven",
             "depNameTemplate": "com.github.spotbugs:spotbugs-maven-plugin",
             "managerFilePatterns": [
-                "/^src/main/java/io/github/arlol/chorito/chores/SpotbugsPluginChore\\.java$/",
+                "/^src/main/java/io/github/arlol/chorito/tools/MavenPluginVersions\\.java$/",
                 "/^src/test/resources/io/github/arlol/chorito/spotbugs-plugin/expected\\.xml$/",
             ],
             "matchStrings": [
+                "SPOTBUGS = \"(?<currentValue>.*?)\"",
                 "<groupId>com\\.github\\.spotbugs</groupId>\\s*<artifactId>spotbugs-maven-plugin</artifactId>\\s*<version>(?<currentValue>.*?)</version>",
+            ],
+        },
+        {
+            "customType": "regex",
+            "datasourceTemplate": "maven",
+            "depNameTemplate": "org.gaul:modernizer-maven-plugin",
+            "managerFilePatterns": [
+                "/^src/main/java/io/github/arlol/chorito/tools/MavenPluginVersions\\.java$/",
+                "/^src/test/resources/io/github/arlol/chorito/modernizer-plugin/expected\\.xml$/",
+            ],
+            "matchStrings": [
+                "MODERNIZER = \"(?<currentValue>.*?)\"",
+                "<groupId>org\\.gaul</groupId>\\s*<artifactId>modernizer-maven-plugin</artifactId>\\s*<version>(?<currentValue>.*?)</version>",
             ],
         },
         {
@@ -28,18 +62,6 @@
             "matchStrings": [
                 "TEMURIN = \"(?<currentValue>.*?)\"",
                 "java-version: (?<currentValue>\\S+)",
-            ],
-        },
-        {
-            "customType": "regex",
-            "datasourceTemplate": "maven",
-            "depNameTemplate": "org.gaul:modernizer-maven-plugin",
-            "managerFilePatterns": [
-                "/^src/main/java/io/github/arlol/chorito/chores/ModernizerPluginChore\\.java$/",
-                "/^src/test/resources/io/github/arlol/chorito/modernizer-plugin/expected\\.xml$/",
-            ],
-            "matchStrings": [
-                "<groupId>org\\.gaul</groupId>\\s*<artifactId>modernizer-maven-plugin</artifactId>\\s*<version>(?<currentValue>.*?)</version>",
             ],
         },
         {
@@ -72,6 +94,24 @@
         "dependencies",
     ],
     "minimumReleaseAge": "7 days",
+    "packageRules": [
+        {
+            // CustomLinterRegistryBuilder lives in ec4j's own package so it can
+            // subclass package-private types and call their constructors. ec4j
+            // does not know that integration exists and is free to change those
+            // members in any release, so its bumps are a decision rather than
+            // routine: a signature change breaks the build loudly, but a
+            // behavioural change behind an unchanged signature does not.
+            // Ec4jChoreTest exercises the class end to end; read it, and the
+            // upstream changelog, before merging one of these.
+            "addLabels": [
+                "review-custom-linter-registry",
+            ],
+            "matchPackageNames": [
+                "org.ec4j.linters:{/,}**",
+            ],
+        },
+    ],
     "schedule": [
         "on the 20th day of the month",
     ],

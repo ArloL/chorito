@@ -40,6 +40,12 @@ public class ChoritoCommand {
 				new GraalNativeImagePropertiesChore(),
 				new GraalNativeImageMavenPluginMigrationChore(),
 				new CodeFormatterProfileChore(),
+				// Formatter, spotbugs, modernizer and source/javadoc form a
+				// chain: each inserts its plugin after the one its predecessor
+				// inserted, so their relative order here is the only record of
+				// that contract. Reordering them, or dropping
+				// EclipseFormatterPluginChore, breaks it -- the later chores
+				// throw naming the plugin they could not find.
 				new EclipseFormatterPluginChore(),
 				new EclipseOptimizeImportSettingsChore(),
 				new SpotbugsPluginChore(),
