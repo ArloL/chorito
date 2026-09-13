@@ -111,9 +111,20 @@ public class GitHubActionChore implements Chore {
 				ClassPathFiles.readString(MAIN_WORKFLOW_TEMPLATE)
 		);
 		String before = main.asStringWithoutVersions();
-		main.setJob("macos", currentMain.getJob("macos"));
-		main.setJob("linux", currentMain.getJob("linux"));
-		main.setJob("windows", currentMain.getJob("windows"));
+		List<String> platformJobs = List.of("macos", "linux", "windows");
+		platformJobs.forEach(job -> main.setJob(job, currentMain.getJob(job)));
+		// The platform jobs upload their binaries so the release job can
+		// download them again. A release that never downloads has nothing to
+		// collect -- a library proving it works inside a native image rather
+		// than shipping one -- so the upload is plumbing to nowhere. Keying on
+		// the download rather than on what the release publishes keeps the
+		// older release jobs, which attach assets from their own paths.
+		if (!main.hasStepUsing("release", "actions/download-artifact")) {
+			platformJobs.forEach(job -> {
+				main.removeStepByName(job, "Move artifacts");
+				main.removeStepUsing(job, "actions/upload-artifact");
+			});
+		}
 		String after = main.asStringWithoutVersions();
 		if (!after.equals(before)) {
 			FilesSilent.writeString(mainYaml, main.asString());

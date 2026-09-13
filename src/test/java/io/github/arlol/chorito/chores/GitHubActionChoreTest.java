@@ -786,4 +786,57 @@ public class GitHubActionChoreTest {
 				""");
 	}
 
+	private static final String GRAAL_MAIN_WITHOUT_RELEASE_ASSETS = """
+			jobs:
+			  version:
+			    runs-on: ubuntu-latest
+			    steps:
+			    - run: echo version
+			  linux:
+			    needs: version
+			    runs-on: ubuntu-latest
+			    steps:
+			    - uses: actions/setup-java@abc # v6.0.0
+			      with:
+			        distribution: graalvm
+			        java-version-file: .tool-versions
+			  release:
+			    runs-on: ubuntu-latest
+			    steps:
+			    - name: Create Release
+			      run: gh release create "v1"
+			""";
+
+	@Test
+	public void testKeepsUploadsOutOfAReleaseThatDownloadsNothing()
+			throws Exception {
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(workflow, GRAAL_MAIN_WITHOUT_RELEASE_ASSETS);
+
+		new GitHubActionChore().updateGraalSteps(extension.choreContext());
+
+		assertThat(workflow).content()
+				.doesNotContain("upload-artifact")
+				.doesNotContain("Move artifacts");
+	}
+
+	@Test
+	public void testKeepsUploadsWhenTheReleaseDownloadsThem() throws Exception {
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(
+				workflow,
+				GRAAL_MAIN_WITHOUT_RELEASE_ASSETS.replace(
+						"    - name: Create Release",
+						"    - uses: actions/download-artifact@abc # v8.0.1\n"
+								+ "    - name: Create Release"
+				)
+		);
+
+		new GitHubActionChore().updateGraalSteps(extension.choreContext());
+
+		assertThat(workflow).content()
+				.contains("upload-artifact")
+				.contains("Move artifacts");
+	}
+
 }

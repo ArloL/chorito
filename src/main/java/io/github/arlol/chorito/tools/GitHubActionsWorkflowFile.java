@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 
@@ -529,6 +530,48 @@ public class GitHubActionsWorkflowFile {
 		return getKeyAsSequence(getJob(jobName), STEPS)
 				.map(SequenceNode::getValue)
 				.orElse(List.of());
+	}
+
+	/**
+	 * Whether the release job hands the files under {@code target/artifacts} to
+	 * whatever publishes the release. That is the path the attestation names as
+	 * its subject, so a release publishing from anywhere else -- the older jobs
+	 * attach assets one by one from their own paths -- answers false.
+	 */
+	public boolean releasePublishesAssets() {
+		return jobMentions("release", "target/artifacts/");
+	}
+
+	public void removeStepByName(String jobName, String stepName) {
+		removeSteps(
+				jobName,
+				step -> scalarValue(getKeyAsNode(nodeAsMap(step), "name"))
+						.filter(stepName::equals)
+						.isPresent()
+		);
+	}
+
+	public void removeStepUsing(String jobName, String actionName) {
+		removeSteps(
+				jobName,
+				step -> scalarValue(getKeyAsNode(nodeAsMap(step), "uses"))
+						.filter(uses -> uses.startsWith(actionName + "@"))
+						.isPresent()
+		);
+	}
+
+	private void removeSteps(String jobName, Predicate<Node> unwanted) {
+		var job = getJob(jobName);
+		var stepsNode = getKeyAsSequence(job, STEPS);
+		if (stepsNode.isEmpty()) {
+			return;
+		}
+		List<Node> kept = stepsNode.orElseThrow()
+				.getValue()
+				.stream()
+				.filter(unwanted.negate())
+				.toList();
+		setKey(job.orElseThrow(), STEPS, newSequence(kept));
 	}
 
 	public void clearPermissions() {
