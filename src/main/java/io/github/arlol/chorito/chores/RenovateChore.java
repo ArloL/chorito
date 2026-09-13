@@ -118,10 +118,11 @@ public class RenovateChore implements Chore {
 		}
 		if (FilesSilent.exists(renovateJson5)) {
 			var content = FilesSilent.readString(renovateJson5);
-			// Both sides drop the comments a json5 file is written for,
-			// so what is left between them is a migration actually
-			// changing something. A file no migration touches keeps its
-			// comments, key order and formatting.
+			// Comments survive the round trip, key order and formatting
+			// do not: both sides come back sorted and reformatted, so
+			// what is left between them is a migration actually changing
+			// something. A file no migration touches is not written and
+			// keeps the order and the layout its author chose.
 			var asRead = JsonBuilder.wrap(content).asString();
 			var migrated = JsonBuilder.wrap(content)
 					.apply(migrations)

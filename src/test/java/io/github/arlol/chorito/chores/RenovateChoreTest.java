@@ -417,16 +417,13 @@ public class RenovateChoreTest {
 		assertThat(renovateJson5).content().isEqualTo(content);
 	}
 
-	// Jackson's tree model has no node for a comment, so a migration that has
-	// to
-	// rewrite the file cannot carry one over. Pinned so the loss stays visible.
 	@Test
-	public void testDropsCommentsWhenAMigrationRewritesTheFile()
+	public void testKeepsCommentsWhenAMigrationRewritesTheFile()
 			throws Exception {
 		Path renovateJson5 = extension.root().resolve("renovate.json5");
 		FilesSilent.writeString(renovateJson5, """
 				{
-				    // worth keeping, but it cannot survive the rewrite
+				    // worth keeping
 				    "addLabels": [
 				        "{{manager}}",
 				    ],
@@ -441,6 +438,7 @@ public class RenovateChoreTest {
 
 		assertThat(renovateJson5).content().isEqualTo("""
 				{
+				    // worth keeping
 				    "addLabels": [
 				        "{{manager}}",
 				    ],
@@ -448,6 +446,51 @@ public class RenovateChoreTest {
 				        "dependencies",
 				    ],
 				    "minimumReleaseAge": "7 days",
+				}
+				""");
+	}
+
+	@Test
+	public void testKeepsCommentsOnSeveralMembersWhenAnUnrelatedKeyChanges()
+			throws Exception {
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
+		FilesSilent.writeString(renovateJson5, """
+				// Renovate keeps this repository's dependencies current.
+				{
+				    "addLabels": [
+				        "{{manager}}",
+				    ],
+				    "customManagers": [
+				        {
+				            // Version pins that no built-in manager sees.
+				            "customType": "regex",
+				        },
+				    ],
+				    "labels": [
+				        "dependencies",
+				    ],
+				    "minimumReleaseAge": "4 days", // renovate's own default
+				}
+				""");
+
+		new RenovateChore().doit(githubContext());
+
+		assertThat(renovateJson5).content().isEqualTo("""
+				// Renovate keeps this repository's dependencies current.
+				{
+				    "addLabels": [
+				        "{{manager}}",
+				    ],
+				    "customManagers": [
+				        {
+				            // Version pins that no built-in manager sees.
+				            "customType": "regex",
+				        },
+				    ],
+				    "labels": [
+				        "dependencies",
+				    ],
+				    "minimumReleaseAge": "7 days", // renovate's own default
 				}
 				""");
 	}
