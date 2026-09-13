@@ -16,6 +16,22 @@ public final class DirectoryStreams {
 	private DirectoryStreams() {
 	}
 
+	/**
+	 * Every workflow file below {@code .github/workflows}, whether it uses the
+	 * {@code .yaml} or the {@code .yml} extension, resolved against the context
+	 * root.
+	 */
+	public static Stream<Path> githubWorkflows(ChoreContext context) {
+		Path workflowsLocation = context.resolve(".github/workflows");
+		return context.textFiles().stream().filter(path -> {
+			if (!path.startsWith(workflowsLocation)) {
+				return false;
+			}
+			String fileName = path.toString();
+			return fileName.endsWith(".yaml") || fileName.endsWith(".yml");
+		}).map(context::resolve);
+	}
+
 	public static Stream<Path> javaDirs(ChoreContext context) {
 		return Stream
 				.of(

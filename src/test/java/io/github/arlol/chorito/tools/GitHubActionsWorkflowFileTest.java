@@ -2,6 +2,8 @@ package io.github.arlol.chorito.tools;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 
 public class GitHubActionsWorkflowFileTest {
@@ -171,6 +173,50 @@ public class GitHubActionsWorkflowFileTest {
 		workflow.useToolVersionsFile();
 
 		assertThat(workflow.asString()).isEqualTo(input);
+	}
+
+	@Test
+	public void grantJobPermissionsKeepsWhatTheJobAlreadyHas() {
+		var workflow = new GitHubActionsWorkflowFile("""
+				jobs:
+				  release:
+				    permissions:
+				      attestations: write
+				      contents: write
+				      id-token: write
+				    steps:
+				    - run: echo
+				""");
+
+		workflow.grantJobPermissions("release", Map.of("contents", "write"));
+
+		assertThat(workflow.asString()).isEqualTo("""
+				jobs:
+				  release:
+				    permissions:
+				      attestations: write
+				      contents: write
+				      id-token: write
+				    steps:
+				    - run: echo
+				""");
+	}
+
+	@Test
+	public void grantJobPermissionsAddsWhatIsMissing() {
+		var workflow = new GitHubActionsWorkflowFile("""
+				jobs:
+				  release:
+				    permissions:
+				      attestations: write
+				    steps:
+				    - run: echo
+				""");
+
+		workflow.grantJobPermissions("release", Map.of("contents", "write"));
+
+		assertThat(workflow.asString())
+				.contains("attestations: write", "contents: write");
 	}
 
 }

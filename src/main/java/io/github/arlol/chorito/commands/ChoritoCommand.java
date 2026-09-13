@@ -32,6 +32,7 @@ public class ChoritoCommand {
 				new NpmrcChore(),
 				new CodeQlAnalysisChore(),
 				new GitHubActionChore(),
+				new AttestReleaseAssetsChore(),
 				new GitIgnoreChore(),
 				new EclipseCompilerSettingsChore(),
 				new JavaUpdaterChore(),

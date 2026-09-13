@@ -2,10 +2,12 @@ package io.github.arlol.chorito.chores;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import io.github.arlol.chorito.tools.ChoreContext;
+import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.ExecutableFlagger;
 import io.github.arlol.chorito.tools.FilesSilent;
@@ -57,18 +59,36 @@ public class GitHubActionChore implements Chore {
 		return context;
 	}
 
+	/**
+	 * What each job of a main workflow cannot do its work without. Read from
+	 * here rather than off the template, because the template is chorito's own
+	 * workflow: chorito attests its releases and so grants itself
+	 * {@code attestations} and {@code id-token}, and copying that across would
+	 * hand those to every release job whether or not it publishes anything.
+	 * {@link AttestReleaseAssetsChore} grants them where they are earned.
+	 */
+	private static final Map<String, Map<String, String>> REQUIRED_PERMISSIONS = Map
+			.of(
+					VERSION_JOB,
+					Map.of("contents", "write"),
+					"release",
+					Map.of("contents", "write"),
+					"deploy",
+					Map.of("packages", "write")
+			);
+
 	public void updatePermissions(ChoreContext context) {
 		Optional<Path> mainWorkflow = mainWorkflow(context);
 		if (mainWorkflow.isEmpty()) {
 			return;
 		}
 		Path mainYaml = mainWorkflow.orElseThrow();
-		String string = FilesSilent.readString(mainYaml);
-		var main = new GitHubActionsWorkflowFile(string);
-		var template = new GitHubActionsWorkflowFile(
-				ClassPathFiles.readString(MAIN_WORKFLOW_TEMPLATE)
+		var main = new GitHubActionsWorkflowFile(
+				FilesSilent.readString(mainYaml)
 		);
-		main.updatePermissionsFromTemplate(template);
+		REQUIRED_PERMISSIONS.forEach(
+				(job, permissions) -> main.grantJobPermissions(job, permissions)
+		);
 		FilesSilent.writeString(mainYaml, main.asString());
 	}
 
@@ -106,7 +126,7 @@ public class GitHubActionChore implements Chore {
 						.readString("github-settings/workflows/chores.yaml")
 		);
 		var debugJob = currentMain.getJob(DEBUG_JOB);
-		workflowFiles(context).forEach(path -> {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			var workflow = new GitHubActionsWorkflowFile(
 					FilesSilent.readString(path)
 			);
@@ -126,7 +146,7 @@ public class GitHubActionChore implements Chore {
 				ClassPathFiles.readString(MAIN_WORKFLOW_TEMPLATE)
 		);
 		var versionJob = currentMain.getJob(VERSION_JOB);
-		workflowFiles(context).forEach(path -> {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			var workflow = new GitHubActionsWorkflowFile(
 					FilesSilent.readString(path)
 			);
@@ -142,7 +162,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateActionsCreateRelease(ChoreContext context) {
-		workflowFiles(context).forEach(path -> {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			String target = """
 					uses: actions/create-release@v1.1.4
@@ -162,7 +182,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateActionsUploadReleaseAsset(ChoreContext context) {
-		workflowFiles(context).forEach(path -> {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			String target = """
 					uses: actions/upload-release-asset@v1.0.2
@@ -272,7 +292,7 @@ public class GitHubActionChore implements Chore {
 	private void migrateJavaDistributionFromAdoptToTemurin(
 			ChoreContext context
 	) {
-		workflowFiles(context).forEach(path -> {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			updated = updated
 					.replace("distribution: adopt", DISTRIBUTION_TEMURIN);
@@ -285,7 +305,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateToGraalSetupAction(ChoreContext context) {
-		workflowFiles(context).forEach(path -> {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			updated = updated.replace("""
 
@@ -344,7 +364,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void useSpecificActionVersions(ChoreContext context) {
-		workflowFiles(context).forEach(path -> {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			updated = updated.replace(
 					"uses: actions/checkout@v3\n",
@@ -395,7 +415,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void removeSetupJava370(ChoreContext context) {
-		workflowFiles(context).forEach(path -> {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			updated = updated.replace(
 					"uses: actions/setup-java@v3.7.0\n",
@@ -406,7 +426,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void replaceSetOutput(ChoreContext context) {
-		workflowFiles(context).forEach(path -> {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			List<String> updated = FilesSilent.readAllLines(path)
 					.stream()
 					.map(s -> {
@@ -510,7 +530,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void actionsCheckoutWithPersistCredentials(ChoreContext context) {
-		workflowFiles(context).forEach(path -> {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String input = FilesSilent.readString(path);
 			var checkActionsWorkflow = new GitHubActionsWorkflowFile(input);
 			checkActionsWorkflow.clearPermissions();
@@ -523,7 +543,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void quoteRedirects(ChoreContext context) {
-		workflowFiles(context).forEach(path -> {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			var yaml = FilesSilent.readString(path);
 			yaml = yaml.replace("> $GITHUB_ENV", "> \"${GITHUB_ENV}\"");
 			yaml = yaml.replace("> $GITHUB_OUTPUT", "> \"${GITHUB_OUTPUT}\"");
@@ -535,7 +555,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateZipProjects(ChoreContext context) {
-		workflowFiles(context).forEach(path -> {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			String target = """
 					    - name: Build project
@@ -561,7 +581,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void removeNeedsVersionOutputsChangelog(ChoreContext context) {
-		workflowFiles(context).forEach(path -> {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			String target = """
 					        body: ${{ needs.version.outputs.changelog }}
@@ -572,7 +592,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateEregonPublishRelease(ChoreContext context) {
-		workflowFiles(context).forEach(path -> {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			var current = FilesSilent.readString(path);
 
 			var target = """
@@ -599,7 +619,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateNcipoploReleaseAction(ChoreContext context) {
-		workflowFiles(context).forEach(path -> {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String current = FilesSilent.readString(path);
 			if (!current.contains("id: create_release")) {
 				return;
@@ -745,7 +765,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void migrateSetupGraalvm(ChoreContext context) {
-		workflowFiles(context).forEach(path -> {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String current = FilesSilent.readString(path);
 			var workflow = new GitHubActionsWorkflowFile(current);
 			String before = workflow.asStringWithoutVersions();
@@ -797,22 +817,6 @@ public class GitHubActionChore implements Chore {
 				FilesSilent.writeString(path, workflow.asString());
 			}
 		});
-	}
-
-	/**
-	 * Every workflow file below {@code .github/workflows}, whether it uses the
-	 * {@code .yaml} or the {@code .yml} extension, resolved against the context
-	 * root.
-	 */
-	private static Stream<Path> workflowFiles(ChoreContext context) {
-		Path workflowsLocation = context.resolve(WORKFLOWS_DIRECTORY);
-		return context.textFiles().stream().filter(path -> {
-			if (!path.startsWith(workflowsLocation)) {
-				return false;
-			}
-			String fileName = path.toString();
-			return WORKFLOW_EXTENSIONS.stream().anyMatch(fileName::endsWith);
-		}).map(context::resolve);
 	}
 
 	/**
