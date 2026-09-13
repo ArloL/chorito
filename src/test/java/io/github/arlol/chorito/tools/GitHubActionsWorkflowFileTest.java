@@ -91,6 +91,73 @@ public class GitHubActionsWorkflowFileTest {
 	}
 
 	@Test
+	public void commentAfterABlockScalarStaysAboveTheNextItem() {
+		String content = """
+				jobs:
+				  release:
+				    steps:
+				    - name: one
+				      run: |
+				        echo one
+				    # heading
+				    - name: two
+				      run: echo two
+				""";
+
+		assertThat(new GitHubActionsWorkflowFile(content).asString())
+				.isEqualTo(content);
+	}
+
+	@Test
+	public void commentAfterABlockScalarStaysAboveALaterKey() {
+		String content = """
+				jobs:
+				  release:
+				    steps:
+				    - name: one
+				      run: |
+				        echo one
+				      # about uses
+				      uses: x
+				    - name: two
+				      run: echo two
+				""";
+
+		assertThat(new GitHubActionsWorkflowFile(content).asString())
+				.isEqualTo(content);
+	}
+
+	@Test
+	public void aCopiedStepCarriesItsHeadingComment() {
+		var source = new GitHubActionsWorkflowFile("""
+				jobs:
+				  release:
+				    steps:
+				    - name: one
+				      run: |
+				        echo one
+				    # heading
+				    - name: two
+				      run: echo two
+				""");
+		var target = new GitHubActionsWorkflowFile("""
+				jobs:
+				  release:
+				    steps:
+				    - name: last
+				      run: echo last
+				""");
+
+		target.insertStepBefore(
+				"release",
+				"last",
+				source.getStepByName("release", "two").orElseThrow()
+		);
+
+		assertThat(target.asString()).contains("# heading");
+	}
+
+	@Test
 	public void commentGluedToTheIndicatorStaysGlued() {
 		String content = """
 				jobs:
