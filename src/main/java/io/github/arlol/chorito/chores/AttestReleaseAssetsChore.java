@@ -1,12 +1,9 @@
 package io.github.arlol.chorito.chores;
 
-import java.util.Map;
-
 import io.github.arlol.chorito.tools.ChoreContext;
-import io.github.arlol.chorito.tools.DirectoryStreams;
-import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.GitHubActionsWorkflowFile;
 import io.github.arlol.chorito.tools.Template;
+import io.github.arlol.chorito.tools.WorkflowJobs;
 
 /**
  * Attests the provenance of the files a release publishes, so an installer that
@@ -15,23 +12,8 @@ import io.github.arlol.chorito.tools.Template;
  */
 public class AttestReleaseAssetsChore implements Chore {
 
-	private static final String RELEASE_JOB = "release";
 	private static final String CREATE_RELEASE_STEP = "Create Release";
 	private static final String ATTEST_ACTION = "actions/attest-build-provenance";
-
-	/**
-	 * The permissions {@link Template} takes off every workflow it hands out,
-	 * granted back here to the jobs that earn them by attesting what they
-	 * publish.
-	 */
-	private static final Map<String, String> ATTEST_PERMISSIONS = Map.of(
-			// mints the OIDC token the signing certificate is requested with
-			"id-token",
-			"write",
-			// persists the attestation against the repository
-			"attestations",
-			"write"
-	);
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
@@ -40,28 +22,22 @@ public class AttestReleaseAssetsChore implements Chore {
 			return context;
 		}
 
-		DirectoryStreams.githubWorkflows(context).forEach(path -> {
-			var workflow = new GitHubActionsWorkflowFile(
-					FilesSilent.readString(path)
-			);
-			if (!workflow.hasJob(RELEASE_JOB)
+		GitHubActionsWorkflowFile.updateEach(context, workflow -> {
+			if (!workflow.hasJob(WorkflowJobs.RELEASE)
 					|| !workflow.releasePublishesAssets()) {
 				return;
 			}
-
-			String before = workflow.asStringWithoutVersions();
-			if (!workflow.hasStepUsing(RELEASE_JOB, ATTEST_ACTION)) {
+			if (!workflow.hasStepUsing(WorkflowJobs.RELEASE, ATTEST_ACTION)) {
 				workflow.insertStepBefore(
-						RELEASE_JOB,
+						WorkflowJobs.RELEASE,
 						CREATE_RELEASE_STEP,
 						attestStep.orElseThrow()
 				);
 			}
-			workflow.grantJobPermissions(RELEASE_JOB, ATTEST_PERMISSIONS);
-
-			if (!workflow.asStringWithoutVersions().equals(before)) {
-				FilesSilent.writeString(path, workflow.asString());
-			}
+			workflow.grantJobPermissions(
+					WorkflowJobs.RELEASE,
+					WorkflowJobs.ATTESTATION_PERMISSIONS
+			);
 		});
 
 		return context;

@@ -50,6 +50,36 @@ public class GitHubActionsWorkflowFile {
 	private static final Pattern USES_VERSION = Pattern
 			.compile("(?m)^([ \\t-]*uses:[^@\\n]*)@[^\\n]*");
 
+	/**
+	 * Runs {@code change} against every workflow of {@code context}, writing
+	 * back only the ones it actually changed.
+	 * <p>
+	 * The chores that rewrite workflows communicate through the files
+	 * themselves, each one re-reading what the last wrote. The read, the
+	 * compare and the conditional write are the protocol that makes that safe
+	 * -- a workflow rewritten with no change still churns the file and the
+	 * commit -- and it was spelled out separately in four places. Stated once
+	 * here, a chore says what it changes and nothing else.
+	 * <p>
+	 * Versions are ignored when deciding whether anything changed, so a
+	 * workflow whose action pins Renovate has bumped is not rewritten back.
+	 */
+	public static void updateEach(
+			ChoreContext context,
+			Consumer<GitHubActionsWorkflowFile> change
+	) {
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
+			var workflow = new GitHubActionsWorkflowFile(
+					FilesSilent.readString(path)
+			);
+			String before = workflow.asStringWithoutVersions();
+			change.accept(workflow);
+			if (!workflow.asStringWithoutVersions().equals(before)) {
+				FilesSilent.writeString(path, workflow.asString());
+			}
+		});
+	}
+
 	public static String removeVersions(String input) {
 		return USES_VERSION.matcher(input).replaceAll("$1@\n");
 	}
@@ -575,7 +605,7 @@ public class GitHubActionsWorkflowFile {
 	 * attach assets one by one from their own paths -- answers false.
 	 */
 	public boolean releasePublishesAssets() {
-		return jobMentions("release", "target/artifacts/");
+		return jobMentions(WorkflowJobs.RELEASE, "target/artifacts/");
 	}
 
 	public void removeStepByName(String jobName, String stepName) {

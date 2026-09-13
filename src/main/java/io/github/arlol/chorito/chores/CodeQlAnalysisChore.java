@@ -13,6 +13,7 @@ import io.github.arlol.chorito.tools.JavaVersions;
 import io.github.arlol.chorito.tools.MyPaths;
 import io.github.arlol.chorito.tools.RandomCronBuilder;
 import io.github.arlol.chorito.tools.Template;
+import io.github.arlol.chorito.tools.WorkflowJobs;
 
 public class CodeQlAnalysisChore implements Chore {
 
@@ -79,7 +80,10 @@ public class CodeQlAnalysisChore implements Chore {
 		}
 
 		if (!languages.contains("java-kotlin")) {
-			template.removeActionFromJob("analyze", "actions/setup-java");
+			template.removeActionFromJob(
+					WorkflowJobs.ANALYZE,
+					"actions/setup-java"
+			);
 			template.removeEnv();
 		}
 
@@ -93,7 +97,7 @@ public class CodeQlAnalysisChore implements Chore {
 			);
 		}
 
-		template.setJobMatrixKey("analyze", "language", languages);
+		template.setJobMatrixKey(WorkflowJobs.ANALYZE, "language", languages);
 
 		if (!template.asStringWithoutVersions().equals(before)) {
 			FilesSilent.writeString(codeqlWorkflow, template.asString());
