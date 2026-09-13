@@ -2,6 +2,7 @@ package io.github.arlol.chorito.tools;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,25 +13,31 @@ public final class JsonBuilder {
 
 	private final ObjectNode node;
 
-	private JsonBuilder(ObjectNode node) {
+	private final JsonComments comments;
+
+	private JsonBuilder(ObjectNode node, JsonComments comments) {
 		this.node = node;
+		this.comments = comments;
 	}
 
 	public static JsonBuilder object() {
-		return new JsonBuilder(Jsons.objectMapper().createObjectNode());
+		return new JsonBuilder(
+				Jsons.objectMapper().createObjectNode(),
+				new JsonComments()
+		);
 	}
 
 	public static JsonBuilder wrap(ObjectNode node) {
-		return new JsonBuilder(node);
+		return new JsonBuilder(node, new JsonComments());
 	}
 
 	public static JsonBuilder wrap(String content) {
-		return new JsonBuilder(
-				Jsons.parse(content)
-						.filter(ObjectNode.class::isInstance)
-						.map(n -> (ObjectNode) n)
-						.orElseThrow()
-		);
+		JsonComments comments = new JsonComments();
+		if (!(JsonCommentParser
+				.parse(content, comments) instanceof ObjectNode objectNode)) {
+			throw new IllegalArgumentException("Not a json object");
+		}
+		return new JsonBuilder(objectNode, comments);
 	}
 
 	public JsonBuilder put(String key, String value) {
@@ -55,8 +62,27 @@ public final class JsonBuilder {
 	}
 
 	public JsonBuilder object(String key, Consumer<JsonBuilder> body) {
-		body.accept(new JsonBuilder(node.putObject(key)));
+		body.accept(new JsonBuilder(node.putObject(key), comments));
 		return this;
+	}
+
+	/**
+	 * Puts a comment on its own line above the given entry. The text is written
+	 * without comment delimiters; each line becomes one {@code //} line in the
+	 * output.
+	 */
+	public JsonBuilder comment(String key, String text) {
+		comments.addLeading(node, key, asLineComment(text));
+		return this;
+	}
+
+	private static String asLineComment(String text) {
+		if (text.isEmpty()) {
+			return "//";
+		}
+		return text.lines()
+				.map(line -> line.isEmpty() ? "//" : "// " + line)
+				.collect(Collectors.joining("\n"));
 	}
 
 	public JsonBuilder migrateString(String key, String from, String to) {
@@ -77,7 +103,7 @@ public final class JsonBuilder {
 	public JsonBuilder ifObjectPresent(String key, Consumer<JsonBuilder> body) {
 		JsonNode child = node.get(key);
 		if (child instanceof ObjectNode childObj) {
-			body.accept(new JsonBuilder(childObj));
+			body.accept(new JsonBuilder(childObj, comments));
 		}
 		return this;
 	}
@@ -94,7 +120,7 @@ public final class JsonBuilder {
 	public JsonBuilder arrayAddObject(String key, Consumer<JsonBuilder> body) {
 		JsonNode child = node.get(key);
 		ArrayNode arr = child instanceof ArrayNode a ? a : node.putArray(key);
-		body.accept(new JsonBuilder(arr.addObject()));
+		body.accept(new JsonBuilder(arr.addObject(), comments));
 		return this;
 	}
 
@@ -150,7 +176,7 @@ public final class JsonBuilder {
 	}
 
 	public String asString() {
-		return Jsons.asString(Jsons.sortFields(node));
+		return Jsons.asString(Jsons.sortFields(node), comments);
 	}
 
 }
