@@ -41,11 +41,16 @@ public class RenovateChore implements Chore {
 		}
 		if (FilesSilent.exists(renovateJson5)) {
 			var content = FilesSilent.readString(renovateJson5);
-			var newContent = JsonBuilder.wrap(content)
+			// Both sides drop the comments a json5 file is written for,
+			// so what is left between them is a migration actually
+			// changing something. A file no migration touches keeps its
+			// comments, key order and formatting.
+			var asRead = JsonBuilder.wrap(content).asString();
+			var migrated = JsonBuilder.wrap(content)
 					.apply(MIGRATIONS)
 					.asString();
-			if (!newContent.equalsIgnoreCase(content)) {
-				FilesSilent.writeString(renovateJson5, newContent);
+			if (!asRead.equals(migrated)) {
+				FilesSilent.writeString(renovateJson5, migrated);
 			}
 		} else if (context.remotes()
 				.stream()
