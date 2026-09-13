@@ -18,6 +18,20 @@
         },
         {
             "customType": "regex",
+            "datasourceTemplate": "java-version",
+            "depNameTemplate": "java",
+            "extractVersionTemplate": "^(?<version>\\d+\\.\\d+\\.\\d+)",
+            "managerFilePatterns": [
+                "/^src/main/java/io/github/arlol/chorito/tools/JavaVersions\\.java$/",
+                "/^src/test/resources/io/github/arlol/chorito/codeql/graal-expected\\.yaml$/",
+            ],
+            "matchStrings": [
+                "TEMURIN = \"(?<currentValue>.*?)\"",
+                "java-version: (?<currentValue>\\S+)",
+            ],
+        },
+        {
+            "customType": "regex",
             "datasourceTemplate": "maven",
             "depNameTemplate": "org.gaul:modernizer-maven-plugin",
             "managerFilePatterns": [

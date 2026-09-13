@@ -452,4 +452,150 @@ public class RenovateChoreTest {
 				""");
 	}
 
+	private ChoreContext graalGithubContext() {
+		FilesSilent.writeString(
+				extension.root().resolve(".tool-versions"),
+				"java graalvm-community-25.0.2\n"
+		);
+		return githubContext();
+	}
+
+	@Test
+	public void testCreatesCustomManagersForGraalProject() throws Exception {
+		new RenovateChore().doit(graalGithubContext());
+
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
+		assertThat(renovateJson5).content()
+				.isEqualTo(
+						"""
+								{
+								    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+								    "addLabels": [
+								        "{{manager}}",
+								    ],
+								    "customManagers": [
+								        {
+								            "customType": "regex",
+								            "datasourceTemplate": "github-releases",
+								            "depNameTemplate": "graalvm/graalvm-ce-builds",
+								            "extractVersionTemplate": "^jdk-(?<version>\\\\S+)",
+								            "managerFilePatterns": [
+								                "/^\\\\.tool-versions$/",
+								            ],
+								            "matchStrings": [
+								                "java graalvm-community-(?<currentValue>\\\\S+)",
+								            ],
+								        },
+								        {
+								            "customType": "regex",
+								            "extractVersionTemplate": "^(?<version>\\\\d+\\\\.\\\\d+\\\\.\\\\d+)",
+								            "managerFilePatterns": [
+								                "/^\\\\.github/workflows/[^/]+\\\\.ya?ml$/",
+								            ],
+								            "matchStrings": [
+								                "# renovate: datasource=(?<datasource>\\\\S+) depName=(?<depName>\\\\S+)\\\\s+java-version: (?<currentValue>\\\\S+)",
+								            ],
+								        },
+								    ],
+								    "extends": [
+								        "config:recommended",
+								    ],
+								    "labels": [
+								        "dependencies",
+								    ],
+								    "minimumReleaseAge": "7 days",
+								    "schedule": [
+								        "on the 20th day of the month",
+								    ],
+								    "vulnerabilityAlerts": {
+								        "addLabels": [
+								            "security",
+								        ],
+								        "minimumReleaseAge": "0 days",
+								        "schedule": [
+								            "at any time",
+								        ],
+								    },
+								}
+								"""
+				);
+	}
+
+	@Test
+	public void testKeepsCustomManagersAndCommentsItAlreadyHas()
+			throws Exception {
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
+		String content = """
+				{
+				    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+				    "addLabels": [
+				        "{{manager}}",
+				    ],
+				    "customManagers": [
+				        {
+				            // Renovate's mise manager maps only temurin- and
+				            // adoptopenjdk- java versions to a datasource.
+				            "customType": "regex",
+				            "datasourceTemplate": "github-releases",
+				            "depNameTemplate": "graalvm/graalvm-ce-builds",
+				            "extractVersionTemplate": "^jdk-(?<version>\\\\S+)",
+				            "managerFilePatterns": [
+				                "/^\\\\.tool-versions$/",
+				            ],
+				            "matchStrings": [
+				                "java graalvm-community-(?<currentValue>\\\\S+)",
+				            ],
+				        },
+				        {
+				            "customType": "regex",
+				            "extractVersionTemplate": "^(?<version>\\\\d+\\\\.\\\\d+\\\\.\\\\d+)",
+				            "managerFilePatterns": [
+				                "/^\\\\.github/workflows/[^/]+\\\\.yaml$/",
+				            ],
+				            "matchStrings": [
+				                "# renovate: datasource=(?<datasource>\\\\S+) depName=(?<depName>\\\\S+)\\\\s+java-version: (?<currentValue>\\\\S+)",
+				            ],
+				        },
+				    ],
+				    "extends": [
+				        "config:recommended",
+				    ],
+				    "labels": [
+				        "dependencies",
+				    ],
+				    "minimumReleaseAge": "7 days",
+				    "schedule": [
+				        "on the 20th day of the month",
+				    ],
+				    "vulnerabilityAlerts": {
+				        "addLabels": [
+				            "security",
+				        ],
+				        "minimumReleaseAge": "0 days",
+				        "schedule": [
+				            "at any time",
+				        ],
+				    },
+				}
+				""";
+		FilesSilent.writeString(renovateJson5, content);
+
+		new RenovateChore().doit(graalGithubContext());
+
+		assertThat(renovateJson5).content().isEqualTo(content);
+	}
+
+	@Test
+	public void testAddsNoCustomManagersToATemurinProject() throws Exception {
+		FilesSilent.writeString(
+				extension.root().resolve(".tool-versions"),
+				"java temurin-25\n"
+		);
+
+		new RenovateChore().doit(githubContext());
+
+		assertThat(extension.root().resolve("renovate.json5")).content()
+				.doesNotContain("customManagers");
+	}
+
 }

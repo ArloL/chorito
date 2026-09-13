@@ -43,6 +43,10 @@ public class GitHubActionsWorkflowFile {
 
 	private static final String STEPS = "steps";
 	private static final String PERMISSIONS = "permissions";
+	private static final String SETUP_JAVA_ACTION = "actions/setup-java";
+	private static final String DISTRIBUTION_TEMURIN = "temurin";
+	private static final String JAVA_VERSION = "java-version";
+	private static final String RENOVATE_JAVA_VERSION_COMMENT = "renovate: datasource=java-version depName=java";
 	private static final Pattern USES_VERSION = Pattern
 			.compile("(?m)^([ \\t-]*uses:[^@\\n]*)@[^\\n]*");
 
@@ -335,6 +339,84 @@ public class GitHubActionsWorkflowFile {
 					}
 				}).toList();
 				setKey(jobNode, STEPS, newSequence(steps));
+			});
+		}
+	}
+
+	/**
+	 * The version a Temurin setup-java step is pinned to, if any. The chores
+	 * that regenerate a workflow from a template carry it across so the bump
+	 * Renovate made survives.
+	 */
+	public Optional<String> getPinnedJavaVersion() {
+		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
+				.orElse(List.of())) {
+			var jobNode = nodeAsMap(jobTuple.getValueNode());
+			for (Node step : getKeyAsSequence(jobNode, STEPS)
+					.map(SequenceNode::getValue)
+					.orElse(List.of())) {
+				var with = getKeyAsMap(nodeAsMap(step), "with");
+				if (scalarValue(getKeyAsNode(with, "distribution"))
+						.filter(DISTRIBUTION_TEMURIN::equals)
+						.isPresent()) {
+					var version = scalarValue(getKeyAsNode(with, JAVA_VERSION));
+					if (version.isPresent()) {
+						return version;
+					}
+				}
+			}
+		}
+		return Optional.empty();
+	}
+
+	public void pinTemurinJavaVersion(String version) {
+		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
+				.orElse(List.of())) {
+			var jobNode = nodeAsMap(jobTuple.getValueNode());
+
+			getKeyAsSequence(jobNode, STEPS).ifPresent(stepsNode -> {
+				for (Node step : stepsNode.getValue()) {
+					var stepNode = nodeAsMap(step);
+					if (scalarValue(getKeyAsNode(stepNode, "uses"))
+							.filter(
+									uses -> uses
+											.startsWith(SETUP_JAVA_ACTION + "@")
+							)
+							.isEmpty()) {
+						continue;
+					}
+					var with = getKeyAsMap(stepNode, "with");
+					if (scalarValue(getKeyAsNode(with, "distribution"))
+							.filter(DISTRIBUTION_TEMURIN::equals)
+							.isEmpty()) {
+						continue;
+					}
+					var withNode = with.orElseThrow();
+					removeKey(with, "java-version-file");
+					var keyNode = newScalar(JAVA_VERSION, ScalarStyle.PLAIN);
+					keyNode.setBlockComments(
+							List.of(
+									new CommentLine(
+											Optional.empty(),
+											Optional.empty(),
+											" " + RENOVATE_JAVA_VERSION_COMMENT,
+											CommentType.BLOCK
+									)
+							)
+					);
+					String pinned = getKeyAsScalar(withNode, JAVA_VERSION)
+							.map(ScalarNode::getValue)
+							.orElse(version);
+					removeKey(with, JAVA_VERSION);
+					var tuples = new ArrayList<>(withNode.getValue());
+					tuples.add(
+							new NodeTuple(
+									keyNode,
+									newScalar(pinned, ScalarStyle.PLAIN)
+							)
+					);
+					withNode.setValue(tuples);
+				}
 			});
 		}
 	}

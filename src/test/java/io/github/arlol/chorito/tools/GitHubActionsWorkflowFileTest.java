@@ -40,4 +40,90 @@ public class GitHubActionsWorkflowFileTest {
 		).isEqualTo("\n\n      - uses: a/b@\n\n");
 	}
 
+	@Test
+	public void pinTemurinJavaVersionReplacesToolVersionsFile() {
+		var workflow = new GitHubActionsWorkflowFile("""
+				jobs:
+				  analyze:
+				    steps:
+				    - uses: actions/setup-java@abc # v6.0.0
+				      with:
+				        cache: maven
+				        distribution: temurin
+				        java-version-file: .tool-versions
+				""");
+
+		workflow.pinTemurinJavaVersion("1.2.3");
+
+		assertThat(workflow.asString()).isEqualTo("""
+				jobs:
+				  analyze:
+				    steps:
+				    - uses: actions/setup-java@abc # v6.0.0
+				      with:
+				        cache: maven
+				        distribution: temurin
+				        # renovate: datasource=java-version depName=java
+				        java-version: 1.2.3
+				""");
+	}
+
+	@Test
+	public void pinTemurinJavaVersionLeavesGraalvmSteps() {
+		String input = """
+				jobs:
+				  linux:
+				    steps:
+				    - uses: actions/setup-java@abc # v6.0.0
+				      with:
+				        cache: maven
+				        distribution: graalvm
+				        java-version-file: .tool-versions
+				""";
+		var workflow = new GitHubActionsWorkflowFile(input);
+
+		workflow.pinTemurinJavaVersion("1.2.3");
+
+		assertThat(workflow.asString()).isEqualTo(input);
+	}
+
+	@Test
+	public void pinTemurinJavaVersionKeepsAnAlreadyPinnedVersion() {
+		var workflow = new GitHubActionsWorkflowFile("""
+				jobs:
+				  analyze:
+				    steps:
+				    - uses: actions/setup-java@abc # v6.0.0
+				      with:
+				        cache: maven
+				        distribution: temurin
+				        # renovate: datasource=java-version depName=java
+				        java-version: 26.0.1
+				""");
+
+		workflow.pinTemurinJavaVersion("1.2.3");
+
+		assertThat(workflow.asString()).contains("java-version: 26.0.1");
+	}
+
+	@Test
+	public void pinTemurinJavaVersionIsIdempotent() {
+		var workflow = new GitHubActionsWorkflowFile("""
+				jobs:
+				  analyze:
+				    steps:
+				    - uses: actions/setup-java@abc # v6.0.0
+				      with:
+				        cache: maven
+				        distribution: temurin
+				        java-version-file: .tool-versions
+				""");
+
+		workflow.pinTemurinJavaVersion("1.2.3");
+		String once = workflow.asString();
+		workflow.pinTemurinJavaVersion("1.2.3");
+
+		assertThat(workflow.asString()).isEqualTo(once);
+	}
+
 }

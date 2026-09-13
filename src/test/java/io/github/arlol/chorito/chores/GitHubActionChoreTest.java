@@ -14,6 +14,7 @@ import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FakeRandomGenerator;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.JavaVersions;
 
 public class GitHubActionChoreTest {
 
@@ -710,6 +711,79 @@ public class GitHubActionChoreTest {
 				.contains("gh release create")
 				.doesNotContain("ncipollo/release-action")
 				.doesNotContain("shogo82148/actions-upload-release-asset");
+	}
+
+	@Test
+	public void testGraalProjectPinsTemurinSteps() throws Exception {
+		FilesSilent.writeString(
+				extension.root().resolve(".tool-versions"),
+				"java graalvm-community-25.0.2\n"
+		);
+		Path workflow = extension.root()
+				.resolve(".github/workflows/sonarcloud.yaml");
+		FilesSilent.writeString(workflow, """
+				jobs:
+				  sonarcloud:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - uses: actions/setup-java@abc # v6.0.0
+				      with:
+				        cache: maven
+				        distribution: temurin
+				        java-version-file: .tool-versions
+				""");
+
+		new GitHubActionChore().doit(extension.choreContext());
+
+		assertThat(workflow).content().isEqualTo("""
+				permissions: {}
+				jobs:
+				  sonarcloud:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - uses: actions/setup-java@abc # v6.0.0
+				      with:
+				        cache: maven
+				        distribution: temurin
+				        # renovate: datasource=java-version depName=java
+				        java-version: $TEMURIN
+				""".replace("$TEMURIN", JavaVersions.TEMURIN));
+	}
+
+	@Test
+	public void testGraalProjectLeavesNativeImageStepsOnToolVersions()
+			throws Exception {
+		FilesSilent.writeString(
+				extension.root().resolve(".tool-versions"),
+				"java graalvm-community-25.0.2\n"
+		);
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(workflow, """
+				jobs:
+				  linux:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - uses: actions/setup-java@abc # v6.0.0
+				      with:
+				        cache: maven
+				        distribution: graalvm
+				        java-version-file: .tool-versions
+				""");
+
+		new GitHubActionChore().doit(extension.choreContext());
+
+		assertThat(workflow).content().isEqualTo("""
+				permissions: {}
+				jobs:
+				  linux:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - uses: actions/setup-java@abc # v6.0.0
+				      with:
+				        cache: maven
+				        distribution: graalvm
+				        java-version-file: .tool-versions
+				""");
 	}
 
 }

@@ -10,6 +10,7 @@ import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.ExecutableFlagger;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.GitHubActionsWorkflowFile;
+import io.github.arlol.chorito.tools.JavaVersions;
 import io.github.arlol.chorito.tools.MyPaths;
 import io.github.arlol.chorito.tools.RandomCronBuilder;
 
@@ -770,6 +771,7 @@ public class GitHubActionChore implements Chore {
 					"v5.0.0"
 			);
 
+			var pinnedJavaVersion = workflow.getPinnedJavaVersion();
 			workflow.removeInputParameterFromAction(
 					"actions/setup-java",
 					"java-version"
@@ -779,6 +781,14 @@ public class GitHubActionChore implements Chore {
 					"java-version-file",
 					".tool-versions"
 			);
+			// A job asking for Temurin here builds no native image, and
+			// .tool-versions would hand it a GraalVM anyway, so it pins a
+			// version of its own that Renovate owns.
+			if (JavaVersions.buildsOnGraalVm(context)) {
+				workflow.pinTemurinJavaVersion(
+						pinnedJavaVersion.orElse(JavaVersions.TEMURIN)
+				);
+			}
 
 			workflow.singleToDoubleQuote();
 
