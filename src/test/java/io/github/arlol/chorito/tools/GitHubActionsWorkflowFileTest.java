@@ -43,6 +43,86 @@ public class GitHubActionsWorkflowFileTest {
 	}
 
 	@Test
+	public void commentAboveStepStaysAboveStep() {
+		String content = """
+				jobs:
+				  build:
+				    steps:
+				    # attest before the release exists, because an installer
+				    # cannot trust an asset it cannot verify
+				    - name: Attest the release assets
+				      uses: actions/attest-build-provenance@abc # v4.2.2
+				""";
+
+		assertThat(new GitHubActionsWorkflowFile(content).asString())
+				.isEqualTo(content);
+	}
+
+	@Test
+	public void commentAboveLaterKeyStaysWhereItIs() {
+		String content = """
+				jobs:
+				  build:
+				    steps:
+				    - name: Attest the release assets
+				      # this placement round-trips unchanged
+				      uses: actions/attest-build-provenance@abc # v4.2.2
+				""";
+
+		assertThat(new GitHubActionsWorkflowFile(content).asString())
+				.isEqualTo(content);
+	}
+
+	@Test
+	public void commentAboveAnyKindOfSequenceItemStaysAboveIt() {
+		String content = """
+				on:
+				  schedule:
+				  # nightly, offset so it does not collide with the hourly runs
+				  - cron: "0 3 * * *"
+				  push:
+				    branches:
+				    # only main: a fork's pushes never reach this repository
+				    - main
+				""";
+
+		assertThat(new GitHubActionsWorkflowFile(content).asString())
+				.isEqualTo(content);
+	}
+
+	@Test
+	public void commentGluedToTheIndicatorStaysGlued() {
+		String content = """
+				jobs:
+				  build:
+				    steps:
+				    - # this one was written behind the indicator
+				      name: Attest the release assets
+				      uses: actions/attest-build-provenance@abc # v4.2.2
+				""";
+
+		assertThat(new GitHubActionsWorkflowFile(content).asString())
+				.isEqualTo(content);
+	}
+
+	@Test
+	public void commentLikeBlockScalarContentIsLeftAlone() {
+		String content = """
+				jobs:
+				  build:
+				    steps:
+				    - name: Write the changelog
+				      run: |
+				        cat <<'MD' > CHANGELOG.md
+				        - # heading in a markdown list
+				        MD
+				""";
+
+		assertThat(new GitHubActionsWorkflowFile(content).asString())
+				.isEqualTo(content);
+	}
+
+	@Test
 	public void pinTemurinJavaVersionReplacesToolVersionsFile() {
 		var workflow = new GitHubActionsWorkflowFile("""
 				jobs:

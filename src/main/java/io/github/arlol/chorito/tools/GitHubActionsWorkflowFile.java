@@ -25,11 +25,9 @@ import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 
 import org.snakeyaml.engine.v2.api.DumpSettings;
-import org.snakeyaml.engine.v2.api.LoadSettings;
 import org.snakeyaml.engine.v2.comments.CommentLine;
 import org.snakeyaml.engine.v2.comments.CommentType;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
-import org.snakeyaml.engine.v2.composer.Composer;
 import org.snakeyaml.engine.v2.emitter.Emitter;
 import org.snakeyaml.engine.v2.nodes.MappingNode;
 import org.snakeyaml.engine.v2.nodes.Node;
@@ -37,8 +35,6 @@ import org.snakeyaml.engine.v2.nodes.NodeTuple;
 import org.snakeyaml.engine.v2.nodes.ScalarNode;
 import org.snakeyaml.engine.v2.nodes.SequenceNode;
 import org.snakeyaml.engine.v2.nodes.Tag;
-import org.snakeyaml.engine.v2.parser.ParserImpl;
-import org.snakeyaml.engine.v2.scanner.StreamReader;
 import org.snakeyaml.engine.v2.serializer.Serializer;
 
 public class GitHubActionsWorkflowFile {
@@ -59,16 +55,7 @@ public class GitHubActionsWorkflowFile {
 	private Optional<Node> root;
 
 	public GitHubActionsWorkflowFile(String content) {
-		LoadSettings loadSettings = LoadSettings.builder()
-				.setParseComments(true)
-				.build();
-		root = new Composer(
-				loadSettings,
-				new ParserImpl(
-						loadSettings,
-						new StreamReader(loadSettings, content)
-				)
-		).getSingleNode();
+		root = Yamls.load(content);
 	}
 
 	public GitHubActionsWorkflowFile copy() {
