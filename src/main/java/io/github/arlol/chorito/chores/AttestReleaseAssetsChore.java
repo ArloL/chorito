@@ -20,13 +20,6 @@ public class AttestReleaseAssetsChore implements Chore {
 	private static final String CREATE_RELEASE_STEP = "Create Release";
 	private static final String ATTEST_ACTION = "actions/attest-build-provenance";
 
-	/**
-	 * A release that hands {@code gh release create} no files has nothing to
-	 * attest, and the action would be pointed at a directory that never gets
-	 * made.
-	 */
-	private static final String RELEASE_ASSETS = "target/artifacts/";
-
 	private static final Map<String, String> ATTEST_PERMISSIONS = Map.of(
 			// mints the OIDC token the signing certificate is requested with
 			"id-token",
@@ -51,7 +44,7 @@ public class AttestReleaseAssetsChore implements Chore {
 					FilesSilent.readString(path)
 			);
 			if (!workflow.hasJob(RELEASE_JOB)
-					|| !workflow.jobMentions(RELEASE_JOB, RELEASE_ASSETS)) {
+					|| !workflow.releasePublishesAssets()) {
 				return;
 			}
 

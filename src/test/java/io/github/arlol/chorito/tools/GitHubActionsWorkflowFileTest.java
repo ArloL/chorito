@@ -366,4 +366,83 @@ public class GitHubActionsWorkflowFileTest {
 				.contains("attestations: write", "contents: write");
 	}
 
+	@Test
+	public void removeStepByNameRemovesThatStepOnly() {
+		var workflow = new GitHubActionsWorkflowFile("""
+				jobs:
+				  linux:
+				    steps:
+				    - name: Build with Maven
+				      run: ./mvnw verify
+				    - name: Move artifacts
+				      run: mkdir target/artifacts
+				    - name: Make sure build did not change anything
+				      run: git diff --exit-code
+				""");
+
+		workflow.removeStepByName("linux", "Move artifacts");
+
+		assertThat(workflow.asString()).isEqualTo("""
+				jobs:
+				  linux:
+				    steps:
+				    - name: Build with Maven
+				      run: ./mvnw verify
+				    - name: Make sure build did not change anything
+				      run: git diff --exit-code
+				""");
+	}
+
+	@Test
+	public void removeStepUsingRemovesTheStepWithThatAction() {
+		var workflow = new GitHubActionsWorkflowFile("""
+				jobs:
+				  linux:
+				    steps:
+				    - uses: actions/checkout@abc # v7.0.1
+				    - uses: actions/upload-artifact@def # v7.0.1
+				      with:
+				        path: target/artifacts
+				    - name: Make sure build did not change anything
+				      run: git diff --exit-code
+				""");
+
+		workflow.removeStepUsing("linux", "actions/upload-artifact");
+
+		assertThat(workflow.asString()).isEqualTo("""
+				jobs:
+				  linux:
+				    steps:
+				    - uses: actions/checkout@abc # v7.0.1
+				    - name: Make sure build did not change anything
+				      run: git diff --exit-code
+				""");
+	}
+
+	@Test
+	public void releasePublishesAssetsReadsTheReleaseJob() {
+		assertThat(new GitHubActionsWorkflowFile("""
+				jobs:
+				  release:
+				    steps:
+				    - name: Create Release
+				      run: gh release create v1 ./target/artifacts/*
+				""").releasePublishesAssets()).isTrue();
+
+		assertThat(new GitHubActionsWorkflowFile("""
+				jobs:
+				  release:
+				    steps:
+				    - name: Create Release
+				      run: gh release create v1
+				""").releasePublishesAssets()).isFalse();
+
+		assertThat(new GitHubActionsWorkflowFile("""
+				jobs:
+				  linux:
+				    steps:
+				    - run: echo
+				""").releasePublishesAssets()).isFalse();
+	}
+
 }
