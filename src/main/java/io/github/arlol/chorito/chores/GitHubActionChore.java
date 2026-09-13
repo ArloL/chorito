@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import io.github.arlol.chorito.tools.ChoreContext;
@@ -29,32 +30,134 @@ public class GitHubActionChore implements Chore {
 	private static final String VERSION_INPUT_PARAMETER = "version";
 	private static final String DEBUG_JOB = "debug";
 
+	/**
+	 * One step of the chain, named so the sequence can be read and asserted.
+	 */
+	record Migration(
+			String name,
+			Consumer<ChoreContext> apply
+	) {
+	}
+
+	/**
+	 * One migration's dependency on an earlier one, and what it consumes.
+	 * <p>
+	 * Several migrations here match text that an earlier one produced, and
+	 * before {@link #ORDERINGS} the only record of that was the order of the
+	 * calls. Swapping two of them stops the later one matching -- no error, no
+	 * failing test, just a repository that never gets migrated. Stated here,
+	 * {@code GitHubActionChoreTest} enforces them.
+	 */
+	record Ordering(
+			String first,
+			String second,
+			String because
+	) {
+	}
+
+	static final List<Ordering> ORDERINGS = List.of(
+			new Ordering(
+					"useSpecificActionVersions",
+					"migrateToGraalSetupAction",
+					"the block it matches names actions/setup-java@v3.5.1, which exists only once bare v3 has been pinned"
+			),
+			new Ordering(
+					"migrateToGraalSetupAction",
+					"migrateJavaDistributionFromAdoptToTemurin",
+					"the same block names 'distribution: adopt', which rewriting adopt to temurin destroys"
+			),
+			new Ordering(
+					"migrateActionsCreateRelease",
+					"migrateNcipoploReleaseAction",
+					"it emits the ncipollo release block that normalising ncipollo versions then consumes"
+			),
+			new Ordering(
+					"migrateEregonPublishRelease",
+					"migrateNcipoploReleaseAction",
+					"it emits a second ncipollo release block, at a pinned SHA, that the same normalisation consumes"
+			)
+	);
+
+	/**
+	 * Every migration, in the order it runs. The order is load bearing --
+	 * {@link #ORDERINGS} says where and why -- and the set only grows, because
+	 * nothing records which generation a repository has reached, so a migration
+	 * cannot be proven dead and retired.
+	 */
+	List<Migration> migrations() {
+		return List.of(
+				new Migration(
+						"updateChoresWorkflow",
+						this::updateChoresWorkflow
+				),
+				new Migration(
+						"updateGraalVmVersion",
+						this::updateGraalVmVersion
+				),
+				new Migration(
+						"removeCustomGithubPackagesMavenSettings",
+						this::removeCustomGithubPackagesMavenSettings
+				),
+				new Migration(
+						"useSpecificActionVersions",
+						this::useSpecificActionVersions
+				),
+				new Migration("replaceSetOutput", this::replaceSetOutput),
+				new Migration(
+						"migrateToGraalSetupAction",
+						this::migrateToGraalSetupAction
+				),
+				new Migration(
+						"migrateJavaDistributionFromAdoptToTemurin",
+						this::migrateJavaDistributionFromAdoptToTemurin
+				),
+				new Migration(
+						"updateCodeQlSchedule",
+						this::updateCodeQlSchedule
+				),
+				new Migration("updateMainSchedule", this::updateMainSchedule),
+				new Migration("removeSetupJava370", this::removeSetupJava370),
+				new Migration(
+						"migrateActionsCreateRelease",
+						this::migrateActionsCreateRelease
+				),
+				new Migration(
+						"migrateActionsUploadReleaseAsset",
+						this::migrateActionsUploadReleaseAsset
+				),
+				new Migration("updateGraalSteps", this::updateGraalSteps),
+				new Migration("updateDebugSteps", this::updateDebugSteps),
+				new Migration("updateVersionSteps", this::updateVersionSteps),
+				new Migration("updatePermissions", this::updatePermissions),
+				new Migration(
+						"addCheckActionWorkflow",
+						this::addCheckActionWorkflow
+				),
+				new Migration(
+						"actionsCheckoutWithPersistCredentials",
+						this::actionsCheckoutWithPersistCredentials
+				),
+				new Migration("quoteRedirects", this::quoteRedirects),
+				new Migration("migrateZipProjects", this::migrateZipProjects),
+				new Migration(
+						"removeNeedsVersionOutputsChangelog",
+						this::removeNeedsVersionOutputsChangelog
+				),
+				new Migration(
+						"migrateEregonPublishRelease",
+						this::migrateEregonPublishRelease
+				),
+				new Migration(
+						"migrateNcipoploReleaseAction",
+						this::migrateNcipoploReleaseAction
+				),
+				new Migration("migrateSetupGraalvm", this::migrateSetupGraalvm)
+		);
+	}
+
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		updateChoresWorkflow(context);
-		updateGraalVmVersion(context);
-		removeCustomGithubPackagesMavenSettings(context);
-		useSpecificActionVersions(context);
-		replaceSetOutput(context);
-		migrateToGraalSetupAction(context);
-		migrateJavaDistributionFromAdoptToTemurin(context);
-		updateCodeQlSchedule(context);
-		updateMainSchedule(context);
-		removeSetupJava370(context);
-		migrateActionsCreateRelease(context);
-		migrateActionsUploadReleaseAsset(context);
-		updateGraalSteps(context);
-		updateDebugSteps(context);
-		updateVersionSteps(context);
-		updatePermissions(context);
-		addCheckActionWorkflow(context);
-		actionsCheckoutWithPersistCredentials(context);
-		quoteRedirects(context);
-		migrateZipProjects(context);
-		removeNeedsVersionOutputsChangelog(context);
-		migrateEregonPublishRelease(context);
-		migrateNcipoploReleaseAction(context);
-		migrateSetupGraalvm(context);
+		migrations().forEach(migration -> migration.apply().accept(context));
 		return context;
 	}
 
@@ -78,7 +181,7 @@ public class GitHubActionChore implements Chore {
 					Map.of("packages", "write")
 			);
 
-	public void updatePermissions(ChoreContext context) {
+	void updatePermissions(ChoreContext context) {
 		Optional<Path> mainWorkflow = mainWorkflow(context);
 		if (mainWorkflow.isEmpty()) {
 			return;
@@ -93,7 +196,7 @@ public class GitHubActionChore implements Chore {
 		FilesSilent.writeString(mainYaml, main.asString());
 	}
 
-	public void updateGraalSteps(ChoreContext context) {
+	void updateGraalSteps(ChoreContext context) {
 		Optional<Path> mainWorkflow = mainWorkflow(context);
 		if (mainWorkflow.isEmpty()) {
 			return;
@@ -130,7 +233,7 @@ public class GitHubActionChore implements Chore {
 		}
 	}
 
-	private void updateDebugSteps(ChoreContext context) {
+	void updateDebugSteps(ChoreContext context) {
 		var currentMain = Template.choresWorkflow();
 		var debugJob = currentMain.getJob(DEBUG_JOB);
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
@@ -148,7 +251,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void updateVersionSteps(ChoreContext context) {
+	void updateVersionSteps(ChoreContext context) {
 		var currentMain = Template.mainWorkflow();
 		var versionJob = currentMain.getJob(VERSION_JOB);
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
@@ -166,7 +269,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void migrateActionsCreateRelease(ChoreContext context) {
+	void migrateActionsCreateRelease(ChoreContext context) {
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			String target = """
@@ -186,7 +289,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void migrateActionsUploadReleaseAsset(ChoreContext context) {
+	void migrateActionsUploadReleaseAsset(ChoreContext context) {
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			String target = """
@@ -201,7 +304,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void updateChoresWorkflow(ChoreContext context) {
+	void updateChoresWorkflow(ChoreContext context) {
 		RandomCronBuilder randomCronBuilder = new RandomCronBuilder(
 				context.randomGenerator()
 		);
@@ -240,7 +343,7 @@ public class GitHubActionChore implements Chore {
 		}
 	}
 
-	private void updateCodeQlSchedule(ChoreContext context) {
+	void updateCodeQlSchedule(ChoreContext context) {
 		RandomCronBuilder randomCronBuilder = new RandomCronBuilder(
 				context.randomGenerator()
 		);
@@ -259,7 +362,7 @@ public class GitHubActionChore implements Chore {
 		}
 	}
 
-	private void updateMainSchedule(ChoreContext context) {
+	void updateMainSchedule(ChoreContext context) {
 		RandomCronBuilder randomCronBuilder = new RandomCronBuilder(
 				context.randomGenerator()
 		);
@@ -291,9 +394,7 @@ public class GitHubActionChore implements Chore {
 		return Optional.of(yaml.substring(0, indexOf));
 	}
 
-	private void migrateJavaDistributionFromAdoptToTemurin(
-			ChoreContext context
-	) {
+	void migrateJavaDistributionFromAdoptToTemurin(ChoreContext context) {
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			updated = updated
@@ -306,7 +407,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void migrateToGraalSetupAction(ChoreContext context) {
+	void migrateToGraalSetupAction(ChoreContext context) {
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			updated = updated.replace("""
@@ -365,7 +466,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void useSpecificActionVersions(ChoreContext context) {
+	void useSpecificActionVersions(ChoreContext context) {
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			updated = updated.replace(
@@ -416,7 +517,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void removeSetupJava370(ChoreContext context) {
+	void removeSetupJava370(ChoreContext context) {
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			updated = updated.replace(
@@ -427,7 +528,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void replaceSetOutput(ChoreContext context) {
+	void replaceSetOutput(ChoreContext context) {
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			List<String> updated = FilesSilent.readAllLines(path)
 					.stream()
@@ -444,7 +545,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void updateGraalVmVersion(ChoreContext context) {
+	void updateGraalVmVersion(ChoreContext context) {
 		mainWorkflow(context).ifPresent(main -> {
 			List<String> updated = FilesSilent.readAllLines(main)
 					.stream()
@@ -462,7 +563,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void removeCustomGithubPackagesMavenSettings(ChoreContext context) {
+	void removeCustomGithubPackagesMavenSettings(ChoreContext context) {
 		mainWorkflow(context).ifPresent(main -> {
 			List<String> updated = FilesSilent.readAllLines(main)
 					.stream()
@@ -487,7 +588,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void addCheckActionWorkflow(ChoreContext context) {
+	void addCheckActionWorkflow(ChoreContext context) {
 		RandomCronBuilder randomCronBuilder = new RandomCronBuilder(
 				context.randomGenerator()
 		);
@@ -527,7 +628,7 @@ public class GitHubActionChore implements Chore {
 		}
 	}
 
-	private void actionsCheckoutWithPersistCredentials(ChoreContext context) {
+	void actionsCheckoutWithPersistCredentials(ChoreContext context) {
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String input = FilesSilent.readString(path);
 			var checkActionsWorkflow = new GitHubActionsWorkflowFile(input);
@@ -540,7 +641,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void quoteRedirects(ChoreContext context) {
+	void quoteRedirects(ChoreContext context) {
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			var yaml = FilesSilent.readString(path);
 			yaml = yaml.replace("> $GITHUB_ENV", "> \"${GITHUB_ENV}\"");
@@ -552,7 +653,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void migrateZipProjects(ChoreContext context) {
+	void migrateZipProjects(ChoreContext context) {
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			String target = """
@@ -578,7 +679,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void removeNeedsVersionOutputsChangelog(ChoreContext context) {
+	void removeNeedsVersionOutputsChangelog(ChoreContext context) {
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
 			String target = """
@@ -589,7 +690,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void migrateEregonPublishRelease(ChoreContext context) {
+	void migrateEregonPublishRelease(ChoreContext context) {
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			var current = FilesSilent.readString(path);
 
@@ -616,7 +717,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void migrateNcipoploReleaseAction(ChoreContext context) {
+	void migrateNcipoploReleaseAction(ChoreContext context) {
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String current = FilesSilent.readString(path);
 			if (!current.contains("id: create_release")) {
@@ -762,7 +863,7 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	private void migrateSetupGraalvm(ChoreContext context) {
+	void migrateSetupGraalvm(ChoreContext context) {
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String current = FilesSilent.readString(path);
 			var workflow = new GitHubActionsWorkflowFile(current);
