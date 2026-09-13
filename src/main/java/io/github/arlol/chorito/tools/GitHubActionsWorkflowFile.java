@@ -18,6 +18,7 @@ import static io.github.arlol.chorito.tools.Yamls.setKey;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.ToIntFunction;
@@ -167,36 +168,37 @@ public class GitHubActionsWorkflowFile {
 		});
 	}
 
-	public void updatePermissionsFromTemplate(
-			GitHubActionsWorkflowFile template
-	) {
-		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
-				.orElse(List.of())) {
-			String jobName = scalarValue(jobTuple.getKeyNode()).orElseThrow();
-			if (!template.hasJob(jobName)) {
-				continue;
-			}
-			var templatePermissions = getKeyAsMap(
-					template.getJob(jobName),
-					PERMISSIONS
-			);
-			if (templatePermissions.isEmpty()) {
-				continue;
-			}
-			applyPermissions(
-					nodeAsMap(jobTuple.getValueNode()),
-					templatePermissions
-			);
-		}
-	}
-
+	/**
+	 * The template states the permissions a job needs, not the only ones it may
+	 * have. A job that grants itself more -- a release attesting its assets
+	 * needs attestations and id-token on top of contents -- keeps them, so the
+	 * next chores run does not quietly take away what someone added on purpose.
+	 * The price is that chorito cannot withdraw a permission once a job has it.
+	 */
 	private static void applyPermissions(
 			MappingNode job,
 			Optional<MappingNode> templatePermissions
 	) {
 		Optional<MappingNode> permissions = getKeyAsMap(job, PERMISSIONS);
 		if (permissions.isPresent()) {
-			permissions.ifPresent(copyValue(templatePermissions));
+			var merged = new ArrayList<>(permissions.orElseThrow().getValue());
+			for (NodeTuple required : templatePermissions
+					.map(MappingNode::getValue)
+					.orElse(List.of())) {
+				String key = scalarValue(required.getKeyNode()).orElseThrow();
+				merged.removeIf(
+						t -> scalarValue(t.getKeyNode()).filter(key::equals)
+								.isPresent()
+				);
+				merged.add(required);
+			}
+			sortTuples(
+					permissions.orElseThrow(),
+					merged,
+					Comparator.comparing(
+							t -> scalarValue(t.getKeyNode()).orElse("")
+					)
+			);
 			return;
 		}
 		var permissionsTuple = new NodeTuple(
@@ -453,6 +455,95 @@ public class GitHubActionsWorkflowFile {
 		});
 	}
 
+	/** The step of {@code jobName} whose {@code name} is {@code stepName}. */
+	public Optional<Node> getStepByName(String jobName, String stepName) {
+		return steps(jobName).stream()
+				.filter(
+						step -> scalarValue(
+								getKeyAsNode(nodeAsMap(step), "name")
+						).filter(stepName::equals).isPresent()
+				)
+				.findFirst();
+	}
+
+	public boolean hasStepUsing(String jobName, String actionName) {
+		return steps(jobName).stream()
+				.anyMatch(
+						step -> scalarValue(
+								getKeyAsNode(nodeAsMap(step), "uses")
+						).filter(uses -> uses.startsWith(actionName + "@"))
+								.isPresent()
+				);
+	}
+
+	/**
+	 * Inserts {@code step} directly above the step called {@code stepName}, or
+	 * does nothing when that step is not there.
+	 */
+	public void insertStepBefore(String jobName, String stepName, Node step) {
+		var job = getJob(jobName);
+		var stepsNode = getKeyAsSequence(job, STEPS);
+		if (stepsNode.isEmpty()) {
+			return;
+		}
+		List<Node> steps = new ArrayList<>(stepsNode.orElseThrow().getValue());
+		for (int i = 0; i < steps.size(); i++) {
+			if (scalarValue(getKeyAsNode(nodeAsMap(steps.get(i)), "name"))
+					.filter(stepName::equals)
+					.isPresent()) {
+				steps.add(i, step);
+				setKey(job.orElseThrow(), STEPS, newSequence(steps));
+				return;
+			}
+		}
+	}
+
+	/** Whether any value anywhere in {@code jobName} contains {@code text}. */
+	public boolean jobMentions(String jobName, String text) {
+		return getJob(jobName)
+				.map(job -> Yamls.asString(Optional.of((Node) job)))
+				.filter(job -> job.contains(text))
+				.isPresent();
+	}
+
+	/**
+	 * Grants {@code permissions} to {@code jobName} on top of whatever it
+	 * already has.
+	 */
+	public void grantJobPermissions(
+			String jobName,
+			Map<String, String> permissions
+	) {
+		var job = getJob(jobName);
+		if (job.isEmpty()) {
+			return;
+		}
+		var granted = newMap(
+				permissions.entrySet()
+						.stream()
+						.map(
+								e -> newTuple(
+										newScalar(
+												e.getKey(),
+												ScalarStyle.PLAIN
+										),
+										newScalar(
+												e.getValue(),
+												ScalarStyle.PLAIN
+										)
+								)
+						)
+						.toList()
+		);
+		applyPermissions(job.orElseThrow(), Optional.of(granted));
+	}
+
+	private List<Node> steps(String jobName) {
+		return getKeyAsSequence(getJob(jobName), STEPS)
+				.map(SequenceNode::getValue)
+				.orElse(List.of());
+	}
+
 	public void clearPermissions() {
 		nodeAsMap(root).ifPresent(mappingNode -> {
 			setKey(mappingNode, PERMISSIONS, newMap());
@@ -615,6 +706,14 @@ public class GitHubActionsWorkflowFile {
 			return keyNode.getValue();
 		}
 		return tuple.getKeyNode().toString();
+	}
+
+	private static void sortTuples(
+			MappingNode node,
+			List<NodeTuple> tuples,
+			Comparator<NodeTuple> order
+	) {
+		node.setValue(tuples.stream().sorted(order).toList());
 	}
 
 	private static void sortTuples(
