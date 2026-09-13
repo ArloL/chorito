@@ -7,12 +7,12 @@ import java.util.List;
 import java.util.Optional;
 
 import io.github.arlol.chorito.tools.ChoreContext;
-import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.GitHubActionsWorkflowFile;
 import io.github.arlol.chorito.tools.JavaVersions;
 import io.github.arlol.chorito.tools.MyPaths;
 import io.github.arlol.chorito.tools.RandomCronBuilder;
+import io.github.arlol.chorito.tools.Template;
 
 public class CodeQlAnalysisChore implements Chore {
 
@@ -60,11 +60,7 @@ public class CodeQlAnalysisChore implements Chore {
 		RandomCronBuilder randomCronBuilder = new RandomCronBuilder(
 				context.randomGenerator()
 		);
-		var template = new GitHubActionsWorkflowFile(
-				ClassPathFiles.readString(
-						"github-settings/workflows/codeql-analysis.yaml"
-				)
-		);
+		var template = Template.codeQlAnalysisWorkflow();
 		template.setOnScheduleCron(randomCronBuilder.randomDayOfMonth());
 
 		Path codeqlWorkflow = context
@@ -90,16 +86,12 @@ public class CodeQlAnalysisChore implements Chore {
 
 		// Analysis builds no native image, so .tool-versions would install a
 		// GraalVM it never uses. Renovate owns the pin once it is written.
-		// Both branches are spelled out because the template is a symlink to
-		// the workflow chorito runs on itself: whatever chorito's own JDK
-		// setup happens to say must not decide what every other repository
-		// gets.
+		// Template hands over a workflow already pointing at .tool-versions,
+		// so only the repositories that need a pin get one.
 		if (JavaVersions.buildsOnGraalVm(context)) {
 			template.pinTemurinJavaVersion(
 					pinnedJavaVersion.orElse(JavaVersions.TEMURIN)
 			);
-		} else {
-			template.useToolVersionsFile();
 		}
 
 		template.setJobMatrixKey("analyze", "language", languages);

@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
@@ -524,6 +525,41 @@ public class GitHubActionsWorkflowFile {
 						.toList()
 		);
 		applyPermissions(job.orElseThrow(), Optional.of(granted));
+	}
+
+	/**
+	 * Takes {@code permissions} away from every job that has them.
+	 * <p>
+	 * The counterpart to {@link #grantJobPermissions(String, Map)}, and the one
+	 * thing a template needs that granting cannot do: chorito's own workflows
+	 * grant themselves permissions no other repository has earned, and the
+	 * templates are those workflows.
+	 *
+	 * @see Template
+	 */
+	public void revokeJobPermissions(Set<String> permissions) {
+		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
+				.orElse(List.of())) {
+			var job = nodeAsMap(jobTuple.getValueNode());
+			var granted = getKeyAsMap(job, PERMISSIONS);
+			if (granted.isEmpty()) {
+				continue;
+			}
+			var kept = granted.orElseThrow()
+					.getValue()
+					.stream()
+					.filter(
+							t -> scalarValue(t.getKeyNode())
+									.filter(permissions::contains)
+									.isEmpty()
+					)
+					.toList();
+			if (kept.isEmpty()) {
+				removeKey(Optional.of(job), PERMISSIONS);
+			} else {
+				granted.orElseThrow().setValue(new ArrayList<>(kept));
+			}
+		}
 	}
 
 	private List<Node> steps(String jobName) {
