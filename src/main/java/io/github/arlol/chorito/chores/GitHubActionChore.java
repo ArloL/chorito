@@ -8,13 +8,13 @@ import java.util.stream.Stream;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.DirectoryStreams;
-import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.ExecutableFlagger;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.GitHubActionsWorkflowFile;
 import io.github.arlol.chorito.tools.JavaVersions;
 import io.github.arlol.chorito.tools.MyPaths;
 import io.github.arlol.chorito.tools.RandomCronBuilder;
+import io.github.arlol.chorito.tools.Template;
 
 public class GitHubActionChore implements Chore {
 
@@ -23,7 +23,6 @@ public class GitHubActionChore implements Chore {
 			.of(".yaml", ".yml");
 	private static final List<String> MAIN_WORKFLOWS = List
 			.of(".github/workflows/main.yaml", ".github/workflows/main.yml");
-	private static final String MAIN_WORKFLOW_TEMPLATE = "github-settings/workflows/main.yaml";
 	private static final String SETUP_GRAALVM_ACTION = "graalvm/setup-graalvm";
 	private static final String DISTRIBUTION_TEMURIN = "distribution: temurin";
 	private static final String VERSION_JOB = "version";
@@ -60,12 +59,14 @@ public class GitHubActionChore implements Chore {
 	}
 
 	/**
-	 * What each job of a main workflow cannot do its work without. Read from
-	 * here rather than off the template, because the template is chorito's own
-	 * workflow: chorito attests its releases and so grants itself
-	 * {@code attestations} and {@code id-token}, and copying that across would
-	 * hand those to every release job whether or not it publishes anything.
-	 * {@link AttestReleaseAssetsChore} grants them where they are earned.
+	 * What each job of a main workflow cannot do its work without.
+	 * <p>
+	 * Stated here rather than read off the template because these are a
+	 * requirement, not a copy: a job gets them whether or not chorito's own
+	 * workflow happens to hold them today.
+	 * {@link io.github.arlol.chorito.tools.Template Template} takes chorito's
+	 * own extras off every workflow it hands out, and
+	 * {@link AttestReleaseAssetsChore} grants those back where they are earned.
 	 */
 	private static final Map<String, Map<String, String>> REQUIRED_PERMISSIONS = Map
 			.of(
@@ -107,9 +108,7 @@ public class GitHubActionChore implements Chore {
 			return;
 		}
 
-		var currentMain = new GitHubActionsWorkflowFile(
-				ClassPathFiles.readString(MAIN_WORKFLOW_TEMPLATE)
-		);
+		var currentMain = Template.mainWorkflow();
 		String before = main.asStringWithoutVersions();
 		List<String> platformJobs = List.of("macos", "linux", "windows");
 		platformJobs.forEach(job -> main.setJob(job, currentMain.getJob(job)));
@@ -132,10 +131,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void updateDebugSteps(ChoreContext context) {
-		var currentMain = new GitHubActionsWorkflowFile(
-				ClassPathFiles
-						.readString("github-settings/workflows/chores.yaml")
-		);
+		var currentMain = Template.choresWorkflow();
 		var debugJob = currentMain.getJob(DEBUG_JOB);
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			var workflow = new GitHubActionsWorkflowFile(
@@ -153,9 +149,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	private void updateVersionSteps(ChoreContext context) {
-		var currentMain = new GitHubActionsWorkflowFile(
-				ClassPathFiles.readString(MAIN_WORKFLOW_TEMPLATE)
-		);
+		var currentMain = Template.mainWorkflow();
 		var versionJob = currentMain.getJob(VERSION_JOB);
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			var workflow = new GitHubActionsWorkflowFile(
@@ -221,10 +215,7 @@ public class GitHubActionChore implements Chore {
 						.anyMatch(path -> path.endsWith(".github"))) {
 			Path choresYaml = context.resolve(".github/workflows/chores.yaml");
 
-			var templateWorkflow = new GitHubActionsWorkflowFile(
-					ClassPathFiles
-							.readString("github-settings/workflows/chores.yaml")
-			);
+			var templateWorkflow = Template.choresWorkflow();
 
 			GitHubActionsWorkflowFile choresWorkflow;
 			if (FilesSilent.exists(choresYaml)) {
@@ -511,11 +502,7 @@ public class GitHubActionChore implements Chore {
 			Path checkActionsYaml = context
 					.resolve(".github/workflows/check-actions.yaml");
 
-			var templateWorkflow = new GitHubActionsWorkflowFile(
-					ClassPathFiles.readString(
-							"github-settings/workflows/check-actions.yaml"
-					)
-			);
+			var templateWorkflow = Template.checkActionsWorkflow();
 
 			GitHubActionsWorkflowFile checkActionsWorkflow;
 			if (FilesSilent.exists(checkActionsYaml)) {
