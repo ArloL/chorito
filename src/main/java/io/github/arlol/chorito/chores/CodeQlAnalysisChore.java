@@ -76,7 +76,6 @@ public class CodeQlAnalysisChore implements Chore {
 			template.setOn(workflowFile.getOn());
 			template.setEnv(workflowFile.getEnv());
 			pinnedJavaVersion = workflowFile.getPinnedJavaVersion();
-		} else {
 		}
 
 		if (!languages.contains("java-kotlin")) {
