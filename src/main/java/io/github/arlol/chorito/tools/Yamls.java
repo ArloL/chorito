@@ -8,9 +8,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.snakeyaml.engine.v2.api.DumpSettings;
 import org.snakeyaml.engine.v2.api.LoadSettings;
 import org.snakeyaml.engine.v2.comments.CommentLine;
+import org.snakeyaml.engine.v2.comments.CommentType;
 import org.snakeyaml.engine.v2.common.FlowStyle;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
 import org.snakeyaml.engine.v2.composer.Composer;
@@ -182,8 +184,135 @@ public abstract class Yamls {
 						new StreamReader(loadSettings, content)
 				)
 		).getSingleNode();
-		root.ifPresent(Yamls::moveLeadingCommentsToSequenceItems);
+		root.ifPresent(node -> placeComments(node, content));
 		return root;
+	}
+
+	/**
+	 * Puts the comments the composer filed against the wrong node back where
+	 * they were written, so that a document chorito only reads comes out as it
+	 * went in.
+	 */
+	private static void placeComments(Node root, String content) {
+		List<Node> nodes = inDocumentOrder(root, new ArrayList<>());
+		leadNextNode(nodes, content.split("\n", -1));
+		moveLeadingCommentsToSequenceItems(root);
+	}
+
+	private static List<Node> inDocumentOrder(Node node, List<Node> nodes) {
+		nodes.add(node);
+		if (node instanceof MappingNode mappingNode) {
+			mappingNode.getValue().forEach(tuple -> {
+				inDocumentOrder(tuple.getKeyNode(), nodes);
+				inDocumentOrder(tuple.getValueNode(), nodes);
+			});
+		} else if (node instanceof SequenceNode sequenceNode) {
+			sequenceNode.getValue()
+					.forEach(item -> inDocumentOrder(item, nodes));
+		}
+		return nodes;
+	}
+
+	/**
+	 * Hands a comment the scanner read as trailing a value, but which was
+	 * written on a line of its own, to the node that follows it.
+	 *
+	 * A block scalar swallows the newline that ends it, so a comment on the
+	 * next line arrives as an in-line comment of that scalar. The emitter
+	 * writes an in-line comment where the value ended, which for a block scalar
+	 * is column 0, and the comment loses its indentation along with the entry
+	 * it was heading. Giving it to the next node in document order is what the
+	 * composer would have done had it read the comment as a block comment, and
+	 * the ordinary placement takes over from there - the next node being a
+	 * later key in the same mapping, or the next sequence item, is what decides
+	 * which.
+	 *
+	 * A comment with no node after it keeps its place, having nothing to lead.
+	 */
+	private static void leadNextNode(List<Node> nodes, String[] lines) {
+		for (int index = 0; index < nodes.size() - 1; index++) {
+			Node node = nodes.get(index);
+			Node next = nodes.get(index + 1);
+			List<CommentLine> inLine = node.getInLineComments();
+			if (inLine == null || inLine.isEmpty()) {
+				continue;
+			}
+			List<CommentLine> leading = new ArrayList<>();
+			List<CommentLine> trailing = new ArrayList<>();
+			for (CommentLine comment : inLine) {
+				boolean leads = startsItsOwnLine(lines, comment)
+						&& startsBefore(comment, next);
+				(leads ? leading : trailing).add(comment);
+			}
+			if (leading.isEmpty()) {
+				continue;
+			}
+			node.setInLineComments(trailing);
+			next.setBlockComments(
+					append(asBlockComments(leading), next.getBlockComments())
+			);
+		}
+	}
+
+	private static List<CommentLine> asBlockComments(
+			List<CommentLine> comments
+	) {
+		return comments.stream()
+				.map(
+						comment -> new CommentLine(
+								comment.getStartMark(),
+								comment.getEndMark(),
+								comment.getValue(),
+								CommentType.BLOCK
+						)
+				)
+				.toList();
+	}
+
+	/**
+	 * Joins two lists of comments in the order they were written, treating the
+	 * null a node without comments reports as empty.
+	 */
+	private static List<CommentLine> append(
+			@Nullable List<CommentLine> first,
+			@Nullable List<CommentLine> second
+	) {
+		List<CommentLine> comments = new ArrayList<>();
+		if (first != null) {
+			comments.addAll(first);
+		}
+		if (second != null) {
+			comments.addAll(second);
+		}
+		return comments;
+	}
+
+	private static boolean startsItsOwnLine(
+			String[] lines,
+			CommentLine comment
+	) {
+		return comment.getStartMark().filter(mark -> {
+			if (mark.getLine() >= lines.length) {
+				return false;
+			}
+			String line = lines[mark.getLine()];
+			return line.substring(0, Math.min(mark.getColumn(), line.length()))
+					.isBlank();
+		}).isPresent();
+	}
+
+	/**
+	 * Whether the comment was written above the given node rather than below
+	 * it. The end of a document reads as an in-line comment of the root, which
+	 * begins long before it.
+	 */
+	private static boolean startsBefore(CommentLine comment, Node next) {
+		return comment.getStartMark()
+				.flatMap(
+						mark -> next.getStartMark()
+								.map(start -> mark.getLine() < start.getLine())
+				)
+				.orElse(false);
 	}
 
 	/**
@@ -224,7 +353,7 @@ public abstract class Yamls {
 			if (comments == null || comments.isEmpty()) {
 				return;
 			}
-			item.setBlockComments(comments);
+			item.setBlockComments(append(item.getBlockComments(), comments));
 			key.setBlockComments(List.of());
 		});
 	}

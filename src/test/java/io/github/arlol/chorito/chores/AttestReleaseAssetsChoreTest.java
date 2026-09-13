@@ -68,10 +68,10 @@ public class AttestReleaseAssetsChoreTest {
 								    steps:
 								    - name: Prepare artifacts
 								      run: mkdir artifacts
+								    # An installer that verifies provenance cannot be told to trust an asset
+								    # it cannot verify, so the attestation has to exist before the release
+								    # does.
 								    - name: Attest the release assets
-								      # An installer that verifies provenance cannot be told to trust an asset
-								      # it cannot verify, so the attestation has to exist before the release
-								      # does.
 								      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
 								      with:
 								        subject-path: target/artifacts/*
