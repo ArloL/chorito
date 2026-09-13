@@ -367,4 +367,89 @@ public class RenovateChoreTest {
 		assertThat(renovateJson5).content().isEqualTo(content);
 	}
 
+	@Test
+	public void testPreservesCommentsWhenNothingToMigrate() throws Exception {
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
+		String content = """
+				{
+				    "addLabels": [
+				        "{{manager}}",
+				    ],
+				    "customManagers": [
+				        {
+				            // Version pins that no built-in manager sees, annotated
+				            // with a "# renovate:" comment on the line above.
+				            "customType": "regex",
+				        },
+				    ],
+				    "labels": [
+				        "dependencies",
+				    ],
+				    "minimumReleaseAge": "7 days",
+				}
+				""";
+		FilesSilent.writeString(renovateJson5, content);
+
+		new RenovateChore().doit(githubContext());
+
+		assertThat(renovateJson5).content().isEqualTo(content);
+	}
+
+	@Test
+	public void testKeepsExistingKeyOrderWhenNothingToMigrate()
+			throws Exception {
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
+		String content = """
+				{
+				    "minimumReleaseAge": "7 days",
+				    "labels": [
+				        "dependencies",
+				    ],
+				    "addLabels": [
+				        "{{manager}}",
+				    ],
+				}
+				""";
+		FilesSilent.writeString(renovateJson5, content);
+
+		new RenovateChore().doit(githubContext());
+
+		assertThat(renovateJson5).content().isEqualTo(content);
+	}
+
+	// Jackson's tree model has no node for a comment, so a migration that has
+	// to
+	// rewrite the file cannot carry one over. Pinned so the loss stays visible.
+	@Test
+	public void testDropsCommentsWhenAMigrationRewritesTheFile()
+			throws Exception {
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
+		FilesSilent.writeString(renovateJson5, """
+				{
+				    // worth keeping, but it cannot survive the rewrite
+				    "addLabels": [
+				        "{{manager}}",
+				    ],
+				    "labels": [
+				        "dependencies",
+				    ],
+				    "minimumReleaseAge": "4 days",
+				}
+				""");
+
+		new RenovateChore().doit(githubContext());
+
+		assertThat(renovateJson5).content().isEqualTo("""
+				{
+				    "addLabels": [
+				        "{{manager}}",
+				    ],
+				    "labels": [
+				        "dependencies",
+				    ],
+				    "minimumReleaseAge": "7 days",
+				}
+				""");
+	}
+
 }
