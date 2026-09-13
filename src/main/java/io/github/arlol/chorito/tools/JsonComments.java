@@ -9,7 +9,7 @@ import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * The comments of a json5 document, kept beside the tree rather than in it.

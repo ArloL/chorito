@@ -1,9 +1,6 @@
 package io.github.arlol.chorito.tools;
 
-import java.io.IOException;
 import java.io.StringWriter;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -12,37 +9,47 @@ import java.util.TreeMap;
 
 import org.jspecify.annotations.Nullable;
 
-import com.fasterxml.jackson.core.JsonFactoryBuilder;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser.Feature;
-import com.fasterxml.jackson.core.json.JsonReadFeature;
-import com.fasterxml.jackson.core.util.Separators;
-import com.fasterxml.jackson.core.util.Separators.Spacing;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.ObjectWriteContext;
+import tools.jackson.core.PrettyPrinter;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.core.json.JsonReadFeature;
+import tools.jackson.core.util.Separators;
+import tools.jackson.core.util.Separators.Spacing;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public abstract class Jsons {
 
 	private Jsons() {
 	}
 
-	public static ObjectMapper objectMapper() {
-		var jsonFactory = new JsonFactoryBuilder()
-				.enable(JsonReadFeature.ALLOW_TRAILING_COMMA)
+	/**
+	 * The factory both halves of the json5 handling read from, so the dialect
+	 * is configured in one place: {@link JsonCommentParser} parses through it
+	 * and {@link #objectMapper()} is built on it.
+	 */
+	public static JsonFactory jsonFactory() {
+		return JsonFactory.builder()
+				.enable(
+						JsonReadFeature.ALLOW_JAVA_COMMENTS,
+						JsonReadFeature.ALLOW_TRAILING_COMMA
+				)
 				.build();
-		ObjectMapper objectMapper = new ObjectMapper(jsonFactory);
-		objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-		objectMapper.enable(Feature.ALLOW_COMMENTS);
-		objectMapper.setDefaultPrettyPrinter(prettyPrinter());
-		return objectMapper;
+	}
+
+	public static ObjectMapper objectMapper() {
+		return JsonMapper.builder(jsonFactory()).build();
 	}
 
 	public static CustomPrettyPrinter prettyPrinter() {
 		return new CustomPrettyPrinter(
-				new Separators().withObjectFieldValueSpacing(Spacing.AFTER)
+				new Separators().withObjectNameValueSpacing(Spacing.AFTER)
 		);
 	}
 
@@ -58,17 +65,37 @@ public abstract class Jsons {
 	public static String asString(JsonNode node, JsonComments comments) {
 		StringWriter writer = new StringWriter();
 		CustomPrettyPrinter printer = prettyPrinter();
-		try (JsonGenerator generator = objectMapper().createGenerator(writer)) {
-			generator.setPrettyPrinter(printer);
+		try (JsonGenerator generator = jsonFactory()
+				.createGenerator(writeContext(printer), writer)) {
 			for (String comment : comments.header()) {
 				generator.writeRaw(comment);
 				generator.writeRaw('\n');
 			}
 			write(node, comments, printer, generator);
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
 		}
 		return writer.toString() + "\n";
+	}
+
+	/**
+	 * Hands the generator the one printer instance the walk pushes comments
+	 * into. A printer configured on the mapper would not do: Jackson copies an
+	 * {@code Instantiatable} printer per serialisation, and the copy is not the
+	 * instance {@link #write} holds. A write context is asked for the printer
+	 * directly and its answer is used as it is.
+	 */
+	private static ObjectWriteContext writeContext(PrettyPrinter printer) {
+		return new ObjectWriteContext.Base() {
+
+			@Override
+			@SuppressFBWarnings(
+					value = "EI_EXPOSE_REP",
+					justification = "Handing out the very instance is the point"
+			)
+			public PrettyPrinter getPrettyPrinter() {
+				return printer;
+			}
+
+		};
 	}
 
 	private static void write(
@@ -76,7 +103,7 @@ public abstract class Jsons {
 			JsonComments comments,
 			CustomPrettyPrinter printer,
 			JsonGenerator generator
-	) throws IOException {
+	) {
 		if (node instanceof ObjectNode objectNode) {
 			generator.writeStartObject();
 			@Nullable
@@ -86,7 +113,7 @@ public abstract class Jsons {
 						comments.leading(objectNode, entry.getKey()),
 						trailing(comments, objectNode, previous)
 				);
-				generator.writeFieldName(entry.getKey());
+				generator.writeName(entry.getKey());
 				write(entry.getValue(), comments, printer, generator);
 				previous = entry.getKey();
 			}
@@ -115,10 +142,9 @@ public abstract class Jsons {
 				: comments.trailing(container, field).orElse(null);
 	}
 
-	private static void writeScalar(JsonNode node, JsonGenerator generator)
-			throws IOException {
+	private static void writeScalar(JsonNode node, JsonGenerator generator) {
 		switch (node.getNodeType()) {
-		case STRING -> generator.writeString(node.textValue());
+		case STRING -> generator.writeString(node.stringValue());
 		case NUMBER -> writeNumber(node, generator);
 		case BOOLEAN -> generator.writeBoolean(node.booleanValue());
 		case NULL -> generator.writeNull();
@@ -129,8 +155,7 @@ public abstract class Jsons {
 		}
 	}
 
-	private static void writeNumber(JsonNode node, JsonGenerator generator)
-			throws IOException {
+	private static void writeNumber(JsonNode node, JsonGenerator generator) {
 		if (node.isInt()) {
 			generator.writeNumber(node.intValue());
 		} else if (node.isLong()) {
@@ -147,21 +172,11 @@ public abstract class Jsons {
 	}
 
 	public static Optional<JsonNode> parse(Path extensions) {
-		try {
-			return Optional.ofNullable(
-					objectMapper().readTree(Files.newInputStream(extensions))
-			);
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
+		return Optional.ofNullable(objectMapper().readTree(extensions));
 	}
 
 	public static Optional<JsonNode> parse(String json) {
-		try {
-			return Optional.ofNullable(objectMapper().readTree(json));
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
+		return Optional.ofNullable(objectMapper().readTree(json));
 	}
 
 	public static JsonNode merge(JsonNode mainNode, JsonNode updateNode) {

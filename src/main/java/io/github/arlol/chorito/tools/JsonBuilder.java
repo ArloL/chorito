@@ -5,9 +5,9 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public final class JsonBuilder {
 
@@ -87,7 +87,7 @@ public final class JsonBuilder {
 
 	public JsonBuilder migrateString(String key, String from, String to) {
 		JsonNode existing = node.get(key);
-		if (existing != null && from.equals(existing.asText())) {
+		if (existing != null && from.equals(existing.asString(""))) {
 			node.put(key, to);
 		}
 		return this;
@@ -143,8 +143,8 @@ public final class JsonBuilder {
 								&& StreamSupport
 										.stream(values.spliterator(), false)
 										.anyMatch(
-												v -> v.isTextual() && value
-														.equals(v.asText())
+												v -> v.isString() && value
+														.equals(v.stringValue())
 										)
 				);
 	}
@@ -162,8 +162,8 @@ public final class JsonBuilder {
 			return List.of();
 		}
 		return StreamSupport.stream(arr.spliterator(), false)
-				.filter(JsonNode::isTextual)
-				.map(JsonNode::asText)
+				.filter(JsonNode::isString)
+				.map(JsonNode::stringValue)
 				.toList();
 	}
 

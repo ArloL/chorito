@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
