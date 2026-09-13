@@ -16,6 +16,7 @@ import io.github.arlol.chorito.tools.JavaVersions;
 import io.github.arlol.chorito.tools.MyPaths;
 import io.github.arlol.chorito.tools.RandomCronBuilder;
 import io.github.arlol.chorito.tools.Template;
+import io.github.arlol.chorito.tools.WorkflowJobs;
 
 public class GitHubActionChore implements Chore {
 
@@ -26,9 +27,7 @@ public class GitHubActionChore implements Chore {
 			.of(".github/workflows/main.yaml", ".github/workflows/main.yml");
 	private static final String SETUP_GRAALVM_ACTION = "graalvm/setup-graalvm";
 	private static final String DISTRIBUTION_TEMURIN = "distribution: temurin";
-	private static final String VERSION_JOB = "version";
 	private static final String VERSION_INPUT_PARAMETER = "version";
-	private static final String DEBUG_JOB = "debug";
 
 	/**
 	 * One step of the chain, named so the sequence can be read and asserted.
@@ -161,26 +160,6 @@ public class GitHubActionChore implements Chore {
 		return context;
 	}
 
-	/**
-	 * What each job of a main workflow cannot do its work without.
-	 * <p>
-	 * Stated here rather than read off the template because these are a
-	 * requirement, not a copy: a job gets them whether or not chorito's own
-	 * workflow happens to hold them today.
-	 * {@link io.github.arlol.chorito.tools.Template Template} takes chorito's
-	 * own extras off every workflow it hands out, and
-	 * {@link AttestReleaseAssetsChore} grants those back where they are earned.
-	 */
-	private static final Map<String, Map<String, String>> REQUIRED_PERMISSIONS = Map
-			.of(
-					VERSION_JOB,
-					Map.of("contents", "write"),
-					"release",
-					Map.of("contents", "write"),
-					"deploy",
-					Map.of("packages", "write")
-			);
-
 	void updatePermissions(ChoreContext context) {
 		Optional<Path> mainWorkflow = mainWorkflow(context);
 		if (mainWorkflow.isEmpty()) {
@@ -190,7 +169,7 @@ public class GitHubActionChore implements Chore {
 		var main = new GitHubActionsWorkflowFile(
 				FilesSilent.readString(mainYaml)
 		);
-		REQUIRED_PERMISSIONS.forEach(
+		WorkflowJobs.REQUIRED_PERMISSIONS.forEach(
 				(job, permissions) -> main.grantJobPermissions(job, permissions)
 		);
 		FilesSilent.writeString(mainYaml, main.asString());
@@ -207,22 +186,25 @@ public class GitHubActionChore implements Chore {
 			return;
 		}
 		var main = new GitHubActionsWorkflowFile(string);
-		if (!main.hasJob(VERSION_JOB)) {
+		if (!main.hasJob(WorkflowJobs.VERSION)) {
 			return;
 		}
 
 		var currentMain = Template.mainWorkflow();
 		String before = main.asStringWithoutVersions();
-		List<String> platformJobs = List.of("macos", "linux", "windows");
-		platformJobs.forEach(job -> main.setJob(job, currentMain.getJob(job)));
+		WorkflowJobs.PLATFORMS
+				.forEach(job -> main.setJob(job, currentMain.getJob(job)));
 		// The platform jobs upload their binaries so the release job can
 		// download them again. A release that never downloads has nothing to
 		// collect -- a library proving it works inside a native image rather
 		// than shipping one -- so the upload is plumbing to nowhere. Keying on
 		// the download rather than on what the release publishes keeps the
 		// older release jobs, which attach assets from their own paths.
-		if (!main.hasStepUsing("release", "actions/download-artifact")) {
-			platformJobs.forEach(job -> {
+		if (!main.hasStepUsing(
+				WorkflowJobs.RELEASE,
+				"actions/download-artifact"
+		)) {
+			WorkflowJobs.PLATFORMS.forEach(job -> {
 				main.removeStepByName(job, "Move artifacts");
 				main.removeStepUsing(job, "actions/upload-artifact");
 			});
@@ -234,37 +216,19 @@ public class GitHubActionChore implements Chore {
 	}
 
 	void updateDebugSteps(ChoreContext context) {
-		var currentMain = Template.choresWorkflow();
-		var debugJob = currentMain.getJob(DEBUG_JOB);
-		DirectoryStreams.githubWorkflows(context).forEach(path -> {
-			var workflow = new GitHubActionsWorkflowFile(
-					FilesSilent.readString(path)
-			);
-			if (workflow.hasJob(DEBUG_JOB)) {
-				String before = workflow.asStringWithoutVersions();
-				workflow.setJob(DEBUG_JOB, debugJob);
-				String after = workflow.asStringWithoutVersions();
-				if (!after.equals(before)) {
-					FilesSilent.writeString(path, workflow.asString());
-				}
+		var debugJob = Template.choresWorkflow().getJob(WorkflowJobs.DEBUG);
+		GitHubActionsWorkflowFile.updateEach(context, workflow -> {
+			if (workflow.hasJob(WorkflowJobs.DEBUG)) {
+				workflow.setJob(WorkflowJobs.DEBUG, debugJob);
 			}
 		});
 	}
 
 	void updateVersionSteps(ChoreContext context) {
-		var currentMain = Template.mainWorkflow();
-		var versionJob = currentMain.getJob(VERSION_JOB);
-		DirectoryStreams.githubWorkflows(context).forEach(path -> {
-			var workflow = new GitHubActionsWorkflowFile(
-					FilesSilent.readString(path)
-			);
-			if (workflow.hasJob(VERSION_JOB)) {
-				String before = workflow.asStringWithoutVersions();
-				workflow.setJob(VERSION_JOB, versionJob);
-				String after = workflow.asStringWithoutVersions();
-				if (!after.equals(before)) {
-					FilesSilent.writeString(path, workflow.asString());
-				}
+		var versionJob = Template.mainWorkflow().getJob(WorkflowJobs.VERSION);
+		GitHubActionsWorkflowFile.updateEach(context, workflow -> {
+			if (workflow.hasJob(WorkflowJobs.VERSION)) {
+				workflow.setJob(WorkflowJobs.VERSION, versionJob);
 			}
 		});
 	}
@@ -353,7 +317,13 @@ public class GitHubActionChore implements Chore {
 			String content = FilesSilent.readString(yaml);
 			String currentCron = readCurrentCron(content)
 					.orElse(randomDayOfMonth);
-			if (!currentCron.endsWith("*")) {
+			// CodeQlAnalysisChore writes this file and carries the repository's
+			// existing schedule across, so this only converts the fixed weekly
+			// crons the older workflows shipped with. Asking whether the cron
+			// is already randomised is what keeps the two chores off each
+			// other: rewrite on anything else and they would pick a new time
+			// on every run.
+			if (!RandomCronBuilder.isRandomDayOfMonth(currentCron)) {
 				FilesSilent.writeString(
 						yaml,
 						content.replace(currentCron, randomDayOfMonth)
@@ -864,11 +834,7 @@ public class GitHubActionChore implements Chore {
 	}
 
 	void migrateSetupGraalvm(ChoreContext context) {
-		DirectoryStreams.githubWorkflows(context).forEach(path -> {
-			String current = FilesSilent.readString(path);
-			var workflow = new GitHubActionsWorkflowFile(current);
-			String before = workflow.asStringWithoutVersions();
-
+		GitHubActionsWorkflowFile.updateEach(context, workflow -> {
 			workflow.removeEnv("GRAALVM_VERSION");
 			workflow.removeEnv("JAVA_VERSION");
 
@@ -910,11 +876,6 @@ public class GitHubActionChore implements Chore {
 			}
 
 			workflow.singleToDoubleQuote();
-
-			String after = workflow.asStringWithoutVersions();
-			if (!after.equals(before)) {
-				FilesSilent.writeString(path, workflow.asString());
-			}
 		});
 	}
 

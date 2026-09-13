@@ -27,18 +27,22 @@ import org.snakeyaml.engine.v2.nodes.Node;
 public abstract class Template {
 
 	private static final String WORKFLOWS = "github-settings/workflows/";
+	private static final String ATTEST_STEP = "Attest the release assets";
 
 	/**
 	 * Permissions chorito's own jobs hold that no repository gets by default.
 	 * chorito attests its releases, so its release job mints an OIDC token and
 	 * writes attestations; copying that across would hand those to every
 	 * release job whether or not it publishes anything.
-	 * {@code AttestReleaseAssetsChore} grants them back where they are earned,
-	 * and reads the step that earns them through
+	 * <p>
+	 * Taken from {@link WorkflowJobs#ATTESTATION_PERMISSIONS} rather than
+	 * listed again, so what is stripped here and what
+	 * {@code AttestReleaseAssetsChore} grants back cannot drift apart. That
+	 * chore reads the step earning them through
 	 * {@link #attestReleaseAssetsStep()}.
 	 */
-	private static final Set<String> CHORITO_ONLY_PERMISSIONS = Set
-			.of("attestations", "id-token");
+	private static final Set<String> CHORITO_ONLY_PERMISSIONS = WorkflowJobs.ATTESTATION_PERMISSIONS
+			.keySet();
 
 	private Template() {
 	}
@@ -70,7 +74,7 @@ public abstract class Template {
 	 */
 	public static Optional<Node> attestReleaseAssetsStep() {
 		return load("main.yaml")
-				.getStepByName("release", "Attest the release assets");
+				.getStepByName(WorkflowJobs.RELEASE, ATTEST_STEP);
 	}
 
 	private static GitHubActionsWorkflowFile load(String workflow) {
