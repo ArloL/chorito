@@ -49,7 +49,6 @@ public class MavenWrapperChore implements Chore {
 								.directory(pomDir)
 								.start()
 								.waitFor(5, TimeUnit.MINUTES);
-						context.setDirty();
 					}
 					if (!FilesSilent.exists(wrapperJar)) {
 						throw new IllegalStateException("No maven-wrapper.jar");
@@ -71,7 +70,6 @@ public class MavenWrapperChore implements Chore {
 									.directory(pomDir)
 									.start()
 									.waitFor(5, TimeUnit.MINUTES);
-							context.setDirty();
 						}
 					}
 				});

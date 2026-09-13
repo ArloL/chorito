@@ -23,7 +23,6 @@ public class EclipseCompilerSettingsChore implements Chore {
 					.resolve(".settings/org.eclipse.jdt.core.prefs");
 			if (!FilesSilent.exists(jdtCorePrefs)) {
 				FilesSilent.touch(jdtCorePrefs);
-				context.setDirty();
 			}
 
 			Map<String, String> jdtCorePrefsMap = new PropertiesSilent()

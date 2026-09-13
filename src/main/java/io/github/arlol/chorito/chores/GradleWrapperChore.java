@@ -52,7 +52,6 @@ public class GradleWrapperChore implements Chore {
 						.inheritIO()
 						.start()
 						.waitFor(5, TimeUnit.MINUTES);
-				context.setDirty();
 			}
 			ExecutableFlagger.makeExecutableIfPossible(wrapper);
 			if (FilesSilent.exists(wrapperProperties)) {
@@ -71,7 +70,6 @@ public class GradleWrapperChore implements Chore {
 							.inheritIO()
 							.start()
 							.waitFor(5, TimeUnit.MINUTES);
-					context.setDirty();
 				}
 			}
 		});
