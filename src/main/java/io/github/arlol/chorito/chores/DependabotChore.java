@@ -31,7 +31,6 @@ public class DependabotChore implements Chore {
 					FilesSilent.readString(dependabotYml)
 			);
 		} else {
-			context.setDirty();
 			dependabotConfigFile = new DependabotConfigFile();
 		}
 

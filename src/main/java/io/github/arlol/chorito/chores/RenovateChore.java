@@ -124,7 +124,6 @@ public class RenovateChore implements Chore {
 		Path renovateJson5 = context.resolve("renovate.json5");
 		if (FilesSilent.exists(renovateJson)) {
 			FilesSilent.move(renovateJson, renovateJson5);
-			context.setDirty();
 		}
 		if (FilesSilent.exists(renovateJson5)) {
 			var content = FilesSilent.readString(renovateJson5);
@@ -162,7 +161,6 @@ public class RenovateChore implements Chore {
 					.apply(migrations)
 					.asString();
 			FilesSilent.writeString(renovateJson5, content);
-			context.setDirty();
 		}
 		return context;
 	}

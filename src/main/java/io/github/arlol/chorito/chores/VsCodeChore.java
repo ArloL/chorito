@@ -34,7 +34,6 @@ public class VsCodeChore implements Chore {
 			Path extensions = dir.resolve(".vscode/extensions.json");
 
 			if (FilesSilent.anyNotExists(settings, extensions)) {
-				context.setDirty();
 			}
 
 			if (FilesSilent.anyChildExists(

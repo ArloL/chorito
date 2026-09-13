@@ -23,7 +23,6 @@ public class EclipseOptimizeImportSettingsChore implements Chore {
 					.resolve(".settings/org.eclipse.jdt.ui.prefs");
 			if (!FilesSilent.exists(jdtUiPrefs)) {
 				FilesSilent.touch(jdtUiPrefs);
-				context.setDirty();
 			}
 
 			Map<String, String> jdtUiPrefsMap = new PropertiesSilent()

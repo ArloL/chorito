@@ -65,12 +65,17 @@ public class ChoritoCommand {
 		);
 		ChoreContext currentContext = GitChoreContext.newBuilder(root).build();
 		for (Chore chore : chores) {
-			currentContext = chore.doit(currentContext);
-			if (currentContext.isDirty()) {
-				currentContext = currentContext.refresh();
-			}
+			// Unconditionally, because the alternative was asking each chore
+			// to say whether it had created or deleted anything and 22 of the
+			// 31 that write files never did. A chore that creates a file
+			// without saying so leaves it out of textFiles() for every chore
+			// after it -- so the later chore silently does nothing, and fixes
+			// itself on the next chorito run, which is the hardest kind of bug
+			// to attribute. Re-scanning costs about 20ms and buys correctness
+			// that does not depend on 40 authors in sequence remembering a
+			// rule.
+			currentContext = chore.doit(currentContext).refresh();
 		}
-		currentContext = currentContext.refresh();
 		currentContext.deleteIgnoredFiles();
 		currentContext.refresh();
 	}

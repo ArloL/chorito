@@ -41,7 +41,6 @@ public class IntellijChore implements Chore {
 				.readString(IDEA_SETTINGS_RESOURCES + name + ".xml");
 		if (!FilesSilent.exists(path)) {
 			FilesSilent.writeString(path, template);
-			context.setDirty();
 		}
 	}
 
@@ -55,7 +54,6 @@ public class IntellijChore implements Chore {
 				.readString(IDEA_SETTINGS_RESOURCES + name + ".xml");
 		if (!FilesSilent.exists(path)) {
 			FilesSilent.writeString(path, templateString);
-			context.setDirty();
 			return;
 		}
 
@@ -118,7 +116,6 @@ public class IntellijChore implements Chore {
 
 		if (!FilesSilent.exists(path)) {
 			FilesSilent.writeString(path, templateString);
-			context.setDirty();
 			return;
 		}
 
