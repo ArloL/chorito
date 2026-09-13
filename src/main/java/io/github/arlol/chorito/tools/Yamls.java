@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import org.snakeyaml.engine.v2.api.DumpSettings;
 import org.snakeyaml.engine.v2.api.LoadSettings;
+import org.snakeyaml.engine.v2.comments.CommentLine;
 import org.snakeyaml.engine.v2.common.FlowStyle;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
 import org.snakeyaml.engine.v2.composer.Composer;
@@ -174,13 +175,58 @@ public abstract class Yamls {
 		LoadSettings loadSettings = LoadSettings.builder()
 				.setParseComments(true)
 				.build();
-		return new Composer(
+		Optional<Node> root = new Composer(
 				loadSettings,
 				new ParserImpl(
 						loadSettings,
 						new StreamReader(loadSettings, content)
 				)
 		).getSingleNode();
+		root.ifPresent(Yamls::moveLeadingCommentsToSequenceItems);
+		return root;
+	}
+
+	/**
+	 * Moves the comment that leads a sequence item off the first key of the
+	 * item's mapping, where the composer attaches it, and onto the item itself.
+	 *
+	 * The emitter writes the {@code -} indicator before it descends into the
+	 * mapping, so a comment left on the key can only come out after the
+	 * indicator - a heading above a step ends up as the step's first line.
+	 *
+	 * Carrying it on the item is not enough on its own. The emitter places a
+	 * block comment by the column its start mark records: at or left of the
+	 * indicator goes above the {@code -}, further right stays behind it. That
+	 * is what makes both written forms round-trip, and it is also the catch for
+	 * a comment built by hand rather than parsed - without a start mark it
+	 * lands behind the {@code -} wherever it is attached.
+	 */
+	private static void moveLeadingCommentsToSequenceItems(Node node) {
+		if (node instanceof MappingNode mappingNode) {
+			mappingNode.getValue().forEach(tuple -> {
+				moveLeadingCommentsToSequenceItems(tuple.getKeyNode());
+				moveLeadingCommentsToSequenceItems(tuple.getValueNode());
+			});
+		} else if (node instanceof SequenceNode sequenceNode) {
+			sequenceNode.getValue().forEach(item -> {
+				moveLeadingCommentsToSequenceItems(item);
+				if (item instanceof MappingNode itemMap) {
+					moveLeadingCommentsOffFirstKey(itemMap);
+				}
+			});
+		}
+	}
+
+	private static void moveLeadingCommentsOffFirstKey(MappingNode item) {
+		item.getValue().stream().findFirst().ifPresent(first -> {
+			Node key = first.getKeyNode();
+			List<CommentLine> comments = key.getBlockComments();
+			if (comments == null || comments.isEmpty()) {
+				return;
+			}
+			item.setBlockComments(comments);
+			key.setBlockComments(List.of());
+		});
 	}
 
 	public static String asString(Optional<Node> root) {
