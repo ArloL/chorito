@@ -30,6 +30,17 @@ public class RenovateChore implements Chore {
 	private static final String GRAALVM_MATCH_STRING = "java graalvm-community-(?<currentValue>\\S+)";
 	private static final String JAVA_VERSION_MATCH_STRING = "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+java-version: (?<currentValue>\\S+)";
 
+	private static final String GRAALVM_COMMENT = """
+			Renovate's mise manager maps only temurin- and
+			adoptopenjdk- java versions to a datasource, so
+			nothing bumps a graalvm-community pin. The jdk-*
+			tags are what mise offers as graalvm-community-*.""";
+	private static final String JAVA_VERSION_COMMENT = """
+			Keeps the Temurin versions current that the jobs
+			building no native image pin. Adoptium's semver
+			carries a build suffix setup-java cannot resolve,
+			so only the release version is kept.""";
+
 	static final List<JsonMigration> MIGRATIONS = List.of(
 			replaceString(MINIMUM_RELEASE_AGE, "4 days", "7 days"),
 			ifAbsent(
@@ -44,21 +55,18 @@ public class RenovateChore implements Chore {
 	);
 
 	/**
-	 * Renovate's mise manager maps only temurin- and adoptopenjdk- java
-	 * versions to a datasource and returns undefined for anything else, so
-	 * nothing bumps a graalvm-community pin. The jdk-* tags are exactly what
-	 * mise offers as graalvm-community-*; the graal-* and vm-* ones are
-	 * GraalVM's own versioning and mise installs none of them.
-	 * <p>
-	 * The second manager keeps the versions the jobs that build no native image
-	 * pin current. Adoptium's own semver carries a build suffix, as in
-	 * 25.0.4+101.0.LTS, which setup-java cannot resolve, so only the release
-	 * version is kept.
+	 * Each manager writes its own justification into renovate.json5 as a
+	 * comment, so the reason a custom manager exists is in front of whoever
+	 * reads the config rather than only here. What the comments leave out: the
+	 * graal-* and vm-* tags are GraalVM's own versioning and mise installs none
+	 * of them, which is why only jdk-* is extracted, and the Adoptium build
+	 * suffix looks like 25.0.4+101.0.LTS.
 	 */
 	static final List<JsonMigration> GRAAL_MIGRATIONS = List.of(
 			customManager(
 					GRAALVM_MATCH_STRING,
-					manager -> manager.put(CUSTOM_TYPE, REGEX)
+					manager -> manager.comment(CUSTOM_TYPE, GRAALVM_COMMENT)
+							.put(CUSTOM_TYPE, REGEX)
 							.put("datasourceTemplate", "github-releases")
 							.put("depNameTemplate", "graalvm/graalvm-ce-builds")
 							.put(
@@ -73,7 +81,9 @@ public class RenovateChore implements Chore {
 			),
 			customManager(
 					JAVA_VERSION_MATCH_STRING,
-					manager -> manager.put(CUSTOM_TYPE, REGEX)
+					manager -> manager
+							.comment(CUSTOM_TYPE, JAVA_VERSION_COMMENT)
+							.put(CUSTOM_TYPE, REGEX)
 							.put(
 									EXTRACT_VERSION_TEMPLATE,
 									"^(?<version>\\d+\\.\\d+\\.\\d+)"

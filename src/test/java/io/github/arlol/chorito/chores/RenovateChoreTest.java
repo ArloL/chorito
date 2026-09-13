@@ -518,6 +518,10 @@ public class RenovateChoreTest {
 								    ],
 								    "customManagers": [
 								        {
+								            // Renovate's mise manager maps only temurin- and
+								            // adoptopenjdk- java versions to a datasource, so
+								            // nothing bumps a graalvm-community pin. The jdk-*
+								            // tags are what mise offers as graalvm-community-*.
 								            "customType": "regex",
 								            "datasourceTemplate": "github-releases",
 								            "depNameTemplate": "graalvm/graalvm-ce-builds",
@@ -530,6 +534,10 @@ public class RenovateChoreTest {
 								            ],
 								        },
 								        {
+								            // Keeps the Temurin versions current that the jobs
+								            // building no native image pin. Adoptium's semver
+								            // carries a build suffix setup-java cannot resolve,
+								            // so only the release version is kept.
 								            "customType": "regex",
 								            "extractVersionTemplate": "^(?<version>\\\\d+\\\\.\\\\d+\\\\.\\\\d+)",
 								            "managerFilePatterns": [
