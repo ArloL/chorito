@@ -47,8 +47,15 @@ public class CustomPrettyPrinter extends DefaultPrettyPrinter {
 		indentObjectsWith(defaultIndenter);
 	}
 
+	/**
+	 * A copy starts a serialisation of its own, so it deliberately inherits no
+	 * pending comments. Both are reset explicitly rather than left to the field
+	 * defaults, so the reset reads as meant rather than forgotten.
+	 */
 	public CustomPrettyPrinter(CustomPrettyPrinter customPrettyPrinter) {
 		super(customPrettyPrinter);
+		pendingLeading = null;
+		pendingTrailing = null;
 	}
 
 	/**
