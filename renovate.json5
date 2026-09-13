@@ -42,6 +42,28 @@
                 "<groupId>org\\.gaul</groupId>\\s*<artifactId>modernizer-maven-plugin</artifactId>\\s*<version>(?<currentValue>.*?)</version>",
             ],
         },
+        {
+            "customType": "regex",
+            "datasourceTemplate": "github-releases",
+            "depNameTemplate": "graalvm/graalvm-ce-builds",
+            "extractVersionTemplate": "^jdk-(?<version>\\S+)",
+            "managerFilePatterns": [
+                "/^\\.tool-versions$/",
+            ],
+            "matchStrings": [
+                "java graalvm-community-(?<currentValue>\\S+)",
+            ],
+        },
+        {
+            "customType": "regex",
+            "extractVersionTemplate": "^(?<version>\\d+\\.\\d+\\.\\d+)",
+            "managerFilePatterns": [
+                "/^\\.github/workflows/[^/]+\\.ya?ml$/",
+            ],
+            "matchStrings": [
+                "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+java-version: (?<currentValue>\\S+)",
+            ],
+        },
     ],
     "extends": [
         "config:recommended",
