@@ -17,6 +17,11 @@ public abstract class MavenPluginVersions {
 
 	public static final String FORMATTER = "2.24.1";
 
+	// spotbugs-maven-plugin versions carry a fourth segment, so the value
+	// parses as a dotted quad. Rewriting it to hide that -- splitting it,
+	// building it from parts -- is exactly what the class comment forbids,
+	// because Renovate matches the bare literal.
+	@SuppressWarnings("java:S1313")
 	public static final String SPOTBUGS = "4.10.3.0";
 
 	public static final String MODERNIZER = "3.5.0";
