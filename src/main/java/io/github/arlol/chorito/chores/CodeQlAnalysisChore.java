@@ -78,6 +78,12 @@ public class CodeQlAnalysisChore implements Chore {
 			pinnedJavaVersion = workflowFile.getPinnedJavaVersion();
 		}
 
+		// After setOn, so it catches both the block just copied from the
+		// repository and the template's own when there was nothing to copy.
+		// Either can say main in a repository that is still on master, where
+		// a branch filter matching nothing leaves the workflow never running.
+		context.mainBranch().ifPresent(template::renameOnBranches);
+
 		if (!languages.contains("java-kotlin")) {
 			template.removeActionFromJob(
 					WorkflowJobs.ANALYZE,

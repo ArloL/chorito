@@ -3,10 +3,12 @@ package io.github.arlol.chorito.tools;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.random.RandomGenerator;
+import java.util.stream.Stream;
 
 public class ChoreContext {
 
@@ -23,6 +25,7 @@ public class ChoreContext {
 		private List<Path> textFiles = List.of();
 		private List<Path> files = List.of();
 		private List<String> remotes = List.of();
+		private List<String> branches = List.of();
 		private RandomGenerator randomGenerator = new Random();
 		private Clock clock = Clock.systemDefaultZone();
 		private Function<String[], ProcessBuilderSilent> processBuilderFactory = ProcessBuilderSilent
@@ -45,6 +48,7 @@ public class ChoreContext {
 			this.textFiles = choreContext.textFiles();
 			this.files = choreContext.files();
 			this.remotes = choreContext.remotes();
+			this.branches = choreContext.branches();
 			this.randomGenerator = choreContext.randomGenerator();
 			this.clock = choreContext.clock();
 			this.processBuilderFactory = choreContext.processBuilderFactory();
@@ -66,6 +70,10 @@ public class ChoreContext {
 
 		public List<String> remotes() {
 			return List.copyOf(remotes);
+		}
+
+		public List<String> branches() {
+			return List.copyOf(branches);
 		}
 
 		public RandomGenerator randomGenerator() {
@@ -100,6 +108,11 @@ public class ChoreContext {
 			return this;
 		}
 
+		public Builder branches(List<String> branches) {
+			this.branches = List.copyOf(branches);
+			return this;
+		}
+
 		public Builder randomGenerator(RandomGenerator randomGenerator) {
 			this.randomGenerator = randomGenerator;
 			return this;
@@ -123,6 +136,7 @@ public class ChoreContext {
 					textFiles,
 					files,
 					remotes,
+					branches,
 					randomGenerator,
 					clock,
 					processBuilderFactory,
@@ -137,6 +151,7 @@ public class ChoreContext {
 	private final List<Path> textFiles;
 	private final List<Path> files;
 	private final List<String> remotes;
+	private final List<String> branches;
 	private final RandomGenerator randomGenerator;
 	private final Clock clock;
 	private final Function<String[], ProcessBuilderSilent> processBuilderFactory;
@@ -148,6 +163,7 @@ public class ChoreContext {
 			List<Path> textFiles,
 			List<Path> files,
 			List<String> remotes,
+			List<String> branches,
 			RandomGenerator randomGenerator,
 			Clock clock,
 			Function<String[], ProcessBuilderSilent> processBuilderFactory,
@@ -158,6 +174,7 @@ public class ChoreContext {
 		this.textFiles = List.copyOf(textFiles);
 		this.files = List.copyOf(files);
 		this.remotes = List.copyOf(remotes);
+		this.branches = List.copyOf(branches);
 		this.randomGenerator = randomGenerator;
 		this.clock = clock;
 		this.processBuilderFactory = processBuilderFactory;
@@ -183,6 +200,42 @@ public class ChoreContext {
 
 	public List<String> remotes() {
 		return List.copyOf(remotes);
+	}
+
+	/**
+	 * Every branch name this checkout knows, local heads and remote-tracking
+	 * branches alike, or empty when chorito is not looking at a git repository.
+	 * <p>
+	 * Both sources are needed because the two ways chorito runs see different
+	 * halves. Under the chores workflow {@code actions/checkout} fetches a
+	 * single branch at depth 1, so the local heads hold exactly the default
+	 * branch and nothing else -- precisely the answer wanted. Run by hand from
+	 * a feature branch of a full clone there may be no local {@code main} at
+	 * all, only {@code origin/main}, and reading heads alone would report a
+	 * repository with no trunk.
+	 */
+	public List<String> branches() {
+		return List.copyOf(branches);
+	}
+
+	/**
+	 * The trunk branch this repository actually uses, or empty when chorito
+	 * cannot tell.
+	 * <p>
+	 * A chore writing a branch name into a workflow -- a trigger filter, a
+	 * {@code github.ref} condition -- has to write the name the repository
+	 * really has. A filter naming a branch that does not exist never matches,
+	 * and a workflow that never runs reports nothing: no red check, no failed
+	 * run, just silence. So empty means skip rather than guess, and a
+	 * repository chorito cannot identify keeps whatever it already had.
+	 * <p>
+	 * {@code main} wins when both exist. That is how a repository which renamed
+	 * and left the old branch lying around sheds its last reference to it.
+	 */
+	public Optional<String> mainBranch() {
+		return Stream.of("main", "master")
+				.filter(branches::contains)
+				.findFirst();
 	}
 
 	public RandomGenerator randomGenerator() {

@@ -28,6 +28,9 @@ public class GitHubActionChore implements Chore {
 	private static final String SETUP_GRAALVM_ACTION = "graalvm/setup-graalvm";
 	private static final String DISTRIBUTION_TEMURIN = "distribution: temurin";
 	private static final String VERSION_INPUT_PARAMETER = "version";
+	private static final List<String> TRUNK_BRANCHES = List
+			.of("main", "master");
+	private static final String DEPENDABOT_CONDITION = " && !startsWith(github.ref, 'refs/heads/dependabot/')";
 
 	/**
 	 * One step of the chain, named so the sequence can be read and asserted.
@@ -74,6 +77,16 @@ public class GitHubActionChore implements Chore {
 					"migrateEregonPublishRelease",
 					"migrateNcipoploReleaseAction",
 					"it emits a second ncipollo release block, at a pinned SHA, that the same normalisation consumes"
+			),
+			new Ordering(
+					"updateVersionSteps",
+					"narrowBranchConditions",
+					"it copies the version job from chorito's own main.yaml, whose ref condition names chorito's branch, and only narrowing afterwards points that copy at the branch the repository really has"
+			),
+			new Ordering(
+					"updateMainTriggers",
+					"removeDeadDependabotCondition",
+					"the dependabot exclusion stays live until push is filtered to one branch, and this is the migration that filters it"
 			)
 	);
 
@@ -150,7 +163,16 @@ public class GitHubActionChore implements Chore {
 						"migrateNcipoploReleaseAction",
 						this::migrateNcipoploReleaseAction
 				),
-				new Migration("migrateSetupGraalvm", this::migrateSetupGraalvm)
+				new Migration("migrateSetupGraalvm", this::migrateSetupGraalvm),
+				new Migration("updateMainTriggers", this::updateMainTriggers),
+				new Migration(
+						"removeDeadDependabotCondition",
+						this::removeDeadDependabotCondition
+				),
+				new Migration(
+						"narrowBranchConditions",
+						this::narrowBranchConditions
+				)
 		);
 	}
 
@@ -224,7 +246,18 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
+	/**
+	 * Skipped when the branch is unknown, because the job it copies carries a
+	 * {@code github.ref} condition naming chorito's own branch.
+	 * {@code narrowBranchConditions} repoints that copy afterwards, and without
+	 * a branch to repoint it to a repository on {@code master} would be handed
+	 * a version job that can never tag -- a release that quietly stops
+	 * happening, with no failed run to show for it.
+	 */
 	void updateVersionSteps(ChoreContext context) {
+		if (context.mainBranch().isEmpty()) {
+			return;
+		}
 		var versionJob = Template.mainWorkflow().getJob(WorkflowJobs.VERSION);
 		GitHubActionsWorkflowFile.updateEach(context, workflow -> {
 			if (workflow.hasJob(WorkflowJobs.VERSION)) {
@@ -574,6 +607,10 @@ public class GitHubActionChore implements Chore {
 					.resolve(".github/workflows/check-actions.yaml");
 
 			var templateWorkflow = Template.checkActionsWorkflow();
+			// The template says main because chorito does. A repository on
+			// master needs the same file with the name swapped, or it gets a
+			// workflow whose triggers can never match.
+			context.mainBranch().ifPresent(templateWorkflow::renameOnBranches);
 
 			GitHubActionsWorkflowFile checkActionsWorkflow;
 			if (FilesSilent.exists(checkActionsYaml)) {
@@ -888,6 +925,109 @@ public class GitHubActionChore implements Chore {
 				.map(context::resolve)
 				.filter(FilesSilent::exists)
 				.findFirst();
+	}
+
+	/**
+	 * Narrows main.yaml to the trunk branch and the pull requests aimed at it.
+	 * <p>
+	 * The shape chorito shipped was a bare {@code push:} -- every branch, every
+	 * time -- with {@code pull_request} cut down to {@code reopened}. That
+	 * covers a branch pushed to this repository and misses a fork completely: a
+	 * fork's push never reaches here, and without {@code opened} and
+	 * {@code synchronize} a fork's pull request builds only if somebody closes
+	 * and reopens it. Filtering push to the trunk and letting pull_request
+	 * cover everything else closes that, and hands fork pull requests to the
+	 * approval gate at the same time.
+	 */
+	void updateMainTriggers(ChoreContext context) {
+		Optional<String> branch = context.mainBranch();
+		if (branch.isEmpty()) {
+			return;
+		}
+		mainWorkflow(context).ifPresent(yaml -> {
+			var main = new GitHubActionsWorkflowFile(
+					FilesSilent.readString(yaml)
+			);
+			if (!main.hasBarePush()) {
+				return;
+			}
+			main.setOnPushAndPullRequestBranches(branch.orElseThrow());
+			FilesSilent.writeString(yaml, main.asString());
+		});
+	}
+
+	/**
+	 * Drops the deploy job's dependabot exclusion once push is filtered.
+	 * <p>
+	 * The job runs {@code if github.event_name == 'push' && !startsWith(...)},
+	 * and dependabot's branches were worth excluding while push fired for every
+	 * branch. Filtered to the trunk, {@code github.ref} on a push can only be
+	 * that branch, so the second half can never be false. A condition that
+	 * reads as though it still decides something is worse than no condition, so
+	 * it goes -- but only for a workflow whose push really is filtered.
+	 */
+	void removeDeadDependabotCondition(ChoreContext context) {
+		mainWorkflow(context).ifPresent(yaml -> {
+			String content = FilesSilent.readString(yaml);
+			var main = new GitHubActionsWorkflowFile(content);
+			if (!main.hasOnPushBranches()) {
+				return;
+			}
+			String updated = content.replace(DEPENDABOT_CONDITION, "");
+			if (!updated.equals(content)) {
+				FilesSilent.writeString(yaml, updated);
+			}
+		});
+	}
+
+	/**
+	 * Points {@code github.ref} conditions at the branch the repository really
+	 * has.
+	 * <p>
+	 * The workflows say {@code refs/heads/master || refs/heads/main} because
+	 * one file had to serve both kinds of repository. Now that
+	 * {@link ChoreContext#mainBranch()} can tell them apart, each repository
+	 * gets the one name that is true for it, and the repositories that have
+	 * already renamed stop carrying a reference to a branch they no longer
+	 * have.
+	 * <p>
+	 * A name is only repointed when that branch is absent. A repository keeping
+	 * both {@code main} and {@code master} alive still means something by a
+	 * condition naming {@code master}, and rewriting it would change which
+	 * pushes release.
+	 */
+	void narrowBranchConditions(ChoreContext context) {
+		Optional<String> mainBranch = context.mainBranch();
+		if (mainBranch.isEmpty()) {
+			return;
+		}
+		String kept = branchCondition(mainBranch.orElseThrow());
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
+			String content = FilesSilent.readString(path);
+			String updated = content
+					.replace(
+							branchCondition("master") + " || "
+									+ branchCondition("main"),
+							kept
+					)
+					.replace(
+							branchCondition("main") + " || "
+									+ branchCondition("master"),
+							kept
+					);
+			for (String absent : TRUNK_BRANCHES) {
+				if (!context.branches().contains(absent)) {
+					updated = updated.replace(branchCondition(absent), kept);
+				}
+			}
+			if (!updated.equals(content)) {
+				FilesSilent.writeString(path, updated);
+			}
+		});
+	}
+
+	private static String branchCondition(String branch) {
+		return "github.ref == 'refs/heads/" + branch + "'";
 	}
 
 }

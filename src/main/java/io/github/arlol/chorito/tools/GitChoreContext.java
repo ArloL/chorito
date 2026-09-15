@@ -5,12 +5,16 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jgit.dircache.DirCacheBuildIterator;
 import org.eclipse.jgit.dircache.DirCacheIterator;
 import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.ConfigConstants;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
@@ -29,6 +33,7 @@ public class GitChoreContext {
 		List<Path> textFiles = new ArrayList<>();
 		List<Path> files = new ArrayList<>();
 		List<String> remotes = new ArrayList<>();
+		Set<String> branches = new LinkedHashSet<>();
 
 		var fileRepositoryBuilder = new FileRepositoryBuilder()
 				.setMustExist(true)
@@ -36,6 +41,13 @@ public class GitChoreContext {
 				.findGitDir(root.toFile());
 		try (Repository repository = fileRepositoryBuilder.build();
 				TreeWalk treeWalk = new TreeWalk(repository);) {
+
+			for (Ref ref : repository.getRefDatabase()
+					.getRefsByPrefix(Constants.R_HEADS)) {
+				branches.add(
+						ref.getName().substring(Constants.R_HEADS.length())
+				);
+			}
 
 			for (String remoteName : repository.getRemoteNames()) {
 				Config config = repository.getConfig();
@@ -45,6 +57,18 @@ public class GitChoreContext {
 						"url"
 				);
 				remotes.add(remoteUrl);
+
+				// origin/HEAD is a symbolic ref standing for the remote's
+				// default branch, not a branch of its own. Left in it would
+				// read as a repository whose trunk is called HEAD.
+				String prefix = Constants.R_REMOTES + remoteName + "/";
+				for (Ref ref : repository.getRefDatabase()
+						.getRefsByPrefix(prefix)) {
+					String branch = ref.getName().substring(prefix.length());
+					if (!Constants.HEAD.equals(branch)) {
+						branches.add(branch);
+					}
+				}
 			}
 
 			treeWalk.addTree(
@@ -88,7 +112,10 @@ public class GitChoreContext {
 			throw new UncheckedIOException(e);
 		}
 
-		return builder.textFiles(textFiles).files(files).remotes(remotes);
+		return builder.textFiles(textFiles)
+				.files(files)
+				.remotes(remotes)
+				.branches(List.copyOf(branches));
 	}
 
 	public static void deleteIgnoredFiles(Path root) {
