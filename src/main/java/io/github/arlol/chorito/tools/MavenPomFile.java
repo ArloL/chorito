@@ -3,6 +3,8 @@ package io.github.arlol.chorito.tools;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -57,6 +59,29 @@ public class MavenPomFile {
 	}
 
 	/**
+	 * The own text of the element {@code path} names below {@code plugin}'s
+	 * {@code <configuration>}, empty when the plugin or any step of the path is
+	 * absent.
+	 */
+	public Optional<String> configuration(Id plugin, String... path) {
+		return Optional.ofNullable(findConfiguration(plugin, path))
+				.map(Element::ownText);
+	}
+
+	/**
+	 * Writes {@code value} into the element {@code path} names below
+	 * {@code plugin}'s {@code <configuration>}, and does nothing when that
+	 * element is absent -- a pom that does not configure something has not
+	 * asked for chorito's value of it.
+	 */
+	public void setConfiguration(Id plugin, String value, String... path) {
+		Element element = findConfiguration(plugin, path);
+		if (element != null) {
+			element.text(value);
+		}
+	}
+
+	/**
 	 * Inserts {@code pluginXml} immediately after {@code anchor}, which must be
 	 * declared in this pom.
 	 */
@@ -101,6 +126,21 @@ public class MavenPomFile {
 
 	public String asString() {
 		return document.outerHtml();
+	}
+
+	@Nullable
+	private Element findConfiguration(Id plugin, String... path) {
+		Element element = findPlugin(plugin);
+		if (element != null) {
+			element = element.selectFirst("> configuration");
+		}
+		for (String step : path) {
+			if (element == null) {
+				return null;
+			}
+			element = element.selectFirst("> " + step);
+		}
+		return element;
 	}
 
 	private Element findPlugin(Id plugin) {
