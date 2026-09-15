@@ -20,9 +20,32 @@ public abstract class WorkflowJobs {
 	public static final String DEBUG = "debug";
 	public static final String ANALYZE = "analyze";
 
-	/** The jobs that build a native image, one per operating system. */
+	public static final String REQUIRED_STATUS_CHECK = "required-status-check";
+
+	/** The job that builds the x64 Linux native image. */
+	public static final String LINUX = "linux";
+
+	/**
+	 * The job that builds the arm64 Linux native image.
+	 * <p>
+	 * The one platform job chorito adds to a repository rather than syncing:
+	 * the others predate it everywhere it runs.
+	 * {@code NativeReleaseLayoutChore} puts it in, after {@link #LINUX}, and
+	 * wires the jobs that wait on it.
+	 */
+	public static final String LINUX_ARM = "linux-arm";
+
+	/**
+	 * The jobs that build a native image, one per operating system and
+	 * architecture.
+	 * <p>
+	 * GraalVM cannot cross-compile, so this is one job per runner rather than
+	 * one per target: macOS is arm64 alone because GitHub no longer offers an
+	 * Intel macOS runner, and Windows is x64 alone because it offers no arm
+	 * one.
+	 */
 	public static final List<String> PLATFORMS = List
-			.of("macos", "linux", "windows");
+			.of("macos", LINUX, LINUX_ARM, "windows");
 
 	/**
 	 * What each job of a main workflow cannot do its work without.
