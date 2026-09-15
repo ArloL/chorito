@@ -53,9 +53,12 @@
         },
         {
             // The floor EnforcerPluginChore writes into every managed pom's
-            // requireMavenVersion rule, and the one chorito's own build
-            // enforces. Renovate's maven datasource skips the 4.0.0 release
-            // candidates as unstable, so this tracks the latest final release.
+            // requireMavenVersion rule, the distribution MavenWrapperChore
+            // points each wrapper at, and the version chorito's own build
+            // enforces -- one constant, because a wrapper installing an older
+            // Maven than the pom demands fails every build in the repository.
+            // Renovate's maven datasource skips the 4.0.0 release candidates
+            // as unstable, so this tracks the latest final release.
             // The third file is chorito's own pom: the chore fixes it on the
             // next run, but only a run, and until then the repository would
             // enforce a floor its own constant has already moved past.
