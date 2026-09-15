@@ -32,6 +32,11 @@ public class ChoritoCommand {
 				new NpmrcChore(),
 				new CodeQlAnalysisChore(),
 				new GitHubActionChore(),
+				// After GitHubActionChore, whose migrations bring an older
+				// release job up to the shape this one rewrites, and before
+				// AttestReleaseAssetsChore, so the attestation covers the
+				// assets as they are finally named.
+				new NativeReleaseLayoutChore(),
 				new AttestReleaseAssetsChore(),
 				new GitIgnoreChore(),
 				new EclipseCompilerSettingsChore(),

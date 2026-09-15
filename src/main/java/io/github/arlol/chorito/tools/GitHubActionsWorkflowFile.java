@@ -141,6 +141,119 @@ public class GitHubActionsWorkflowFile {
 		getJob(name).ifPresent(copyValue(debugJob));
 	}
 
+	/**
+	 * Puts {@code job} under {@code name}, directly after the job called
+	 * {@code afterName} when it is not there yet.
+	 * <p>
+	 * {@link #setJob} writes into a job that already exists and is silent when
+	 * it does not, which is what the chores syncing a job from the template
+	 * want. Adding a platform to a repository is the other case: the job has
+	 * never been there, and appending it to the end of the file would put a
+	 * build job below the release that waits on it.
+	 */
+	public void putJobAfter(
+			String name,
+			Optional<MappingNode> job,
+			String afterName
+	) {
+		if (job.isEmpty() || getJobs().isEmpty()) {
+			return;
+		}
+		if (hasJob(name)) {
+			setJob(name, job);
+			return;
+		}
+		MappingNode jobs = getJobs().orElseThrow();
+		List<NodeTuple> tuples = new ArrayList<>(jobs.getValue());
+		NodeTuple added = newTuple(name, job.orElseThrow());
+		int after = indexOfKey(tuples, afterName);
+		if (after < 0) {
+			tuples.add(added);
+		} else {
+			tuples.add(after + 1, added);
+		}
+		jobs.setValue(tuples);
+	}
+
+	/**
+	 * Adds {@code needed} to what {@code jobName} waits for, directly after
+	 * {@code afterName}, and does nothing when it is already listed.
+	 * <p>
+	 * Only a {@code needs} written as a sequence is touched. The single-job
+	 * form -- {@code needs: version} on every platform job -- is a scalar, and
+	 * a job waiting on exactly one other is never the one a platform gets added
+	 * to.
+	 */
+	public void addJobNeeds(String jobName, String needed, String afterName) {
+		var needs = getKeyAsSequence(getJob(jobName), "needs");
+		if (needs.isEmpty()) {
+			return;
+		}
+		List<Node> values = new ArrayList<>(needs.orElseThrow().getValue());
+		if (values.stream()
+				.anyMatch(
+						value -> scalarValue(Optional.of(value))
+								.filter(needed::equals)
+								.isPresent()
+				)) {
+			return;
+		}
+		int after = indexOfScalar(values, afterName);
+		// Plain, so the added entry reads like the ones around it: newScalar
+		// defaults to double quotes, and `- "linux-arm"` beside `- linux` is a
+		// diff that says nothing.
+		Node added = newScalar(needed, ScalarStyle.PLAIN);
+		if (after < 0) {
+			values.add(added);
+		} else {
+			values.add(after + 1, added);
+		}
+		setKey(getJob(jobName).orElseThrow(), "needs", newSequence(values));
+	}
+
+	/**
+	 * Replaces the step of {@code jobName} called {@code stepName} with
+	 * {@code step}, or does nothing when that step is not there.
+	 */
+	public void replaceStepByName(String jobName, String stepName, Node step) {
+		var job = getJob(jobName);
+		var stepsNode = getKeyAsSequence(job, STEPS);
+		if (stepsNode.isEmpty()) {
+			return;
+		}
+		List<Node> steps = new ArrayList<>(stepsNode.orElseThrow().getValue());
+		for (int i = 0; i < steps.size(); i++) {
+			if (scalarValue(getKeyAsNode(nodeAsMap(steps.get(i)), "name"))
+					.filter(stepName::equals)
+					.isPresent()) {
+				steps.set(i, step);
+				setKey(job.orElseThrow(), STEPS, newSequence(steps));
+				return;
+			}
+		}
+	}
+
+	private static int indexOfKey(List<NodeTuple> tuples, String key) {
+		for (int i = 0; i < tuples.size(); i++) {
+			if (scalarValue(Optional.of(tuples.get(i).getKeyNode()))
+					.filter(key::equals)
+					.isPresent()) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	private static int indexOfScalar(List<Node> values, String value) {
+		for (int i = 0; i < values.size(); i++) {
+			if (scalarValue(Optional.of(values.get(i))).filter(value::equals)
+					.isPresent()) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
 	public Optional<MappingNode> getOn() {
 		return getKeyAsMap(nodeAsMap(root), "on");
 	}
