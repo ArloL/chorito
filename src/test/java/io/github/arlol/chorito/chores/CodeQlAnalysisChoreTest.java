@@ -50,6 +50,34 @@ public class CodeQlAnalysisChoreTest {
 		);
 	}
 
+	/**
+	 * The shipped workflow filters on main because chorito's own does. Left
+	 * unswapped in a repository on master, the analysis would never run and
+	 * nothing would say so.
+	 */
+	@Test
+	public void testMasterRepositoryGetsItsOwnBranchName() throws Exception {
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.branches(List.of("master"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new CodeQlAnalysisChore().doit(context);
+
+		Path workflow = context
+				.resolve(".github/workflows/codeql-analysis.yaml");
+		assertThat(FilesSilent.readString(workflow)).contains("""
+				  push:
+				    branches:
+				    - master
+				  pull_request:
+				    branches:
+				    - master
+				""").doesNotContain("- main");
+	}
+
 	@Test
 	public void testJava() throws Exception {
 		FilesSilent.touch(extension.root().resolve("pom.xml"));

@@ -408,6 +408,7 @@ public class GitHubActionChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.branches(List.of("main"))
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -497,6 +498,7 @@ public class GitHubActionChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.branches(List.of("main"))
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 		new GitHubActionChore().doit(context);
@@ -514,6 +516,36 @@ public class GitHubActionChoreTest {
 				.build();
 		new GitHubActionChore().doit(context);
 		assertThat(workflow).content().contains("1 3 1 * *");
+	}
+
+	/**
+	 * check-actions.yaml is shipped as written, and it says main because
+	 * chorito does. A repository on master needs the name swapped or it
+	 * receives a workflow whose triggers match nothing, which is not a failure
+	 * anybody sees -- the workflow simply never runs.
+	 */
+	@Test
+	void shouldCreateCheckActionsWorkflowForAMasterRepository()
+			throws Exception {
+		Path workflow = extension.root()
+				.resolve(".github/workflows/check-actions.yaml");
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.branches(List.of("master"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new GitHubActionChore().doit(context);
+
+		assertThat(workflow).content().contains("""
+				  push:
+				    branches:
+				    - master
+				  pull_request:
+				    branches:
+				    - master
+				""").doesNotContain("- main");
 	}
 
 	@Test

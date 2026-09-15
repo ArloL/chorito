@@ -2,6 +2,11 @@ name: Main
 
 on:
   push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
   schedule:
   - cron: "9 6 16 * *"
 permissions: {}
@@ -51,7 +56,7 @@ jobs:
         persist-credentials: true
     - name: Bump version and push tag
       id: tag
-      if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
+      if: ${{ github.ref == 'refs/heads/main' }}
       uses: ArloL/calver-tag-action@533d695fb5821c708d5324eded28d541d11d87b7 # v2409.0.103
     - id: output
       env:
@@ -162,7 +167,7 @@ jobs:
     - macos
     - linux
     - windows
-    if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -200,7 +205,7 @@ jobs:
     - macos
     - linux
     - windows
-    if: ${{ github.event_name == 'push' && !startsWith(github.ref, 'refs/heads/dependabot/') }}
+    if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
     permissions:
       packages: write

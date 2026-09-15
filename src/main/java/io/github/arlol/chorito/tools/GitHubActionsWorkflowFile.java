@@ -43,6 +43,9 @@ public class GitHubActionsWorkflowFile {
 
 	private static final String STEPS = "steps";
 	private static final String PERMISSIONS = "permissions";
+	private static final String MAIN_BRANCH = "main";
+	private static final List<String> ON_BRANCH_TRIGGERS = List
+			.of("push", "pull_request");
 	private static final String SETUP_JAVA_ACTION = "actions/setup-java";
 	private static final String DISTRIBUTION_TEMURIN = "temurin";
 	private static final String JAVA_VERSION = "java-version";
@@ -167,6 +170,111 @@ public class GitHubActionsWorkflowFile {
 				),
 				"cron",
 				newScalar(newCron, ScalarStyle.DOUBLE_QUOTED)
+		);
+	}
+
+	/**
+	 * Whether {@code on.push} is present with nothing written under it.
+	 * <p>
+	 * A bare push is the shape chorito shipped, and the only one safe to
+	 * replace wholesale. Anything under push -- branches, tags, paths -- is
+	 * somebody's decision, and rebuilding the block would discard it without
+	 * saying so.
+	 */
+	public boolean hasBarePush() {
+		return getOn().flatMap(on -> getKeyAsNode(on, "push"))
+				.filter(push -> !(push instanceof MappingNode))
+				.isPresent();
+	}
+
+	/**
+	 * Whether {@code on.push} names the branches it runs for.
+	 */
+	public boolean hasOnPushBranches() {
+		return getOn().flatMap(on -> getKeyAsMap(on, "push"))
+				.flatMap(push -> getKeyAsSequence(push, "branches"))
+				.isPresent();
+	}
+
+	/**
+	 * Replaces the push and pull_request triggers with ones filtered to
+	 * {@code branch}, keeping every other trigger and the order they are
+	 * written in.
+	 * <p>
+	 * The two are rebuilt rather than edited in place because a workflow
+	 * reaching this may have only one of them, or neither in the position it
+	 * ends up in. {@link #sortKeys()} orders the top level of a workflow and
+	 * the insides of a job, but nothing orders the triggers, so writing push
+	 * and pull_request first here is what keeps the block readable.
+	 */
+	public void setOnPushAndPullRequestBranches(String branch) {
+		getOn().ifPresent(on -> {
+			List<NodeTuple> tuples = new ArrayList<>();
+			tuples.add(newTuple("push", branchFilter(branch)));
+			tuples.add(newTuple("pull_request", branchFilter(branch)));
+			on.getValue()
+					.stream()
+					.filter(
+							tuple -> !ON_BRANCH_TRIGGERS
+									.contains(keyName(tuple))
+					)
+					.forEach(tuples::add);
+			on.setValue(tuples);
+		});
+	}
+
+	/**
+	 * Points existing push and pull_request branch filters at {@code branch}.
+	 * <p>
+	 * chorito's own workflows are the templates it ships, and they say
+	 * {@code main} because that is the branch chorito uses. A repository still
+	 * on {@code master} needs the same file with the name swapped: a filter
+	 * naming a branch that does not exist matches nothing, and the workflow
+	 * then never runs at all -- no failed run to notice, just silence.
+	 */
+	public void renameOnBranches(String branch) {
+		if (MAIN_BRANCH.equals(branch)) {
+			return;
+		}
+		getOn().ifPresent(on -> ON_BRANCH_TRIGGERS.forEach(trigger -> {
+			getKeyAsMap(on, trigger).ifPresent(triggerNode -> {
+				getKeyAsSequence(triggerNode, "branches").ifPresent(
+						branches -> setKey(
+								triggerNode,
+								"branches",
+								newSequence(
+										branches.getValue()
+												.stream()
+												.map(
+														node -> renamedBranch(
+																node,
+																branch
+														)
+												)
+												.toList()
+								)
+						)
+				);
+			});
+		}));
+	}
+
+	private static Node renamedBranch(Node node, String branch) {
+		if (node instanceof ScalarNode scalar
+				&& MAIN_BRANCH.equals(scalar.getValue())) {
+			return newScalar(branch, ScalarStyle.PLAIN);
+		}
+		return node;
+	}
+
+	private static MappingNode branchFilter(String branch) {
+		// A fresh node per call: two tuples sharing one node make the emitter
+		// write an anchor and an alias instead of the block twice.
+		return newMap(
+				newTuple(
+						"branches",
+						newSequence(newScalar(branch, ScalarStyle.PLAIN))
+				)
 		);
 	}
 

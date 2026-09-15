@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.github.arlol.chorito.chores.GitHubActionChore.Migration;
 import io.github.arlol.chorito.chores.GitHubActionChore.Ordering;
+import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
 
@@ -194,6 +195,244 @@ public class GitHubActionMigrationsTest {
 		assertThat(workflow).content()
 				.doesNotContain("changelog")
 				.contains("tag: v1");
+	}
+
+	@Test
+	public void updateMainTriggersFiltersPushAndPullRequestToTheTrunk() {
+		Path workflow = workflow("""
+				on:
+				  push:
+				  pull_request:
+				    branches:
+				    - main
+				    types:
+				    - reopened
+				  schedule:
+				  - cron: "14 3 2 * *"
+				jobs:
+				  build:
+				    steps:
+				    - run: true
+				""");
+
+		chore.updateMainTriggers(context("main"));
+
+		assertThat(workflow).content().contains("""
+				on:
+				  push:
+				    branches:
+				    - main
+				  pull_request:
+				    branches:
+				    - main
+				  schedule:
+				  - cron: "14 3 2 * *"
+				""");
+		assertThat(workflow).content().doesNotContain("reopened");
+	}
+
+	@Test
+	public void updateMainTriggersNamesMasterWhenThatIsTheTrunk() {
+		Path workflow = workflow("""
+				on:
+				  push:
+				jobs:
+				  build:
+				    steps:
+				    - run: true
+				""");
+
+		chore.updateMainTriggers(context("master"));
+
+		assertThat(workflow).content().contains("""
+				on:
+				  push:
+				    branches:
+				    - master
+				  pull_request:
+				    branches:
+				    - master
+				""");
+	}
+
+	/**
+	 * A push already naming branches is somebody's decision. Rebuilding the
+	 * block would throw away whatever they filtered on without saying so.
+	 */
+	@Test
+	public void updateMainTriggersLeavesAFilteredPushAlone() {
+		Path workflow = workflow("""
+				on:
+				  push:
+				    branches:
+				    - release
+				jobs:
+				  build:
+				    steps:
+				    - run: true
+				""");
+
+		chore.updateMainTriggers(context("main"));
+
+		assertThat(workflow).content()
+				.contains("- release")
+				.doesNotContain("pull_request");
+	}
+
+	/**
+	 * No branch, no guess. Writing main into a repository still on master would
+	 * leave it with triggers that match nothing at all.
+	 */
+	@Test
+	public void updateMainTriggersSkipsWhenTheTrunkIsUnknown() {
+		Path workflow = workflow("""
+				on:
+				  push:
+				jobs:
+				  build:
+				    steps:
+				    - run: true
+				""");
+
+		chore.updateMainTriggers(extension.choreContext());
+
+		assertThat(workflow).content().doesNotContain("branches");
+	}
+
+	@Test
+	public void narrowBranchConditionsCollapsesTheDisjunction() {
+		Path workflow = workflow(
+				releaseGuardedBy(
+						"github.ref == 'refs/heads/master'"
+								+ " || github.ref == 'refs/heads/main'"
+				)
+		);
+
+		chore.narrowBranchConditions(context("main"));
+
+		assertThat(workflow).content()
+				.contains("if: ${{ github.ref == 'refs/heads/main' }}")
+				.doesNotContain("master");
+	}
+
+	/**
+	 * {@code updateVersionSteps} copies the version job out of chorito's own
+	 * main.yaml, which names chorito's branch. A repository on master gets that
+	 * copy repointed here -- without it the job could never tag.
+	 */
+	@Test
+	public void narrowBranchConditionsRepointsAMainOnlyGuardAtMaster() {
+		Path workflow = workflow(
+				releaseGuardedBy("github.ref == 'refs/heads/main'")
+		);
+
+		chore.narrowBranchConditions(context("master"));
+
+		assertThat(workflow).content()
+				.contains("if: ${{ github.ref == 'refs/heads/master' }}");
+	}
+
+	/**
+	 * A repository keeping both branches alive still means something by a
+	 * condition naming master, so only a name with no branch behind it is
+	 * repointed.
+	 */
+	@Test
+	public void narrowBranchConditionsKeepsAGuardWhoseBranchExists() {
+		Path workflow = workflow(
+				releaseGuardedBy("github.ref == 'refs/heads/master'")
+		);
+
+		chore.narrowBranchConditions(context("main", "master"));
+
+		assertThat(workflow).content()
+				.contains("if: ${{ github.ref == 'refs/heads/master' }}");
+	}
+
+	@Test
+	public void removeDeadDependabotConditionDropsItOncePushIsFiltered() {
+		Path workflow = workflow(deployExcludingDependabot("""
+				on:
+				  push:
+				    branches:
+				    - main
+				"""));
+
+		chore.removeDeadDependabotCondition(context("main"));
+
+		assertThat(workflow).content()
+				.contains("if: ${{ github.event_name == 'push' }}")
+				.doesNotContain("dependabot");
+	}
+
+	/**
+	 * While push fires for every branch the exclusion is still doing work, so
+	 * it stays until the triggers are narrowed.
+	 */
+	@Test
+	public void removeDeadDependabotConditionKeepsItWhilePushIsBare() {
+		Path workflow = workflow(deployExcludingDependabot("""
+				on:
+				  push:
+				"""));
+
+		chore.removeDeadDependabotCondition(context("main"));
+
+		assertThat(workflow).content().contains("dependabot");
+	}
+
+	/**
+	 * The copied version job carries a branch condition, so copying it into a
+	 * repository chorito cannot identify would hand it a job that may never tag
+	 * -- silently, since nothing fails.
+	 */
+	@Test
+	public void updateVersionStepsSkipsWhenTheTrunkIsUnknown() {
+		Path workflow = workflow("""
+				jobs:
+				  version:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - run: echo mine
+				""");
+
+		chore.updateVersionSteps(extension.choreContext());
+		assertThat(workflow).content()
+				.contains("echo mine")
+				.doesNotContain("calver-tag-action");
+
+		chore.updateVersionSteps(context("main"));
+		assertThat(workflow).content().contains("calver-tag-action");
+	}
+
+	private static String deployExcludingDependabot(String on) {
+		return on + """
+				jobs:
+				  deploy:
+				    if: ${{ github.event_name == 'push' && EXCLUSION }}
+				    steps:
+				    - run: true
+				""".replace(
+				"EXCLUSION",
+				"!startsWith(github.ref, 'refs/heads/dependabot/')"
+		);
+	}
+
+	private static String releaseGuardedBy(String condition) {
+		return """
+				jobs:
+				  release:
+				    if: ${{ CONDITION }}
+				    steps:
+				    - run: true
+				""".replace("CONDITION", condition);
+	}
+
+	private ChoreContext context(String... branches) {
+		return extension.choreContext()
+				.toBuilder()
+				.branches(List.of(branches))
+				.build();
 	}
 
 	private Path workflow(String content) {
