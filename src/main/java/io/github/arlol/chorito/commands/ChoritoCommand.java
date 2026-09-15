@@ -51,6 +51,7 @@ public class ChoritoCommand {
 				new SpotbugsPluginChore(),
 				new ModernizerPluginChore(),
 				new MavenJavadocSourcesPluginChore(),
+				new EnforcerPluginChore(),
 				new LifecycleMappingChore(),
 				new VsCodeChore(),
 				new IntellijChore(),

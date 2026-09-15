@@ -43,6 +43,10 @@ public abstract class MavenPlugins {
 			"org.apache.maven.plugins",
 			"maven-source-plugin"
 	);
+	public static final Id ENFORCER = new Id(
+			"org.apache.maven.plugins",
+			"maven-enforcer-plugin"
+	);
 	public static final Id LIFECYCLE_MAPPING = new Id(
 			"org.eclipse.m2e",
 			"lifecycle-mapping"

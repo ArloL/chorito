@@ -4,12 +4,13 @@
         "{{manager}}",
     ],
     // The custom managers below read chorito's own source as data. Each one
-    // matches a named constant in tools/MavenPluginVersions.java or
-    // tools/JavaVersions.java -- never XML a chore assembles -- so a rename or
-    // a reformat inside a chore cannot silently stop an update. The second
-    // pattern in each manager keeps the test fixture that asserts the written
-    // pom in step with the constant; the test in MavenPluginVersionsTest fails
-    // the build if the two ever drift.
+    // matches a named constant in tools/MavenPluginVersions.java,
+    // tools/MavenVersions.java or tools/JavaVersions.java -- never XML a chore
+    // assembles -- so a rename or a reformat inside a chore cannot silently
+    // stop an update. The second pattern in each manager keeps the test fixture
+    // that asserts the written pom in step with the constant; the tests in
+    // MavenPluginVersionsTest and EnforcerPluginChoreTest fail the build if the
+    // two ever drift.
     "customManagers": [
         {
             "customType": "regex",
@@ -48,6 +49,27 @@
             "matchStrings": [
                 "MODERNIZER = \"(?<currentValue>.*?)\"",
                 "<groupId>org\\.gaul</groupId>\\s*<artifactId>modernizer-maven-plugin</artifactId>\\s*<version>(?<currentValue>.*?)</version>",
+            ],
+        },
+        {
+            // The floor EnforcerPluginChore writes into every managed pom's
+            // requireMavenVersion rule, and the one chorito's own build
+            // enforces. Renovate's maven datasource skips the 4.0.0 release
+            // candidates as unstable, so this tracks the latest final release.
+            // The third file is chorito's own pom: the chore fixes it on the
+            // next run, but only a run, and until then the repository would
+            // enforce a floor its own constant has already moved past.
+            "customType": "regex",
+            "datasourceTemplate": "maven",
+            "depNameTemplate": "org.apache.maven:apache-maven",
+            "managerFilePatterns": [
+                "/^src/main/java/io/github/arlol/chorito/tools/MavenVersions\\.java$/",
+                "/^src/test/resources/io/github/arlol/chorito/enforcer-plugin/expected\\.xml$/",
+                "/^pom\\.xml$/",
+            ],
+            "matchStrings": [
+                "MAVEN = \"(?<currentValue>.*?)\"",
+                "<requireMavenVersion>\\s*<version>(?<currentValue>.*?)</version>",
             ],
         },
         {
