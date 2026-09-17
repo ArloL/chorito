@@ -518,6 +518,25 @@ public class GitHubActionChoreTest {
 		assertThat(workflow).content().contains("1 3 1 * *");
 	}
 
+	@Test
+	void checkActionsWorkflowShouldNotUpdateToolVersions() throws Exception {
+		Path workflow = extension.root()
+				.resolve(".github/workflows/check-actions.yaml");
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+		new GitHubActionChore().doit(context);
+		String bumped = FilesSilent.readString(workflow)
+				.replaceFirst("ZIZMOR_VERSION: \\S+", "ZIZMOR_VERSION: 99.0.0");
+		FilesSilent.writeString(workflow, bumped);
+
+		new GitHubActionChore().doit(context);
+
+		assertThat(workflow).content().isEqualTo(bumped);
+	}
+
 	/**
 	 * check-actions.yaml is shipped as written, and it says main because
 	 * chorito does. A repository on master needs the name swapped or it

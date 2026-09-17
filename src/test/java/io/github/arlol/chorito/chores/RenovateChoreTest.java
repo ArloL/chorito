@@ -636,6 +636,73 @@ public class RenovateChoreTest {
 		assertThat(renovateJson5).content().isEqualTo(content);
 	}
 
+	private void writeWorkflowPinningATool() {
+		FilesSilent.writeString(
+				extension.root()
+						.resolve(".github/workflows/check-actions.yaml"),
+				"""
+						jobs:
+						  zizmor:
+						    steps:
+						    - env:
+						        # renovate: datasource=pypi depName=zizmor
+						        ZIZMOR_VERSION: 1.30.1
+						      run: uvx "zizmor@${ZIZMOR_VERSION}" .
+						"""
+		);
+	}
+
+	@Test
+	public void testAddsGitHubActionsVersionsPresetWhenAWorkflowPinsATool()
+			throws Exception {
+		writeWorkflowPinningATool();
+
+		new RenovateChore().doit(githubContext());
+
+		assertThat(extension.root().resolve("renovate.json5")).content()
+				.contains("""
+						    "extends": [
+						        "config:recommended",
+						        "customManagers:githubActionsVersions",
+						    ],
+						""");
+	}
+
+	@Test
+	public void testKeepsGitHubActionsVersionsPresetItAlreadyHas()
+			throws Exception {
+		writeWorkflowPinningATool();
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
+		String content = """
+				{
+				    "extends": [
+				        "customManagers:githubActionsVersions",
+				    ],
+				    "labels": [
+				        "dependencies",
+				    ],
+				    "addLabels": [
+				        "{{manager}}",
+				    ],
+				    "minimumReleaseAge": "7 days",
+				}
+				""";
+		FilesSilent.writeString(renovateJson5, content);
+
+		new RenovateChore().doit(githubContext());
+
+		assertThat(renovateJson5).content().isEqualTo(content);
+	}
+
+	@Test
+	public void testAddsNoGitHubActionsVersionsPresetWithoutPinnedTools()
+			throws Exception {
+		new RenovateChore().doit(githubContext());
+
+		assertThat(extension.root().resolve("renovate.json5")).content()
+				.doesNotContain("githubActionsVersions");
+	}
+
 	@Test
 	public void testAddsNoCustomManagersToATemurinProject() throws Exception {
 		FilesSilent.writeString(
