@@ -25,9 +25,7 @@ public class GitHubActionChore implements Chore {
 			.of(".yaml", ".yml");
 	private static final List<String> MAIN_WORKFLOWS = List
 			.of(".github/workflows/main.yaml", ".github/workflows/main.yml");
-	private static final String SETUP_GRAALVM_ACTION = "graalvm/setup-graalvm";
 	private static final String DISTRIBUTION_TEMURIN = "distribution: temurin";
-	private static final String VERSION_INPUT_PARAMETER = "version";
 	private static final List<String> TRUNK_BRANCHES = List
 			.of("main", "master");
 	private static final String DEPENDABOT_CONDITION = " && !startsWith(github.ref, 'refs/heads/dependabot/')";
@@ -58,16 +56,6 @@ public class GitHubActionChore implements Chore {
 	}
 
 	static final List<Ordering> ORDERINGS = List.of(
-			new Ordering(
-					"useSpecificActionVersions",
-					"migrateToGraalSetupAction",
-					"the block it matches names actions/setup-java@v3.5.1, which exists only once bare v3 has been pinned"
-			),
-			new Ordering(
-					"migrateToGraalSetupAction",
-					"migrateJavaDistributionFromAdoptToTemurin",
-					"the same block names 'distribution: adopt', which rewriting adopt to temurin destroys"
-			),
 			new Ordering(
 					"migrateActionsCreateRelease",
 					"migrateNcipoploReleaseAction",
@@ -103,10 +91,6 @@ public class GitHubActionChore implements Chore {
 						this::updateChoresWorkflow
 				),
 				new Migration(
-						"updateGraalVmVersion",
-						this::updateGraalVmVersion
-				),
-				new Migration(
 						"removeCustomGithubPackagesMavenSettings",
 						this::removeCustomGithubPackagesMavenSettings
 				),
@@ -115,10 +99,6 @@ public class GitHubActionChore implements Chore {
 						this::useSpecificActionVersions
 				),
 				new Migration("replaceSetOutput", this::replaceSetOutput),
-				new Migration(
-						"migrateToGraalSetupAction",
-						this::migrateToGraalSetupAction
-				),
 				new Migration(
 						"migrateJavaDistributionFromAdoptToTemurin",
 						this::migrateJavaDistributionFromAdoptToTemurin
@@ -163,7 +143,10 @@ public class GitHubActionChore implements Chore {
 						"migrateNcipoploReleaseAction",
 						this::migrateNcipoploReleaseAction
 				),
-				new Migration("migrateSetupGraalvm", this::migrateSetupGraalvm),
+				new Migration(
+						"useToolVersionsForSetupJava",
+						this::useToolVersionsForSetupJava
+				),
 				new Migration("updateMainTriggers", this::updateMainTriggers),
 				new Migration(
 						"removeDeadDependabotCondition",
@@ -410,65 +393,6 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	void migrateToGraalSetupAction(ChoreContext context) {
-		DirectoryStreams.githubWorkflows(context).forEach(path -> {
-			String updated = FilesSilent.readString(path);
-			updated = updated.replace("""
-
-					    - name: Set up Visual Studio shell
-					      uses: egor-tensin/vs-shell@v2\
-					""", "");
-			updated = updated.replace("""
-					    - uses: actions/setup-java@v3.5.1
-					      with:
-					        java-version: ${{ env.JAVA_VERSION }}
-					        distribution: adopt
-					        cache: 'maven'
-					    - name: Setup Graalvm
-					      uses: DeLaGuardo/setup-graalvm@5.0
-					      with:
-					        graalvm: ${{ env.GRAALVM_VERSION }}
-					        java: java${{ env.JAVA_VERSION }}
-					    - name: Install native-image module
-					      run: gu install native-image\
-					""", """
-					    - uses: graalvm/setup-graalvm@v1.0.7
-					      with:
-					        version: ${{ env.GRAALVM_VERSION }}
-					        java-version: ${{ env.JAVA_VERSION }}
-					        components: 'native-image'
-					        github-token: ${{ secrets.GITHUB_TOKEN }}
-					        cache: 'maven'\
-					""");
-			updated = updated.replace(
-					"""
-							    - uses: actions/setup-java@v3.5.1
-							      with:
-							        java-version: ${{ env.JAVA_VERSION }}
-							        distribution: adopt
-							        cache: 'maven'
-							    - name: Setup Graalvm
-							      uses: DeLaGuardo/setup-graalvm@5.0
-							      with:
-							        graalvm: ${{ env.GRAALVM_VERSION }}
-							        java: java${{ env.JAVA_VERSION }}
-							    - name: Install native-image module
-							      run: '& "$env:JAVA_HOME\\bin\\gu" install native-image'\
-							""",
-					"""
-							    - uses: graalvm/setup-graalvm@v1.0.7
-							      with:
-							        version: ${{ env.GRAALVM_VERSION }}
-							        java-version: ${{ env.JAVA_VERSION }}
-							        components: 'native-image'
-							        github-token: ${{ secrets.GITHUB_TOKEN }}
-							        cache: 'maven'\
-							"""
-			);
-			FilesSilent.writeString(path, updated);
-		});
-	}
-
 	void useSpecificActionVersions(ChoreContext context) {
 		DirectoryStreams.githubWorkflows(context).forEach(path -> {
 			String updated = FilesSilent.readString(path);
@@ -545,24 +469,6 @@ public class GitHubActionChore implements Chore {
 					})
 					.toList();
 			FilesSilent.write(path, updated, "\n");
-		});
-	}
-
-	void updateGraalVmVersion(ChoreContext context) {
-		mainWorkflow(context).ifPresent(main -> {
-			List<String> updated = FilesSilent.readAllLines(main)
-					.stream()
-					.map(s -> {
-						if (s.startsWith("  GRAALVM_VERSION: 22.1.0")) {
-							return s;
-						}
-						if (s.startsWith("  GRAALVM_VERSION: ")) {
-							return "  GRAALVM_VERSION: 22.2.0";
-						}
-						return s;
-					})
-					.toList();
-			FilesSilent.write(main, updated, "\n");
 		});
 	}
 
@@ -870,29 +776,8 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	void migrateSetupGraalvm(ChoreContext context) {
+	void useToolVersionsForSetupJava(ChoreContext context) {
 		GitHubActionsWorkflowFile.updateEach(context, workflow -> {
-			workflow.removeEnv("GRAALVM_VERSION");
-			workflow.removeEnv("JAVA_VERSION");
-
-			workflow.removeInputParameterFromAction(
-					SETUP_GRAALVM_ACTION,
-					"github-token"
-			);
-			workflow.removeInputParameterFromAction(
-					SETUP_GRAALVM_ACTION,
-					VERSION_INPUT_PARAMETER
-			);
-			workflow.removeInputParameterFromAction(
-					SETUP_GRAALVM_ACTION,
-					"components"
-			);
-			workflow.replaceActionWith(
-					SETUP_GRAALVM_ACTION,
-					"actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165",
-					"v5.0.0"
-			);
-
 			var pinnedJavaVersion = workflow.getPinnedJavaVersion();
 			workflow.removeInputParameterFromAction(
 					"actions/setup-java",

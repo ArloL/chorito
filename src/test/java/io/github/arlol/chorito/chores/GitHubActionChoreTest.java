@@ -38,87 +38,6 @@ public class GitHubActionChoreTest {
 			        distribution: temurin
 			        java-version-file: .tool-versions
 			""";
-	private static final String INPUT_GRAALSETUP_OUTPUT = """
-			jobs:
-			  linux:
-			    runs-on: ubuntu-latest
-			    needs: version
-			    env:
-			      REVISION: ${{ needs.version.outputs.new_version }}
-			    steps:
-			    - uses: actions/checkout@v3.1.0
-			    - uses: actions/setup-java@v3.5.1
-			      with:
-			        java-version: ${{ env.JAVA_VERSION }}
-			        distribution: adopt
-			        cache: 'maven'
-			    - name: Setup Graalvm
-			      uses: DeLaGuardo/setup-graalvm@5.0
-			      with:
-			        graalvm: ${{ env.GRAALVM_VERSION }}
-			        java: java${{ env.JAVA_VERSION }}
-			    - name: Install native-image module
-			      run: gu install native-image
-			  windows:
-			    runs-on: windows-latest
-			    needs: version
-			    env:
-			      REVISION: ${{ needs.version.outputs.new_version }}
-			    steps:
-			    - uses: actions/checkout@v3.1.0
-			    - uses: actions/setup-java@v3.5.1
-			      with:
-			        java-version: ${{ env.JAVA_VERSION }}
-			        distribution: adopt
-			        cache: 'maven'
-			    - name: Setup Graalvm
-			      uses: DeLaGuardo/setup-graalvm@5.0
-			      with:
-			        graalvm: ${{ env.GRAALVM_VERSION }}
-			        java: java${{ env.JAVA_VERSION }}
-			    - name: Install native-image module
-			      run: '& "$env:JAVA_HOME\\bin\\gu" install native-image'
-			    - name: Remove WindowsImageHeapProviderFeature
-			      run: '& 7z d "$env:JAVA_HOME\\lib\\svm\\builder\\svm.jar" com/oracle/svm/core/windows/WindowsImageHeapProviderFeature.class'
-			    - name: Install upx
-			      run: choco install upx --version=3.96 --no-progress
-			    - name: Set up Visual Studio shell
-			      uses: egor-tensin/vs-shell@v2
-			""";
-	private static final String EXPECTED_GRAALSETUP_OUTPUT = """
-			permissions: {}
-			jobs:
-			  linux:
-			    needs: version
-			    runs-on: ubuntu-latest
-			    env:
-			      REVISION: ${{ needs.version.outputs.new_version }}
-			    steps:
-			    - uses: actions/checkout@v3.1.0
-			      with:
-			        persist-credentials: false
-			    - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
-			      with:
-			        cache: maven
-			        java-version-file: .tool-versions
-			  windows:
-			    needs: version
-			    runs-on: windows-latest
-			    env:
-			      REVISION: ${{ needs.version.outputs.new_version }}
-			    steps:
-			    - uses: actions/checkout@v3.1.0
-			      with:
-			        persist-credentials: false
-			    - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
-			      with:
-			        cache: maven
-			        java-version-file: .tool-versions
-			    - name: Remove WindowsImageHeapProviderFeature
-			      run: '& 7z d "$env:JAVA_HOME\\lib\\svm\\builder\\svm.jar" com/oracle/svm/core/windows/WindowsImageHeapProviderFeature.class'
-			    - name: Install upx
-			      run: choco install upx --version=3.96 --no-progress
-			""";
 
 	@RegisterExtension
 	final FileSystemExtension extension = new FileSystemExtension();
@@ -182,46 +101,6 @@ public class GitHubActionChoreTest {
 				  call:
 				    uses: ./.github/workflows/reusable.yaml
 				""");
-	}
-
-	@Test
-	public void testVsShellWorkflowFile() throws Exception {
-		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
-		FilesSilent.writeString(workflow, """
-				jobs:
-				  windows:
-				    runs-on: windows-latest
-				    steps:
-				    - uses: graalvm/setup-graalvm@v1.0.7
-				    - name: Set up Visual Studio shell
-				      uses: egor-tensin/vs-shell@v2
-				""");
-
-		new GitHubActionChore().doit(extension.choreContext());
-
-		assertThat(workflow).content()
-				.isEqualTo(
-						"""
-								permissions: {}
-								jobs:
-								  windows:
-								    runs-on: windows-latest
-								    steps:
-								    - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
-								      with:
-								        java-version-file: .tool-versions
-								"""
-				);
-	}
-
-	@Test
-	public void testGraalSetupMigration() throws Exception {
-		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
-		FilesSilent.writeString(workflow, INPUT_GRAALSETUP_OUTPUT);
-
-		new GitHubActionChore().doit(extension.choreContext());
-
-		assertThat(workflow).content().isEqualTo(EXPECTED_GRAALSETUP_OUTPUT);
 	}
 
 	@Test

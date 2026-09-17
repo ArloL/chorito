@@ -3,7 +3,6 @@ package io.github.arlol.chorito.tools;
 import static io.github.arlol.chorito.tools.Yamls.copyValue;
 import static io.github.arlol.chorito.tools.Yamls.getKeyAsMap;
 import static io.github.arlol.chorito.tools.Yamls.getKeyAsNode;
-import static io.github.arlol.chorito.tools.Yamls.getKeyAsScalar;
 import static io.github.arlol.chorito.tools.Yamls.getKeyAsSequence;
 import static io.github.arlol.chorito.tools.Yamls.getYamlPath;
 import static io.github.arlol.chorito.tools.Yamls.newMap;
@@ -1085,46 +1084,6 @@ public class GitHubActionsWorkflowFile {
 			Comparator<NodeTuple> order
 	) {
 		node.setValue(node.getValue().stream().sorted(order).toList());
-	}
-
-	public void replaceActionWith(
-			String oldAction,
-			String newActionRef,
-			String newActionVersion
-	) {
-		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
-				.orElse(List.of())) {
-			var jobNode = nodeAsMap(jobTuple.getValueNode());
-
-			getKeyAsSequence(jobNode, STEPS).ifPresent(stepsNode -> {
-				List<Node> steps = stepsNode.getValue().stream().peek(step -> {
-					var stepNode = nodeAsMap(step);
-					getKeyAsScalar(stepNode, "uses")
-							.filter(
-									uses -> uses.getValue()
-											.startsWith(oldAction + "@")
-							)
-							.ifPresent(uses -> {
-								var scalarNode = newScalar(
-										newActionRef,
-										uses.getScalarStyle()
-								);
-								scalarNode.setInLineComments(
-										List.of(
-												new CommentLine(
-														Optional.empty(),
-														Optional.empty(),
-														" " + newActionVersion,
-														CommentType.IN_LINE
-												)
-										)
-								);
-								setKey(stepNode, "uses", scalarNode);
-							});
-				}).toList();
-				setKey(jobNode, STEPS, newSequence(steps));
-			});
-		}
 	}
 
 }
