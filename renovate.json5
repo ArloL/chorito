@@ -86,7 +86,7 @@
             ],
             "matchStrings": [
                 "TEMURIN = \"(?<currentValue>.*?)\"",
-                "java-version: (?<currentValue>\\S+)",
+                "JAVA_VERSION: (?<currentValue>\\S+)",
             ],
         },
         {
@@ -99,16 +99,6 @@
             ],
             "matchStrings": [
                 "java graalvm-community-(?<currentValue>\\S+)",
-            ],
-        },
-        {
-            "customType": "regex",
-            "extractVersionTemplate": "^(?<version>\\d+\\.\\d+\\.\\d+)",
-            "managerFilePatterns": [
-                "/^\\.github/workflows/[^/]+\\.ya?ml$/",
-            ],
-            "matchStrings": [
-                "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+java-version: (?<currentValue>\\S+)",
             ],
         },
     ],

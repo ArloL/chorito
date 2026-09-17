@@ -222,17 +222,21 @@ public class GitHubActionsWorkflowFileTest {
 
 		workflow.pinTemurinJavaVersion("1.2.3");
 
-		assertThat(workflow.asString()).isEqualTo("""
-				jobs:
-				  analyze:
-				    steps:
-				    - uses: actions/setup-java@abc # v6.0.0
-				      with:
-				        cache: maven
-				        distribution: temurin
-				        # renovate: datasource=java-version depName=java
-				        java-version: 1.2.3
-				""");
+		assertThat(workflow.asString()).isEqualTo(
+				"""
+						jobs:
+						  analyze:
+						    steps:
+						    - uses: actions/setup-java@abc # v6.0.0
+						      env:
+						        # renovate: datasource=java-version depName=java extractVersion=^(?<version>\\d+\\.\\d+\\.\\d+)
+						        JAVA_VERSION: 1.2.3
+						      with:
+						        cache: maven
+						        distribution: temurin
+						        java-version: ${{ env.JAVA_VERSION }}
+						"""
+		);
 	}
 
 	@Test
@@ -270,7 +274,84 @@ public class GitHubActionsWorkflowFileTest {
 
 		workflow.pinTemurinJavaVersion("1.2.3");
 
-		assertThat(workflow.asString()).contains("java-version: 1.2.3");
+		assertThat(workflow.asString()).isEqualTo(
+				"""
+						jobs:
+						  analyze:
+						    steps:
+						    - uses: actions/setup-java@abc # v6.0.0
+						      env:
+						        # renovate: datasource=java-version depName=java extractVersion=^(?<version>\\d+\\.\\d+\\.\\d+)
+						        JAVA_VERSION: 1.2.3
+						      with:
+						        cache: maven
+						        distribution: temurin
+						        java-version: ${{ env.JAVA_VERSION }}
+						"""
+		);
+	}
+
+	@Test
+	public void pinTemurinJavaVersionKeepsOtherStepEnv() {
+		var workflow = new GitHubActionsWorkflowFile("""
+				jobs:
+				  analyze:
+				    steps:
+				    - uses: actions/setup-java@abc # v6.0.0
+				      env:
+				        OTHER: value
+				      with:
+				        distribution: temurin
+				""");
+
+		workflow.pinTemurinJavaVersion("1.2.3");
+
+		assertThat(workflow.asString()).contains(
+				"""
+						      env:
+						        OTHER: value
+						        # renovate: datasource=java-version depName=java extractVersion=^(?<version>\\d+\\.\\d+\\.\\d+)
+						        JAVA_VERSION: 1.2.3
+						"""
+		);
+	}
+
+	@Test
+	public void getPinnedJavaVersionReadsTheEnvVar() {
+		var workflow = new GitHubActionsWorkflowFile(
+				"""
+						jobs:
+						  analyze:
+						    steps:
+						    - uses: actions/setup-java@abc # v6.0.0
+						      env:
+						        # renovate: datasource=java-version depName=java extractVersion=^(?<version>\\d+\\.\\d+\\.\\d+)
+						        JAVA_VERSION: 26.0.1
+						      with:
+						        cache: maven
+						        distribution: temurin
+						        java-version: ${{ env.JAVA_VERSION }}
+						"""
+		);
+
+		assertThat(workflow.getPinnedJavaVersion()).contains("26.0.1");
+	}
+
+	@Test
+	public void getPinnedJavaVersionReadsAVersionWrittenIntoTheInput() {
+		var workflow = new GitHubActionsWorkflowFile("""
+				jobs:
+				  analyze:
+				    steps:
+				    - uses: actions/setup-java@abc # v6.0.0
+				      with:
+				        cache: maven
+				        distribution: temurin
+				        # renovate: datasource=java-version depName=java
+				        java-version: 26.0.1
+				""");
+
+		assertThat(workflow.getPinnedJavaVersion()).contains("26.0.1");
 	}
 
 	@Test
@@ -295,17 +376,21 @@ public class GitHubActionsWorkflowFileTest {
 
 	@Test
 	public void useToolVersionsFileRemovesThePinAndItsComment() {
-		var workflow = new GitHubActionsWorkflowFile("""
-				jobs:
-				  analyze:
-				    steps:
-				    - uses: actions/setup-java@abc # v6.0.0
-				      with:
-				        cache: maven
-				        distribution: temurin
-				        # renovate: datasource=java-version depName=java
-				        java-version: 1.2.3
-				""");
+		var workflow = new GitHubActionsWorkflowFile(
+				"""
+						jobs:
+						  analyze:
+						    steps:
+						    - uses: actions/setup-java@abc # v6.0.0
+						      env:
+						        # renovate: datasource=java-version depName=java extractVersion=^(?<version>\\d+\\.\\d+\\.\\d+)
+						        JAVA_VERSION: 1.2.3
+						      with:
+						        cache: maven
+						        distribution: temurin
+						        java-version: ${{ env.JAVA_VERSION }}
+						"""
+		);
 
 		workflow.useToolVersionsFile();
 

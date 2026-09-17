@@ -786,19 +786,25 @@ public class GitHubActionChoreTest {
 
 		new GitHubActionChore().doit(extension.choreContext());
 
-		assertThat(workflow).content().isEqualTo("""
-				permissions: {}
-				jobs:
-				  sonarcloud:
-				    runs-on: ubuntu-latest
-				    steps:
-				    - uses: actions/setup-java@abc # v6.0.0
-				      with:
-				        cache: maven
-				        distribution: temurin
-				        # renovate: datasource=java-version depName=java
-				        java-version: $TEMURIN
-				""".replace("$TEMURIN", JavaVersions.TEMURIN));
+		assertThat(workflow).content()
+				.isEqualTo(
+						"""
+								permissions: {}
+								jobs:
+								  sonarcloud:
+								    runs-on: ubuntu-latest
+								    steps:
+								    - uses: actions/setup-java@abc # v6.0.0
+								      env:
+								        # renovate: datasource=java-version depName=java extractVersion=^(?<version>\\d+\\.\\d+\\.\\d+)
+								        JAVA_VERSION: $TEMURIN
+								      with:
+								        cache: maven
+								        distribution: temurin
+								        java-version: ${{ env.JAVA_VERSION }}
+								"""
+								.replace("$TEMURIN", JavaVersions.TEMURIN)
+				);
 	}
 
 	@Test

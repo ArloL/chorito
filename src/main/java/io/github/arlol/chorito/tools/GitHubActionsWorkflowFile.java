@@ -49,7 +49,11 @@ public class GitHubActionsWorkflowFile {
 	private static final String SETUP_JAVA_ACTION = "actions/setup-java";
 	private static final String DISTRIBUTION_TEMURIN = "temurin";
 	private static final String JAVA_VERSION = "java-version";
-	private static final String RENOVATE_JAVA_VERSION_COMMENT = "renovate: datasource=java-version depName=java";
+	private static final String JAVA_VERSION_ENV = "JAVA_VERSION";
+	private static final String ENV = "env";
+	private static final String WITH = "with";
+	// Adoptium's semver carries a build suffix setup-java cannot resolve.
+	private static final String RENOVATE_JAVA_VERSION_COMMENT = "renovate: datasource=java-version depName=java extractVersion=^(?<version>\\d+\\.\\d+\\.\\d+)";
 	private static final Pattern USES_VERSION = Pattern
 			.compile("(?m)^([ \\t-]*uses:[^@\\n]*)@[^\\n]*");
 	/**
@@ -602,27 +606,23 @@ public class GitHubActionsWorkflowFile {
 	/**
 	 * The version a Temurin setup-java step is pinned to, if any. The chores
 	 * that regenerate a workflow from a template carry it across so the bump
-	 * Renovate made survives.
+	 * Renovate made survives. A version written straight into
+	 * {@code java-version} is how chorito pinned before the env var, and is
+	 * read so that pin moves across too.
 	 */
 	public Optional<String> getPinnedJavaVersion() {
-		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
-				.orElse(List.of())) {
-			var jobNode = nodeAsMap(jobTuple.getValueNode());
-			for (Node step : getKeyAsSequence(jobNode, STEPS)
-					.map(SequenceNode::getValue)
-					.orElse(List.of())) {
-				var with = getKeyAsMap(nodeAsMap(step), "with");
-				if (scalarValue(getKeyAsNode(with, "distribution"))
-						.filter(DISTRIBUTION_TEMURIN::equals)
-						.isPresent()) {
-					var version = scalarValue(getKeyAsNode(with, JAVA_VERSION));
-					if (version.isPresent()) {
-						return version;
-					}
-				}
-			}
-		}
-		return Optional.empty();
+		List<String> versions = new ArrayList<>();
+		forEachTemurinSetupJava(step -> {
+			var version = scalarValue(
+					getKeyAsNode(getKeyAsMap(step, ENV), JAVA_VERSION_ENV)
+			).or(
+					() -> scalarValue(
+							getKeyAsNode(getKeyAsMap(step, WITH), JAVA_VERSION)
+					).filter(v -> !v.startsWith("${{"))
+			);
+			version.ifPresent(versions::add);
+		});
+		return versions.stream().findFirst();
 	}
 
 	/**
@@ -632,13 +632,27 @@ public class GitHubActionsWorkflowFile {
 	 * rebuilds a workflow from a template must not inherit the template's own
 	 * pin, and chorito's template for this file is a symlink to the workflow it
 	 * runs itself.
+	 * <p>
+	 * The version lives in a step env var so Renovate's
+	 * customManagers:githubActionsVersions preset finds it.
 	 */
 	public void pinTemurinJavaVersion(String version) {
-		forEachTemurinSetupJavaWith(with -> {
-			var withNode = with.orElseThrow();
-			removeKey(with, "java-version-file");
-			removeKey(with, JAVA_VERSION);
-			var keyNode = newScalar(JAVA_VERSION, ScalarStyle.PLAIN);
+		forEachTemurinSetupJava(step -> {
+			var env = getKeyAsMap(step, ENV).orElseGet(() -> {
+				var newEnv = newMap();
+				var tuples = new ArrayList<NodeTuple>();
+				for (NodeTuple tuple : step.getValue()) {
+					if (scalarValue(tuple.getKeyNode()).filter(WITH::equals)
+							.isPresent()) {
+						tuples.add(newTuple(ENV, newEnv));
+					}
+					tuples.add(tuple);
+				}
+				step.setValue(tuples);
+				return newEnv;
+			});
+			removeKey(Optional.of(env), JAVA_VERSION_ENV);
+			var keyNode = newScalar(JAVA_VERSION_ENV, ScalarStyle.PLAIN);
 			keyNode.setBlockComments(
 					List.of(
 							new CommentLine(
@@ -649,25 +663,37 @@ public class GitHubActionsWorkflowFile {
 							)
 					)
 			);
-			var tuples = new ArrayList<>(withNode.getValue());
-			tuples.add(
+			var envTuples = new ArrayList<>(env.getValue());
+			envTuples.add(
 					new NodeTuple(
 							keyNode,
 							newScalar(version, ScalarStyle.PLAIN)
 					)
 			);
-			withNode.setValue(tuples);
+			env.setValue(envTuples);
+
+			var with = getKeyAsMap(step, WITH);
+			removeKey(with, "java-version-file");
+			// Removed rather than overwritten: the key of an older pin carries
+			// the renovate comment that now belongs to the env var.
+			removeKey(with, JAVA_VERSION);
+			setKey(
+					with.orElseThrow(),
+					JAVA_VERSION,
+					newScalar(
+							"${{ env." + JAVA_VERSION_ENV + " }}",
+							ScalarStyle.PLAIN
+					)
+			);
 		});
 	}
 
 	/**
-	 * Runs {@code body} against the {@code with} of every setup-java step
-	 * asking for Temurin. Those are the steps that build no native image, so
-	 * they are the ones whose JDK is chorito's to decide.
+	 * Runs {@code body} against every setup-java step asking for Temurin. Those
+	 * are the steps that build no native image, so they are the ones whose JDK
+	 * is chorito's to decide.
 	 */
-	private void forEachTemurinSetupJavaWith(
-			Consumer<Optional<MappingNode>> body
-	) {
+	private void forEachTemurinSetupJava(Consumer<MappingNode> body) {
 		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
 				.orElse(List.of())) {
 			var jobNode = nodeAsMap(jobTuple.getValueNode());
@@ -682,13 +708,15 @@ public class GitHubActionsWorkflowFile {
 						.isEmpty()) {
 					continue;
 				}
-				var with = getKeyAsMap(stepNode, "with");
-				if (scalarValue(getKeyAsNode(with, "distribution"))
-						.filter(DISTRIBUTION_TEMURIN::equals)
-						.isEmpty()) {
+				if (scalarValue(
+						getKeyAsNode(
+								getKeyAsMap(stepNode, WITH),
+								"distribution"
+						)
+				).filter(DISTRIBUTION_TEMURIN::equals).isEmpty()) {
 					continue;
 				}
-				body.accept(with);
+				body.accept(stepNode);
 			}
 		}
 	}
@@ -698,7 +726,13 @@ public class GitHubActionsWorkflowFile {
 	 * dropping a pin and the renovate comment above it.
 	 */
 	public void useToolVersionsFile() {
-		forEachTemurinSetupJavaWith(with -> {
+		forEachTemurinSetupJava(step -> {
+			var env = getKeyAsMap(step, ENV);
+			removeKey(env, JAVA_VERSION_ENV);
+			if (env.map(e -> e.getValue().isEmpty()).orElse(false)) {
+				removeKey(Optional.of(step), ENV);
+			}
+			var with = getKeyAsMap(step, WITH);
 			removeKey(with, JAVA_VERSION);
 			setKey(
 					with.orElseThrow(),

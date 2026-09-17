@@ -149,6 +149,34 @@ public final class JsonBuilder {
 				);
 	}
 
+	/**
+	 * Removes every object in the array at {@code key} whose {@code childKey}
+	 * array contains {@code value}, and the array itself once it is empty.
+	 */
+	public JsonBuilder arrayRemoveObjectsContaining(
+			String key,
+			String childKey,
+			String value
+	) {
+		if (!(node.get(key) instanceof ArrayNode arr)) {
+			return this;
+		}
+		for (int i = arr.size() - 1; i >= 0; i--) {
+			if (arr.get(i).get(childKey) instanceof ArrayNode values
+					&& StreamSupport.stream(values.spliterator(), false)
+							.anyMatch(
+									v -> v.isString()
+											&& value.equals(v.stringValue())
+							)) {
+				arr.remove(i);
+			}
+		}
+		if (arr.isEmpty()) {
+			node.remove(key);
+		}
+		return this;
+	}
+
 	public JsonBuilder arrayDistinctSort(String key) {
 		return array(
 				key,
