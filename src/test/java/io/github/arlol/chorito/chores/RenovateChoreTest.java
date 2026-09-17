@@ -533,20 +533,6 @@ public class RenovateChoreTest {
 								                "java graalvm-community-(?<currentValue>\\\\S+)",
 								            ],
 								        },
-								        {
-								            // Keeps the Temurin versions current that the jobs
-								            // building no native image pin. Adoptium's semver
-								            // carries a build suffix setup-java cannot resolve,
-								            // so only the release version is kept.
-								            "customType": "regex",
-								            "extractVersionTemplate": "^(?<version>\\\\d+\\\\.\\\\d+\\\\.\\\\d+)",
-								            "managerFilePatterns": [
-								                "/^\\\\.github/workflows/[^/]+\\\\.ya?ml$/",
-								            ],
-								            "matchStrings": [
-								                "# renovate: datasource=(?<datasource>\\\\S+) depName=(?<depName>\\\\S+)\\\\s+java-version: (?<currentValue>\\\\S+)",
-								            ],
-								        },
 								    ],
 								    "extends": [
 								        "config:recommended",
@@ -595,16 +581,6 @@ public class RenovateChoreTest {
 				            ],
 				            "matchStrings": [
 				                "java graalvm-community-(?<currentValue>\\\\S+)",
-				            ],
-				        },
-				        {
-				            "customType": "regex",
-				            "extractVersionTemplate": "^(?<version>\\\\d+\\\\.\\\\d+\\\\.\\\\d+)",
-				            "managerFilePatterns": [
-				                "/^\\\\.github/workflows/[^/]+\\\\.yaml$/",
-				            ],
-				            "matchStrings": [
-				                "# renovate: datasource=(?<datasource>\\\\S+) depName=(?<depName>\\\\S+)\\\\s+java-version: (?<currentValue>\\\\S+)",
 				            ],
 				        },
 				    ],
@@ -701,6 +677,65 @@ public class RenovateChoreTest {
 
 		assertThat(extension.root().resolve("renovate.json5")).content()
 				.doesNotContain("githubActionsVersions");
+	}
+
+	@Test
+	public void testRemovesTheJavaVersionInputManager() throws Exception {
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
+		FilesSilent.writeString(
+				renovateJson5,
+				"""
+						{
+						    "customManagers": [
+						        {
+						            // Keeps the Temurin versions current.
+						            "customType": "regex",
+						            "matchStrings": [
+						                "# renovate: datasource=(?<datasource>\\\\S+) depName=(?<depName>\\\\S+)\\\\s+java-version: (?<currentValue>\\\\S+)",
+						            ],
+						        },
+						        {
+						            // worth keeping
+						            "customType": "regex",
+						            "matchStrings": [
+						                "java graalvm-community-(?<currentValue>\\\\S+)",
+						            ],
+						        },
+						    ],
+						    "labels": [
+						        "dependencies",
+						    ],
+						    "addLabels": [
+						        "{{manager}}",
+						    ],
+						}
+						"""
+		);
+
+		new RenovateChore().doit(graalGithubContext());
+
+		assertThat(renovateJson5).content()
+				.isEqualTo(
+						"""
+								{
+								    "addLabels": [
+								        "{{manager}}",
+								    ],
+								    "customManagers": [
+								        {
+								            // worth keeping
+								            "customType": "regex",
+								            "matchStrings": [
+								                "java graalvm-community-(?<currentValue>\\\\S+)",
+								            ],
+								        },
+								    ],
+								    "labels": [
+								        "dependencies",
+								    ],
+								}
+								"""
+				);
 	}
 
 	@Test

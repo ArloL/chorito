@@ -61,11 +61,13 @@ jobs:
       with:
         persist-credentials: false
     - uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
+      env:
+        # renovate: datasource=java-version depName=java extractVersion=^(?<version>\d+\.\d+\.\d+)
+        JAVA_VERSION: 25.0.4
       with:
         cache: maven
         distribution: temurin
-        # renovate: datasource=java-version depName=java
-        java-version: 25.0.4
+        java-version: ${{ env.JAVA_VERSION }}
     - name: Initialize CodeQL
       uses: github/codeql-action/init@fca7ace96b7d713c7035871441bd52efbe39e27e # v3.28.19
       with:

@@ -269,15 +269,15 @@ public class CodeQlAnalysisChoreTest {
 				workflow,
 				FilesSilent.readString(workflow)
 						.replace(
-								"java-version: " + JavaVersions.TEMURIN,
-								"java-version: 26.0.1"
+								"JAVA_VERSION: " + JavaVersions.TEMURIN,
+								"JAVA_VERSION: 26.0.1"
 						)
 		);
 
 		new CodeQlAnalysisChore().doit(context);
 
 		assertThat(FilesSilent.readString(workflow))
-				.contains("java-version: 26.0.1");
+				.contains("JAVA_VERSION: 26.0.1");
 	}
 
 }

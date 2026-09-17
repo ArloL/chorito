@@ -39,11 +39,6 @@ public class RenovateChore implements Chore {
 			adoptopenjdk- java versions to a datasource, so
 			nothing bumps a graalvm-community pin. The jdk-*
 			tags are what mise offers as graalvm-community-*.""";
-	private static final String JAVA_VERSION_COMMENT = """
-			Keeps the Temurin versions current that the jobs
-			building no native image pin. Adoptium's semver
-			carries a build suffix setup-java cannot resolve,
-			so only the release version is kept.""";
 
 	static final List<JsonMigration> MIGRATIONS = List.of(
 			replaceString(MINIMUM_RELEASE_AGE, "4 days", "7 days"),
@@ -63,8 +58,7 @@ public class RenovateChore implements Chore {
 	 * comment, so the reason a custom manager exists is in front of whoever
 	 * reads the config rather than only here. What the comments leave out: the
 	 * graal-* and vm-* tags are GraalVM's own versioning and mise installs none
-	 * of them, which is why only jdk-* is extracted, and the Adoptium build
-	 * suffix looks like 25.0.4+101.0.LTS.
+	 * of them, which is why only jdk-* is extracted.
 	 */
 	static final List<JsonMigration> GRAAL_MIGRATIONS = List.of(
 			customManager(
@@ -83,20 +77,13 @@ public class RenovateChore implements Chore {
 							)
 							.array(MATCH_STRINGS, GRAALVM_MATCH_STRING)
 			),
-			customManager(
-					JAVA_VERSION_MATCH_STRING,
-					manager -> manager
-							.comment(CUSTOM_TYPE, JAVA_VERSION_COMMENT)
-							.put(CUSTOM_TYPE, REGEX)
-							.put(
-									EXTRACT_VERSION_TEMPLATE,
-									"^(?<version>\\d+\\.\\d+\\.\\d+)"
-							)
-							.array(
-									MANAGER_FILE_PATTERNS,
-									"/^\\.github/workflows/[^/]+\\.ya?ml$/"
-							)
-							.array(MATCH_STRINGS, JAVA_VERSION_MATCH_STRING)
+			// The Temurin pin used to be a java-version input with a manager of
+			// its own. It is a JAVA_VERSION env var now, which
+			// customManagers:githubActionsVersions updates.
+			builder -> builder.arrayRemoveObjectsContaining(
+					CUSTOM_MANAGERS,
+					MATCH_STRINGS,
+					JAVA_VERSION_MATCH_STRING
 			)
 	);
 
