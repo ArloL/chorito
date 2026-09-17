@@ -52,6 +52,13 @@ public class GitHubActionsWorkflowFile {
 	private static final String RENOVATE_JAVA_VERSION_COMMENT = "renovate: datasource=java-version depName=java";
 	private static final Pattern USES_VERSION = Pattern
 			.compile("(?m)^([ \\t-]*uses:[^@\\n]*)@[^\\n]*");
+	/**
+	 * The pins Renovate's customManagers:githubActionsVersions preset updates:
+	 * a "# renovate:" comment above an env var ending in _VERSION.
+	 */
+	private static final Pattern TOOL_VERSION = Pattern.compile(
+			"(?m)^([ \\t]*# renovate: [^\\n]*\\n[ \\t]*[A-Za-z0-9_]+_VERSION\\s*:)[^\\n]*"
+	);
 
 	/**
 	 * Runs {@code change} against every workflow of {@code context}, writing
@@ -65,7 +72,8 @@ public class GitHubActionsWorkflowFile {
 	 * here, a chore says what it changes and nothing else.
 	 * <p>
 	 * Versions are ignored when deciding whether anything changed, so a
-	 * workflow whose action pins Renovate has bumped is not rewritten back.
+	 * workflow whose action or tool pins Renovate has bumped is not rewritten
+	 * back.
 	 */
 	public static void updateEach(
 			ChoreContext context,
@@ -84,7 +92,12 @@ public class GitHubActionsWorkflowFile {
 	}
 
 	public static String removeVersions(String input) {
-		return USES_VERSION.matcher(input).replaceAll("$1@\n");
+		String withoutUses = USES_VERSION.matcher(input).replaceAll("$1@\n");
+		return TOOL_VERSION.matcher(withoutUses).replaceAll("$1");
+	}
+
+	public static boolean pinsToolVersions(String input) {
+		return TOOL_VERSION.matcher(input).find();
 	}
 
 	private Optional<Node> root;

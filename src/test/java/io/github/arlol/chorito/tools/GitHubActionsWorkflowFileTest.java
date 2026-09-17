@@ -20,6 +20,24 @@ public class GitHubActionsWorkflowFileTest {
 	}
 
 	@Test
+	public void removeVersionsStripsRenovatePinnedToolVersion() {
+		assertThat(
+				GitHubActionsWorkflowFile.removeVersions(
+						"      env:\n        # renovate: datasource=pypi depName=zizmor\n        ZIZMOR_VERSION: 1.30.1\n"
+				)
+		).isEqualTo(
+				"      env:\n        # renovate: datasource=pypi depName=zizmor\n        ZIZMOR_VERSION:\n"
+		);
+	}
+
+	@Test
+	public void removeVersionsKeepsVersionWithoutRenovateComment() {
+		String input = "      env:\n        ZIZMOR_VERSION: 1.30.1\n";
+		assertThat(GitHubActionsWorkflowFile.removeVersions(input))
+				.isEqualTo(input);
+	}
+
+	@Test
 	public void removeVersionsKeepsLinesWithoutUses() {
 		String input = "name: main\n\n\n   \n- - -\nrun: echo a@b\n";
 		assertThat(GitHubActionsWorkflowFile.removeVersions(input))
