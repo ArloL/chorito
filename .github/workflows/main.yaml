@@ -15,7 +15,7 @@ env:
 
 jobs:
   debug:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
     - name: Dump GitHub context
       env:
@@ -44,7 +44,7 @@ jobs:
     - name: Dump environment variables
       run: set
   version:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       contents: write
     outputs:
@@ -201,7 +201,7 @@ jobs:
     - linux-arm
     - windows
     if: ${{ github.ref == 'refs/heads/main' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       attestations: write
       contents: write
@@ -268,6 +268,8 @@ jobs:
     - linux
     - windows
     if: ${{ github.event_name == 'push' }}
+    # A full Maven build, so it stays off the single-vCPU slim runner and its
+    # 15 minute cap
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -308,7 +310,7 @@ jobs:
     # are considered success in their weird logic. So we always run it and fail
     # ourselves if necessary
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
     - run: echo "Use this job as the required status check of this workflow"
     - name: Check that all jobs were successful
@@ -331,7 +333,7 @@ jobs:
         - ArloL/newlinechecker
         - ArloL/wait-for-ports
         - ArloL/website-janitor
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
     - name: Trigger chores on ${{ matrix.repo }}
       uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1

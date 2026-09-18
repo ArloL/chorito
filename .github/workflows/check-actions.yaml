@@ -17,7 +17,7 @@ permissions: {}
 
 jobs:
   debug:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
     - name: Dump GitHub context
       env:
@@ -46,6 +46,7 @@ jobs:
     - name: Dump environment variables
       run: set
   actionlint:
+    # go run wants a Go toolchain, which the slim image does not carry
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -60,7 +61,7 @@ jobs:
       run: |
         go run "actionlint.kjanat.dev/cmd/actionlint@${ACTIONLINT_VERSION}"
   zizmor:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     permissions:
       actions: read
       contents: read
@@ -92,7 +93,7 @@ jobs:
     # are considered success in their weird logic. So we always run it and fail
     # ourselves if necessary
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
     - run: echo "Use this job as the required status check of this workflow"
     - name: Check that all jobs were successful
