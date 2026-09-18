@@ -53,13 +53,8 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
-    # The slim image carries no go, and the one on ubuntu-latest is older than
-    # actionlint asks for anyway: go run there downloads a newer toolchain
-    # before it builds. Asking for stable is that same download without the
-    # bootstrap.
     - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
       with:
-        # This repository has no go.sum, so there is nothing to key a cache on
         cache: false
         go-version: stable
     - name: run actionlint
