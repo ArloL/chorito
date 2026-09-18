@@ -268,8 +268,6 @@ jobs:
     - linux
     - windows
     if: ${{ github.event_name == 'push' }}
-    # A full Maven build, so it stays off the single-vCPU slim runner and its
-    # 15 minute cap
     runs-on: ubuntu-latest
     permissions:
       packages: write
