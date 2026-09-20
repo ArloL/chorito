@@ -15,7 +15,7 @@ package io.github.arlol.chorito.tools;
  */
 public abstract class MavenPluginVersions {
 
-	public static final String FORMATTER = "2.24.1";
+	public static final String FORMATTER = "2.29.0";
 
 	// spotbugs-maven-plugin versions carry a fourth segment, so the value
 	// parses as a dotted quad. Rewriting it to hide that -- splitting it,
