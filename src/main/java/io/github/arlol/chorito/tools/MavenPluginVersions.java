@@ -22,7 +22,7 @@ public abstract class MavenPluginVersions {
 	// building it from parts -- is exactly what the class comment forbids,
 	// because Renovate matches the bare literal.
 	@SuppressWarnings("java:S1313")
-	public static final String SPOTBUGS = "4.10.3.0";
+	public static final String SPOTBUGS = "4.10.4.1";
 
 	public static final String MODERNIZER = "3.5.0";
 
