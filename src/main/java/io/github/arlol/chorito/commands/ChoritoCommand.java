@@ -18,6 +18,7 @@ public class ChoritoCommand {
 		var chores = List.of(
 				new GitMasterBranchChore(),
 				new ReadmeChore(),
+				new AgentsMarkdownChore(),
 				new GitAttributesChore(),
 				new PomParentRelativePathChore(),
 				new PomScmChore(),
