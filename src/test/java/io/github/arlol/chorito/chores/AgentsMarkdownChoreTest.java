@@ -124,6 +124,28 @@ public class AgentsMarkdownChoreTest {
 	}
 
 	@Test
+	public void testMaterializesAgentsMarkdownSymlinkPointingElsewhere()
+			throws Exception {
+		ChoreContext context = extension.choreContext();
+		FilesSilent.writeString(
+				context.resolve("docs/instructions.md"),
+				"# Instructions\n"
+		);
+		Files.createSymbolicLink(
+				context.resolve("AGENTS.md"),
+				context.root()
+						.relativize(context.resolve("docs/instructions.md"))
+		);
+
+		new AgentsMarkdownChore().doit(context.refresh());
+
+		assertThat(Files.isSymbolicLink(context.resolve("AGENTS.md")))
+				.isFalse();
+		assertThat(FilesSilent.readString(context.resolve("AGENTS.md")))
+				.isEqualTo("# Instructions\n");
+	}
+
+	@Test
 	public void testRenamesClaudeMarkdownInNestedDirectories() {
 		ChoreContext context = extension.choreContext();
 		FilesSilent.writeString(
