@@ -3,9 +3,8 @@ package io.github.arlol.chorito.chores;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
-
-import org.jspecify.annotations.Nullable;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
@@ -47,36 +46,42 @@ public class AgentsMarkdownChore implements Chore {
 			return;
 		}
 
-		byte @Nullable [] content = surviving(agents, claude);
-		// Read before either delete, because the two shapes this untangles
-		// point at each other: an AGENTS.md symlink whose target is the
-		// CLAUDE.md about to be deleted holds the only copy of the content.
+		// map reads the bytes here, before either delete, because the two
+		// shapes this untangles point at each other: an AGENTS.md symlink
+		// whose target is the CLAUDE.md about to be deleted holds the only
+		// copy of the content.
+		Optional<byte[]> content = surviving(agents, claude)
+				.map(FilesSilent::readAllBytes);
 		FilesSilent.deleteIfExists(claude);
 		FilesSilent.deleteIfExists(agents);
-		if (content != null) {
-			FilesSilent.write(agents, content);
-		}
+		content.ifPresent(bytes -> FilesSilent.write(agents, bytes));
 	}
 
 	/**
-	 * The bytes AGENTS.md ends up with, or null when neither name leads to a
-	 * readable file -- a dangling symlink left behind by whatever it once
-	 * pointed at, which is deleted rather than resurrected.
+	 * The file AGENTS.md takes its content from, or empty when neither name
+	 * leads to a readable one -- a dangling symlink left behind by whatever it
+	 * once pointed at, which is deleted rather than resurrected.
 	 * <p>
-	 * A file outranks a symlink and AGENTS.md outranks CLAUDE.md, so two real
-	 * files that drifted apart resolve to the AGENTS.md one.
+	 * A real file outranks a symlink and AGENTS.md outranks CLAUDE.md, so two
+	 * real files that drifted apart resolve to the AGENTS.md one. The caller
+	 * has already answered that case, which is why a real CLAUDE.md is first
+	 * here.
+	 * <p>
+	 * The answer is a path rather than the bytes so that "nothing survives"
+	 * stays distinct from an empty file, which is content like any other and is
+	 * kept.
 	 */
-	private static byte @Nullable [] surviving(Path agents, Path claude) {
+	private static Optional<Path> surviving(Path agents, Path claude) {
 		if (isRegularFileItself(claude)) {
-			return FilesSilent.readAllBytes(claude);
+			return Optional.of(claude);
 		}
 		if (FilesSilent.isRegularFile(agents)) {
-			return FilesSilent.readAllBytes(agents);
+			return Optional.of(agents);
 		}
 		if (FilesSilent.isRegularFile(claude)) {
-			return FilesSilent.readAllBytes(claude);
+			return Optional.of(claude);
 		}
-		return null;
+		return Optional.empty();
 	}
 
 	/**
