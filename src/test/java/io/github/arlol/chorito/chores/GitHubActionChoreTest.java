@@ -446,6 +446,164 @@ public class GitHubActionChoreTest {
 				""").doesNotContain("- main");
 	}
 
+	/**
+	 * The template is chorito's own workflow. Code scanning is only there for a
+	 * private repository with GitHub Code Security, so uploading SARIF would
+	 * turn the check red on the others, and the debug job is chorito's habit
+	 * rather than something every repository needs on every run.
+	 */
+	@Test
+	void shouldCreateCheckActionsWorkflowWithoutSarifOrDebug()
+			throws Exception {
+		Path workflow = extension.root()
+				.resolve(".github/workflows/check-actions.yaml");
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new GitHubActionChore().doit(context);
+
+		assertThat(workflow).content()
+				.contains("--format github .")
+				.doesNotContain(
+						"debug:",
+						"sarif",
+						"upload-sarif",
+						"security-events",
+						"actions: read"
+				);
+	}
+
+	private static final String ADAPTED_CHECK_ACTIONS = """
+			name: Check actions
+
+			on:
+			  # only when a workflow or a composite action changes
+			  push:
+			    branches:
+			    - main
+			    paths: &paths
+			    - .github/workflows/**
+			    - .github/actions/**
+			  pull_request:
+			    paths: *paths
+			  schedule:
+			  - cron: "3 4 5 * *"
+			permissions: {}
+
+			jobs:
+			  actionlint:
+			    runs-on: ubuntu-slim
+			""";
+
+	@Test
+	void checkActionsWorkflowKeepsTheTriggersItHas() throws Exception {
+		Path workflow = extension.root()
+				.resolve(".github/workflows/check-actions.yaml");
+		FilesSilent.writeString(workflow, ADAPTED_CHECK_ACTIONS);
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new GitHubActionChore().doit(context);
+
+		assertThat(workflow).content()
+				.startsWith(
+						ADAPTED_CHECK_ACTIONS.substring(
+								0,
+								ADAPTED_CHECK_ACTIONS.indexOf("jobs:")
+						)
+				)
+				.contains("zizmor:", "required-status-check:")
+				.doesNotContain("debug:", "upload-sarif");
+	}
+
+	@Test
+	void checkActionsWorkflowWithoutAScheduleKeepsHavingNone()
+			throws Exception {
+		Path workflow = extension.root()
+				.resolve(".github/workflows/check-actions.yaml");
+		FilesSilent.writeString(workflow, """
+				on:
+				  pull_request:
+				jobs:
+				  actionlint:
+				    runs-on: ubuntu-slim
+				""");
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new GitHubActionChore().doit(context);
+
+		assertThat(workflow).content().startsWith("""
+				name: Check actions
+
+				on:
+				  pull_request:
+				permissions: {}
+				""").doesNotContain("schedule");
+	}
+
+	@Test
+	void checkActionsWorkflowKeepsAnExistingDebugJob() throws Exception {
+		Path workflow = extension.root()
+				.resolve(".github/workflows/check-actions.yaml");
+		FilesSilent.writeString(workflow, """
+				on:
+				  pull_request:
+				jobs:
+				  debug:
+				    runs-on: ubuntu-slim
+				    steps:
+				    - run: set
+				  actionlint:
+				    runs-on: ubuntu-slim
+				""");
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new GitHubActionChore().doit(context);
+
+		assertThat(workflow).content().contains("""
+				jobs:
+				  debug:
+				""");
+	}
+
+	/**
+	 * A repository that already uploads zizmor's findings to code scanning has
+	 * code scanning, so it keeps doing so -- chorito's own among them.
+	 */
+	@Test
+	void checkActionsWorkflowKeepsUploadingSarifWhereItAlreadyDoes()
+			throws Exception {
+		Path workflow = extension.root()
+				.resolve(".github/workflows/check-actions.yaml");
+		String own = ClassPathFiles
+				.readString("github-settings/workflows/check-actions.yaml");
+		FilesSilent.writeString(workflow, own);
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.branches(List.of("main"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new GitHubActionChore().doit(context);
+
+		assertThat(workflow).content().isEqualTo(own);
+	}
+
 	@Test
 	void actionsCheckoutWithPersistCredentials() throws Exception {
 		String input = ClassPathFiles
@@ -641,6 +799,122 @@ public class GitHubActionChoreTest {
 				.contains("gh release create")
 				.doesNotContain("ncipollo/release-action")
 				.doesNotContain("shogo82148/actions-upload-release-asset");
+	}
+
+	@Test
+	public void testJavaVersionIsReplacedByTheToolVersionsFile()
+			throws Exception {
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(workflow, """
+				permissions: {}
+				jobs:
+				  linux:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - uses: actions/setup-java@abc # v6.0.0
+				      with:
+				        distribution: temurin
+				        java-version: 21
+				""");
+
+		new GitHubActionChore().doit(extension.choreContext());
+
+		assertThat(workflow).content().isEqualTo("""
+				permissions: {}
+				jobs:
+				  linux:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - uses: actions/setup-java@abc # v6.0.0
+				      with:
+				        distribution: temurin
+				        java-version-file: .tool-versions
+				""");
+	}
+
+	/**
+	 * A project checked out into a subdirectory keeps its .tool-versions there,
+	 * and pointing setup-java at the workspace root fails the build.
+	 */
+	@Test
+	public void testJavaVersionFileOfTheAuthorsChoosingIsKept()
+			throws Exception {
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		String content = """
+				permissions: {}
+				jobs:
+				  linux:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - uses: actions/checkout@abc # v7.0.1
+				      with:
+				        path: src
+				        persist-credentials: false
+				        repository: example/backend
+				    - uses: actions/setup-java@abc # v6.0.0
+				      with:
+				        distribution: temurin
+				        java-version-file: src/.tool-versions
+				""";
+		FilesSilent.writeString(workflow, content);
+
+		new GitHubActionChore().doit(extension.choreContext());
+
+		assertThat(workflow).content().isEqualTo(content);
+	}
+
+	@Test
+	public void testGraalProjectKeepsAJavaVersionFileOfTheAuthorsChoosing()
+			throws Exception {
+		FilesSilent.writeString(
+				extension.root().resolve(".tool-versions"),
+				"java graalvm-community-25.0.2\n"
+		);
+		Path workflow = extension.root()
+				.resolve(".github/workflows/sonarcloud.yaml");
+		String content = """
+				permissions: {}
+				jobs:
+				  sonarcloud:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - uses: actions/setup-java@abc # v6.0.0
+				      with:
+				        distribution: temurin
+				        java-version-file: src/.tool-versions
+				""";
+		FilesSilent.writeString(workflow, content);
+
+		new GitHubActionChore().doit(extension.choreContext());
+
+		assertThat(workflow).content().isEqualTo(content);
+	}
+
+	@Test
+	public void testAnchoredPathsSurviveTheChores() throws Exception {
+		Path workflow = extension.root().resolve(".github/workflows/ruff.yaml");
+		String content = """
+				on:
+				  push:
+				    paths: &paths
+				    - "**.py"
+				    # ruff also formats the Python blocks in Markdown.
+				    - "**.md"
+				    - ruff.toml
+				  pull_request:
+				    paths: *paths
+				permissions: {}
+				jobs:
+				  ruff:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - run: ruff check
+				""";
+		FilesSilent.writeString(workflow, content);
+
+		new GitHubActionChore().doit(extension.choreContext());
+
+		assertThat(workflow).content().isEqualTo(content);
 	}
 
 	@Test

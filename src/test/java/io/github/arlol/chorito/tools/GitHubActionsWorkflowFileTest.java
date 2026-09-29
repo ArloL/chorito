@@ -208,6 +208,265 @@ public class GitHubActionsWorkflowFileTest {
 	}
 
 	@Test
+	public void commentAboveAStepInAnIndentedSequenceStaysAboveIt() {
+		String content = """
+				jobs:
+				  check:
+				    steps:
+				      - name: one
+				        run: echo one
+				      # explains step two
+				      - name: two
+				        run: echo two
+				""";
+
+		assertThat(new GitHubActionsWorkflowFile(content).asString())
+				.isEqualTo("""
+						jobs:
+						  check:
+						    steps:
+						    - name: one
+						      run: echo one
+						    # explains step two
+						    - name: two
+						      run: echo two
+						""");
+	}
+
+	@Test
+	public void commentAboveACronInAnIndentedSequenceStaysAboveIt() {
+		String content = """
+				on:
+				  schedule:
+				    # runs after the nightly backup
+				    - cron: "15 5 * * *"
+				""";
+
+		assertThat(new GitHubActionsWorkflowFile(content).asString())
+				.isEqualTo("""
+						on:
+						  schedule:
+						  # runs after the nightly backup
+						  - cron: "15 5 * * *"
+						""");
+	}
+
+	@Test
+	public void commentGluedToAnIndentedIndicatorStaysGlued() {
+		String content = """
+				jobs:
+				  build:
+				    steps:
+				      - # this one was written behind the indicator
+				        name: one
+				""";
+
+		assertThat(new GitHubActionsWorkflowFile(content).asString())
+				.isEqualTo("""
+						jobs:
+						  build:
+						    steps:
+						    - # this one was written behind the indicator
+						      name: one
+						""");
+	}
+
+	@Test
+	public void blankLineBetweenABlockScalarAndACommentIsKept() {
+		String content = """
+				jobs:
+				  check:
+				    steps:
+				    - name: one
+				      run: |
+				        echo one
+
+				    # explains step two
+				    - name: two
+				      run: |
+				        echo two
+
+				      # about uses
+				      uses: x
+				""";
+
+		assertThat(new GitHubActionsWorkflowFile(content).asString())
+				.isEqualTo(content);
+	}
+
+	@Test
+	public void blankLineBetweenABlockScalarAndACommentIsKeptWhenIndented() {
+		String content = """
+				on:
+				  schedule:
+				    # runs after the nightly backup
+				    - cron: "15 5 * * *"
+
+				jobs:
+				  check:
+				    runs-on: ubuntu-slim
+				    steps:
+				      - name: one
+				        run: |
+				          echo one
+
+				      # explains step two
+				      - name: two
+				        run: |
+				          echo two
+				""";
+
+		assertThat(new GitHubActionsWorkflowFile(content).asString())
+				.isEqualTo("""
+						on:
+						  schedule:
+						  # runs after the nightly backup
+						  - cron: "15 5 * * *"
+
+						jobs:
+						  check:
+						    runs-on: ubuntu-slim
+						    steps:
+						    - name: one
+						      run: |
+						        echo one
+
+						    # explains step two
+						    - name: two
+						      run: |
+						        echo two
+						""");
+	}
+
+	@Test
+	public void literalBlockWithATabStaysALiteralBlock() {
+		String content = """
+				jobs:
+				  build:
+				    steps:
+				    - name: tab
+				      run: |
+				        echo "${LINE%%\t*}"
+				        printf 'a\tb\\n'
+				""";
+
+		assertThat(new GitHubActionsWorkflowFile(content).asString())
+				.isEqualTo(content);
+	}
+
+	@Test
+	public void literalBlockWithATrailingSpaceStaysALiteralBlock() {
+		String content = """
+				jobs:
+				  build:
+				    steps:
+				    - name: trailing space
+				      run: |
+				        echo one\s
+				        echo two
+				""";
+
+		assertThat(new GitHubActionsWorkflowFile(content).asString())
+				.isEqualTo(content);
+	}
+
+	@Test
+	public void literalBlockKeepsItsContentWhenItHasToBeForced() {
+		String content = """
+				jobs:
+				  build:
+				    steps:
+				    - run: |-
+				        \tindented by a tab
+				        spaces then a break \s
+				        last line ends in a space\s
+				""";
+		var workflow = new GitHubActionsWorkflowFile(content);
+
+		var reread = new GitHubActionsWorkflowFile(workflow.asString());
+
+		assertThat(reread.asString()).isEqualTo(workflow.asString());
+		assertThat(
+				Yamls.scalarValue(
+						Yamls.getYamlPath(
+								Yamls.load(workflow.asString()).orElseThrow(),
+								"/jobs/build/steps/0/run"
+						).getFirst()
+				)
+		).contains(
+				"\tindented by a tab\nspaces then a break  \nlast line ends in a space "
+		);
+	}
+
+	@Test
+	public void literalBlockIsNotForcedWhenTheDocumentHoldsTheStandIns() {
+		String content = """
+				jobs:
+				  build:
+				    steps:
+				    - name: "\uE009"
+				      run: |
+				        echo "${LINE%%\t*}"
+				""";
+		var workflow = new GitHubActionsWorkflowFile(content);
+
+		var reread = new GitHubActionsWorkflowFile(workflow.asString());
+
+		assertThat(
+				Yamls.scalarValue(
+						Yamls.getYamlPath(
+								Yamls.load(reread.asString()).orElseThrow(),
+								"/jobs/build/steps/0/name"
+						).getFirst()
+				)
+		).contains("\uE009");
+	}
+
+	@Test
+	public void anchoredSequenceStaysAnchored() {
+		String content = """
+				on:
+				  push:
+				    paths: &paths
+				    - "**.py"
+				    # ruff also formats the Python blocks in Markdown.
+				    - "**.md"
+				    - ruff.toml
+				  pull_request:
+				    paths: *paths
+				""";
+		var workflow = new GitHubActionsWorkflowFile(content);
+
+		workflow.singleToDoubleQuote();
+
+		assertThat(workflow.asString()).isEqualTo(content);
+	}
+
+	@Test
+	public void singleToDoubleQuoteKeepsComments() {
+		String content = """
+				jobs:
+				  build:
+				    steps:
+				    # heading
+				    - name: 'one' # trailing
+				      run: echo one
+				""";
+		var workflow = new GitHubActionsWorkflowFile(content);
+
+		workflow.singleToDoubleQuote();
+
+		assertThat(workflow.asString()).isEqualTo("""
+				jobs:
+				  build:
+				    steps:
+				    # heading
+				    - name: one # trailing
+				      run: echo one
+				""");
+	}
+
+	@Test
 	public void pinTemurinJavaVersionReplacesToolVersionsFile() {
 		var workflow = new GitHubActionsWorkflowFile("""
 				jobs:

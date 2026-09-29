@@ -16,6 +16,7 @@ import static io.github.arlol.chorito.tools.Yamls.setKey;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,18 +26,15 @@ import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 
-import org.snakeyaml.engine.v2.api.DumpSettings;
 import org.snakeyaml.engine.v2.comments.CommentLine;
 import org.snakeyaml.engine.v2.comments.CommentType;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
-import org.snakeyaml.engine.v2.emitter.Emitter;
 import org.snakeyaml.engine.v2.nodes.MappingNode;
 import org.snakeyaml.engine.v2.nodes.Node;
 import org.snakeyaml.engine.v2.nodes.NodeTuple;
 import org.snakeyaml.engine.v2.nodes.ScalarNode;
 import org.snakeyaml.engine.v2.nodes.SequenceNode;
 import org.snakeyaml.engine.v2.nodes.Tag;
-import org.snakeyaml.engine.v2.serializer.Serializer;
 
 public class GitHubActionsWorkflowFile {
 
@@ -48,6 +46,8 @@ public class GitHubActionsWorkflowFile {
 	private static final String SETUP_JAVA_ACTION = "actions/setup-java";
 	private static final String DISTRIBUTION_TEMURIN = "temurin";
 	private static final String JAVA_VERSION = "java-version";
+	private static final String JAVA_VERSION_FILE = "java-version-file";
+	private static final String TOOL_VERSIONS = ".tool-versions";
 	private static final String JAVA_VERSION_ENV = "JAVA_VERSION";
 	private static final String ENV = "env";
 	private static final String WITH = "with";
@@ -118,27 +118,7 @@ public class GitHubActionsWorkflowFile {
 	}
 
 	public String asString() {
-		if (root.isEmpty()) {
-			return "";
-		}
-		DumpSettings dumpSettings = DumpSettings.builder()
-				.setDumpComments(true)
-				.setSplitLines(false)
-				.build();
-
-		YamlStreamToStringWriter writer = new YamlStreamToStringWriter();
-		Serializer serializer = new Serializer(
-				dumpSettings,
-				new Emitter(dumpSettings, writer)
-		);
-		serializer.emitStreamStart();
-		serializer.serializeDocument(root.orElseThrow());
-		String string = writer.toString();
-		string = string.replaceAll("\n\s+\n", "\n\n");
-		if (string.endsWith("\n")) {
-			return string;
-		}
-		return string + "\n";
+		return Yamls.asString(root);
 	}
 
 	public Optional<MappingNode> getJobs() {
@@ -155,6 +135,24 @@ public class GitHubActionsWorkflowFile {
 
 	public void setJob(String name, Optional<MappingNode> debugJob) {
 		getJob(name).ifPresent(copyValue(debugJob));
+	}
+
+	public void removeJob(String name) {
+		removeKey(getJobs(), name);
+	}
+
+	/**
+	 * Puts {@code job} under {@code name} as the first job, or does nothing
+	 * when there is already a job of that name.
+	 */
+	public void putJobFirst(String name, Optional<MappingNode> job) {
+		if (job.isEmpty() || getJobs().isEmpty() || hasJob(name)) {
+			return;
+		}
+		MappingNode jobs = getJobs().orElseThrow();
+		List<NodeTuple> tuples = new ArrayList<>(jobs.getValue());
+		tuples.addFirst(newTuple(name, job.orElseThrow()));
+		jobs.setValue(tuples);
 	}
 
 	/**
@@ -276,6 +274,18 @@ public class GitHubActionsWorkflowFile {
 
 	public void setOn(Optional<MappingNode> newOn) {
 		getOn().ifPresent(copyValue(newOn));
+	}
+
+	/**
+	 * Replaces the triggers with those of {@code other}, in whatever form it
+	 * writes them, and answers whether it had any.
+	 */
+	public boolean copyTriggersFrom(GitHubActionsWorkflowFile other) {
+		var triggers = getKeyAsNode(nodeAsMap(other.root), "on");
+		triggers.ifPresent(
+				on -> nodeAsMap(root).ifPresent(map -> setKey(map, "on", on))
+		);
+		return triggers.isPresent();
 	}
 
 	public Optional<SequenceNode> getOnSchedule() {
@@ -548,58 +558,32 @@ public class GitHubActionsWorkflowFile {
 		}
 	}
 
-	public void removeInputParameterFromAction(
-			String actionName,
-			String inputParameter
-	) {
-		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
-				.orElse(List.of())) {
-			var jobNode = nodeAsMap(jobTuple.getValueNode());
-
-			getKeyAsSequence(jobNode, STEPS).ifPresent(stepsNode -> {
-				List<Node> steps = stepsNode.getValue().stream().peek(step -> {
-					var stepNode = nodeAsMap(step);
-					if (scalarValue(getKeyAsNode(stepNode, "uses"))
-							.filter(uses -> uses.startsWith(actionName + "@"))
-							.isPresent()) {
-						removeKey(
-								getKeyAsMap(stepNode, "with"),
-								inputParameter
-						);
-					}
-				}).toList();
-				setKey(jobNode, STEPS, newSequence(steps));
+	/**
+	 * Points every setup-java step that names its version inline, or names
+	 * none, at {@code .tool-versions}.
+	 * <p>
+	 * A step that already reads a version file keeps the one it reads. Which
+	 * file that is belongs to the author: a project checked out into a
+	 * subdirectory keeps its {@code .tool-versions} there, and pointing the
+	 * step at the workspace root fails the build.
+	 */
+	public void useToolVersionsFileForSetupJava() {
+		forEachSetupJava(step -> {
+			var with = getKeyAsMap(step, WITH).orElseGet(() -> {
+				var newWith = newMap();
+				setKey(step, WITH, newWith);
+				return newWith;
 			});
-		}
-	}
-
-	public void addInputParameterToAction(
-			String actionName,
-			String inputParameter,
-			String value
-	) {
-		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
-				.orElse(List.of())) {
-			var jobNode = nodeAsMap(jobTuple.getValueNode());
-
-			getKeyAsSequence(jobNode, STEPS).ifPresent(stepsNode -> {
-				List<Node> steps = stepsNode.getValue().stream().peek(step -> {
-					var stepNode = nodeAsMap(step);
-					if (scalarValue(getKeyAsNode(stepNode, "uses"))
-							.filter(uses -> uses.startsWith(actionName + "@"))
-							.isPresent()) {
-						var withNode = getKeyAsMap(stepNode, "with")
-								.orElseGet(() -> {
-									var with = newMap();
-									setKey(stepNode, "with", with);
-									return with;
-								});
-						setKey(withNode, inputParameter, newScalar(value));
-					}
-				}).toList();
-				setKey(jobNode, STEPS, newSequence(steps));
-			});
-		}
+			if (getKeyAsNode(with, JAVA_VERSION_FILE).isPresent()) {
+				return;
+			}
+			removeKey(Optional.of(with), JAVA_VERSION);
+			setKey(
+					with,
+					JAVA_VERSION_FILE,
+					newScalar(TOOL_VERSIONS, ScalarStyle.PLAIN)
+			);
+		});
 	}
 
 	/**
@@ -634,9 +618,18 @@ public class GitHubActionsWorkflowFile {
 	 * <p>
 	 * The version lives in a step env var so Renovate's
 	 * customManagers:githubActionsVersions preset finds it.
+	 * <p>
+	 * A step reading a version file other than the repository's own
+	 * {@code .tool-versions} is left alone, for the reason
+	 * {@link #useToolVersionsFileForSetupJava()} gives.
 	 */
 	public void pinTemurinJavaVersion(String version) {
 		forEachTemurinSetupJava(step -> {
+			if (scalarValue(
+					getKeyAsNode(getKeyAsMap(step, WITH), JAVA_VERSION_FILE)
+			).filter(file -> !TOOL_VERSIONS.equals(file)).isPresent()) {
+				return;
+			}
 			var env = getKeyAsMap(step, ENV).orElseGet(() -> {
 				var newEnv = newMap();
 				var tuples = new ArrayList<NodeTuple>();
@@ -672,7 +665,7 @@ public class GitHubActionsWorkflowFile {
 			env.setValue(envTuples);
 
 			var with = getKeyAsMap(step, WITH);
-			removeKey(with, "java-version-file");
+			removeKey(with, JAVA_VERSION_FILE);
 			// Removed rather than overwritten: the key of an older pin carries
 			// the renovate comment that now belongs to the env var.
 			removeKey(with, JAVA_VERSION);
@@ -693,6 +686,16 @@ public class GitHubActionsWorkflowFile {
 	 * is chorito's to decide.
 	 */
 	private void forEachTemurinSetupJava(Consumer<MappingNode> body) {
+		forEachSetupJava(step -> {
+			if (scalarValue(
+					getKeyAsNode(getKeyAsMap(step, WITH), "distribution")
+			).filter(DISTRIBUTION_TEMURIN::equals).isPresent()) {
+				body.accept(step);
+			}
+		});
+	}
+
+	private void forEachSetupJava(Consumer<MappingNode> body) {
 		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
 				.orElse(List.of())) {
 			var jobNode = nodeAsMap(jobTuple.getValueNode());
@@ -704,18 +707,9 @@ public class GitHubActionsWorkflowFile {
 						.filter(
 								uses -> uses.startsWith(SETUP_JAVA_ACTION + "@")
 						)
-						.isEmpty()) {
-					continue;
+						.isPresent()) {
+					body.accept(stepNode);
 				}
-				if (scalarValue(
-						getKeyAsNode(
-								getKeyAsMap(stepNode, WITH),
-								"distribution"
-						)
-				).filter(DISTRIBUTION_TEMURIN::equals).isEmpty()) {
-					continue;
-				}
-				body.accept(stepNode);
 			}
 		}
 	}
@@ -735,8 +729,8 @@ public class GitHubActionsWorkflowFile {
 			removeKey(with, JAVA_VERSION);
 			setKey(
 					with.orElseThrow(),
-					"java-version-file",
-					newScalar(".tool-versions", ScalarStyle.PLAIN)
+					JAVA_VERSION_FILE,
+					newScalar(TOOL_VERSIONS, ScalarStyle.PLAIN)
 			);
 		});
 	}
@@ -781,6 +775,37 @@ public class GitHubActionsWorkflowFile {
 				setKey(job.orElseThrow(), STEPS, newSequence(steps));
 				return;
 			}
+		}
+	}
+
+	/**
+	 * Replaces {@code target} with {@code replacement} in the script of every
+	 * step of {@code jobName} that runs one, keeping the style it is written
+	 * in.
+	 */
+	public void replaceInRun(
+			String jobName,
+			String target,
+			String replacement
+	) {
+		for (Node step : steps(jobName)) {
+			var stepNode = nodeAsMap(step);
+			Yamls.getKeyAsScalar(stepNode, "run")
+					.filter(run -> run.getValue().contains(target))
+					.ifPresent(
+							run -> setKey(
+									stepNode,
+									"run",
+									newScalar(
+											run.getValue()
+													.replace(
+															target,
+															replacement
+													),
+											run.getScalarStyle()
+									)
+							)
+					);
 		}
 	}
 
@@ -914,65 +939,96 @@ public class GitHubActionsWorkflowFile {
 	}
 
 	public void singleToDoubleQuote() {
-		root.ifPresent(this::singleToDoubleQuote);
+		root.ifPresent(
+				node -> singleToDoubleQuote(node, new IdentityHashMap<>())
+		);
 	}
 
-	public Node singleToDoubleQuote(Node node) {
-		return switch (node) {
+	/**
+	 * Converts {@code node} once, however often it is reached.
+	 * <p>
+	 * An anchor and its aliases are one node in the tree, and the serializer
+	 * writes them as an anchor and aliases again only while they stay one.
+	 * Converting each place it is reached on its own would hand back a copy per
+	 * place: the list comes out in full under every alias, and only the pieces
+	 * that happened to come through untouched are still shared, under an anchor
+	 * name made up for them.
+	 * <p>
+	 * A replaced node carries its anchor and comments across, or they would be
+	 * lost with the node they were attached to.
+	 */
+	private Node singleToDoubleQuote(Node node, Map<Node, Node> converted) {
+		Node done = converted.get(node);
+		if (done != null) {
+			return done;
+		}
+		Node result = switch (node) {
 		case MappingNode mappingNode -> {
+			converted.put(mappingNode, mappingNode);
 			var value = mappingNode.getValue().stream().map(nodeTuple -> {
 				return newTuple(
 						nodeTuple.getKeyNode(),
-						singleToDoubleQuote(nodeTuple.getValueNode())
+						singleToDoubleQuote(nodeTuple.getValueNode(), converted)
 				);
 			}).toList();
 			mappingNode.setValue(value);
 			yield mappingNode;
 		}
-		case SequenceNode sequenceNode -> newSequence(
-				sequenceNode.getValue()
-						.stream()
-						.map(this::singleToDoubleQuote)
-						.toList()
+		case SequenceNode sequenceNode -> carryOver(
+				sequenceNode,
+				newSequence(
+						sequenceNode.getValue()
+								.stream()
+								.map(
+										item -> singleToDoubleQuote(
+												item,
+												converted
+										)
+								)
+								.toList()
+				)
 		);
-		case ScalarNode scalarNode -> {
-			String value = scalarNode.getValue();
-
-			if (scalarNode.getScalarStyle() == ScalarStyle.SINGLE_QUOTED) {
-				if (!value.contains("\"")) {
-					scalarNode = new ScalarNode(
-							scalarNode.getTag(),
-							value,
-							ScalarStyle.DOUBLE_QUOTED
-					);
-				}
-			}
-
-			if (scalarNode.getScalarStyle() == ScalarStyle.DOUBLE_QUOTED) {
-
-				if ((value.equalsIgnoreCase("off")
-						|| value.equalsIgnoreCase("on")) || value.contains("*")
-						|| value.contains(":")) {
-					scalarNode = new ScalarNode(
-							scalarNode.getTag(),
-							value,
-							ScalarStyle.DOUBLE_QUOTED
-					);
-				} else {
-					scalarNode = new ScalarNode(
-							scalarNode.getTag(),
-							value,
-							ScalarStyle.PLAIN
-					);
-				}
-			}
-
-			yield scalarNode;
-		}
-		default -> {
-			yield node;
-		}
+		case ScalarNode scalarNode -> singleToDoubleQuote(scalarNode);
+		default -> node;
 		};
+		converted.put(node, result);
+		converted.put(result, result);
+		return result;
+	}
+
+	private static Node carryOver(Node from, Node to) {
+		to.setAnchor(from.getAnchor());
+		to.setBlockComments(from.getBlockComments());
+		to.setInLineComments(from.getInLineComments());
+		to.setEndComments(from.getEndComments());
+		return to;
+	}
+
+	private static Node singleToDoubleQuote(ScalarNode scalarNode) {
+		String value = scalarNode.getValue();
+		ScalarStyle style = scalarNode.getScalarStyle();
+		if (style == ScalarStyle.SINGLE_QUOTED && !value.contains("\"")) {
+			style = ScalarStyle.DOUBLE_QUOTED;
+		}
+		if (style == ScalarStyle.DOUBLE_QUOTED && !value.equalsIgnoreCase("off")
+				&& !value.equalsIgnoreCase("on") && !value.contains("*")
+				&& !value.contains(":")) {
+			style = ScalarStyle.PLAIN;
+		}
+		if (style == scalarNode.getScalarStyle()) {
+			return scalarNode;
+		}
+		return carryOver(
+				scalarNode,
+				new ScalarNode(
+						scalarNode.getTag(),
+						true,
+						value,
+						style,
+						scalarNode.getStartMark(),
+						scalarNode.getEndMark()
+				)
+		);
 	}
 
 	private static final Comparator<NodeTuple> WORKFLOW_KEY_ORDER = keyOrder(
