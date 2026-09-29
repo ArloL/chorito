@@ -162,7 +162,7 @@ public class GitChoreContext {
 						root,
 						GitChoreContext::refresh,
 						GitChoreContext::deleteIgnoredFiles
-				)
+				).gitHubRepositoryIsPublic(GitHubRepositories.publicLookup())
 		);
 	}
 

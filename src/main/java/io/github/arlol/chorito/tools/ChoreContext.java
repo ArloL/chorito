@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 import java.util.stream.Stream;
 
@@ -30,6 +31,7 @@ public class ChoreContext {
 		private Clock clock = Clock.systemDefaultZone();
 		private Function<String[], ProcessBuilderSilent> processBuilderFactory = ProcessBuilderSilent
 				.factory();
+		private Predicate<String> gitHubRepositoryIsPublic = _ -> false;
 		private final BuilderRefresh builderRefresh;
 		private final Consumer<Path> deleteIgnoredFiles;
 
@@ -52,6 +54,7 @@ public class ChoreContext {
 			this.randomGenerator = choreContext.randomGenerator();
 			this.clock = choreContext.clock();
 			this.processBuilderFactory = choreContext.processBuilderFactory();
+			this.gitHubRepositoryIsPublic = choreContext.gitHubRepositoryIsPublic;
 			this.builderRefresh = choreContext.builderRefresh;
 			this.deleteIgnoredFiles = choreContext.deleteIgnoredFiles;
 		}
@@ -86,6 +89,10 @@ public class ChoreContext {
 
 		public Function<String[], ProcessBuilderSilent> processBuilderFactory() {
 			return processBuilderFactory;
+		}
+
+		public Predicate<String> gitHubRepositoryIsPublic() {
+			return gitHubRepositoryIsPublic;
 		}
 
 		public Builder root(Path root) {
@@ -130,6 +137,18 @@ public class ChoreContext {
 			return this;
 		}
 
+		/**
+		 * Answers whether the {@code owner/repo} it is given is a public
+		 * repository on github.com. Defaults to never, so that nothing but
+		 * {@link GitChoreContext} reaches out to the network.
+		 */
+		public Builder gitHubRepositoryIsPublic(
+				Predicate<String> gitHubRepositoryIsPublic
+		) {
+			this.gitHubRepositoryIsPublic = gitHubRepositoryIsPublic;
+			return this;
+		}
+
 		public ChoreContext build() {
 			return new ChoreContext(
 					root,
@@ -140,6 +159,7 @@ public class ChoreContext {
 					randomGenerator,
 					clock,
 					processBuilderFactory,
+					gitHubRepositoryIsPublic,
 					builderRefresh,
 					deleteIgnoredFiles
 			);
@@ -155,6 +175,7 @@ public class ChoreContext {
 	private final RandomGenerator randomGenerator;
 	private final Clock clock;
 	private final Function<String[], ProcessBuilderSilent> processBuilderFactory;
+	private final Predicate<String> gitHubRepositoryIsPublic;
 	private final BuilderRefresh builderRefresh;
 	private final Consumer<Path> deleteIgnoredFiles;
 
@@ -167,6 +188,7 @@ public class ChoreContext {
 			RandomGenerator randomGenerator,
 			Clock clock,
 			Function<String[], ProcessBuilderSilent> processBuilderFactory,
+			Predicate<String> gitHubRepositoryIsPublic,
 			BuilderRefresh builderRefresh,
 			Consumer<Path> deleteIgnoredFilesConsumer
 	) {
@@ -178,6 +200,7 @@ public class ChoreContext {
 		this.randomGenerator = randomGenerator;
 		this.clock = clock;
 		this.processBuilderFactory = processBuilderFactory;
+		this.gitHubRepositoryIsPublic = gitHubRepositoryIsPublic;
 		this.builderRefresh = builderRefresh;
 		this.deleteIgnoredFiles = deleteIgnoredFilesConsumer;
 	}
@@ -236,6 +259,21 @@ public class ChoreContext {
 		return Stream.of("main", "master")
 				.filter(branches::contains)
 				.findFirst();
+	}
+
+	/**
+	 * Whether a remote points at a public repository on github.com.
+	 * <p>
+	 * A GitHub remote alone is not enough for the chores that ask: a private
+	 * repository may be client code, which must not get an MIT licence, and
+	 * cannot run code scanning. When chorito cannot tell, the answer is no -- a
+	 * missing file is easier to notice and fix than a wrong licence.
+	 */
+	public boolean isPublicGitHubRepository() {
+		return remotes.stream()
+				.map(GitHubRepositories::nameOf)
+				.flatMap(Optional::stream)
+				.anyMatch(gitHubRepositoryIsPublic);
 	}
 
 	public RandomGenerator randomGenerator() {

@@ -79,6 +79,7 @@ public class CodeQlScheduleOwnershipTest {
 		return extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.build();
 	}
 

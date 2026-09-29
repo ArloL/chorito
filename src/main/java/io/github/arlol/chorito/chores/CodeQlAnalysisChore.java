@@ -10,7 +10,6 @@ import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
 import io.github.arlol.chorito.tools.GitHubActionsWorkflowFile;
 import io.github.arlol.chorito.tools.JavaVersions;
-import io.github.arlol.chorito.tools.MyPaths;
 import io.github.arlol.chorito.tools.RandomCronBuilder;
 import io.github.arlol.chorito.tools.Template;
 import io.github.arlol.chorito.tools.WorkflowJobs;
@@ -19,14 +18,9 @@ public class CodeQlAnalysisChore implements Chore {
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
-		// it only makes sense to add it to github repositories
-		if (context.remotes()
-				.stream()
-				.noneMatch(s -> s.startsWith("https://github.com"))
-				&& context.textFiles()
-						.stream()
-						.map(MyPaths::getParent)
-						.noneMatch(path -> path.endsWith(".github"))) {
+		// Code scanning is not available for private repositories, where the
+		// workflow only fails.
+		if (!context.isPublicGitHubRepository()) {
 			return context;
 		}
 
