@@ -30,10 +30,29 @@ public class CodeQlAnalysisChoreTest {
 	}
 
 	@Test
+	public void testPrivateRepositoryGetsNoWorkflow() {
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> false)
+				.build();
+		FilesSilent.writeString(
+				context.resolve(".github/dependabot.yml"),
+				"version: 2\n"
+		);
+
+		new CodeQlAnalysisChore().doit(context);
+
+		assertThat(extension.relativePaths())
+				.containsExactly(".github", ".github/dependabot.yml");
+	}
+
+	@Test
 	public void testEmptyGithubProject() throws Exception {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -60,6 +79,7 @@ public class CodeQlAnalysisChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.branches(List.of("master"))
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
@@ -85,6 +105,7 @@ public class CodeQlAnalysisChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -109,6 +130,7 @@ public class CodeQlAnalysisChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -138,6 +160,7 @@ public class CodeQlAnalysisChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -161,6 +184,7 @@ public class CodeQlAnalysisChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -183,6 +207,7 @@ public class CodeQlAnalysisChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -208,6 +233,7 @@ public class CodeQlAnalysisChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -235,6 +261,7 @@ public class CodeQlAnalysisChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 
@@ -260,6 +287,7 @@ public class CodeQlAnalysisChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
 		new CodeQlAnalysisChore().doit(context);

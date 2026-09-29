@@ -22,6 +22,7 @@ public class DependabotChoreTest {
 				.toBuilder()
 				.remotes(List.of("https://github.com/ArloL/chorito.git"))
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.build();
 		new DependabotChore().doit(context);
 	}
@@ -47,6 +48,30 @@ public class DependabotChoreTest {
 						    github-codeql-action:
 						      patterns:
 						      - "github/codeql-action*"
+						""");
+	}
+
+	@Test
+	public void testPrivateRepositoryGetsNoCodeQlGroup() {
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> false)
+				.build();
+
+		new DependabotChore().doit(context);
+
+		assertThat(extension.root().resolve(".github/dependabot.yml")).content()
+				.isEqualTo("""
+						version: 2
+						updates:
+						- package-ecosystem: "github-actions"
+						  directory: "/"
+						  schedule:
+						    interval: "monthly"
+						  cooldown:
+						    default-days: 7
+						  open-pull-requests-limit: 10
 						""");
 	}
 

@@ -40,7 +40,7 @@ public class LicenseChore implements Chore {
 		moveIfExists(context.resolve("LICENSE.md"), license);
 		moveIfExists(context.resolve("LICENSE.txt"), license);
 
-		if (!isGitHubProject(context)) {
+		if (!context.isPublicGitHubRepository()) {
 			return context;
 		}
 		checkPom(context);
@@ -61,12 +61,6 @@ public class LicenseChore implements Chore {
 		if (FilesSilent.exists(source)) {
 			FilesSilent.move(source, target);
 		}
-	}
-
-	private static boolean isGitHubProject(ChoreContext context) {
-		return context.remotes()
-				.stream()
-				.anyMatch(s -> s.startsWith("https://github.com"));
 	}
 
 	private void updateCopyrightYear(Path license, String currentYear) {

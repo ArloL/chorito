@@ -30,12 +30,26 @@ public class LicenseChoreTest {
 	}
 
 	@Test
+	public void testPrivateRepositoryGetsNoLicense() throws Exception {
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> false)
+				.build();
+
+		new LicenseChore().doit(context);
+
+		assertThat(extension.relativePaths()).isEmpty();
+	}
+
+	@Test
 	public void testCreate() throws Exception {
 		Instant instant = Instant.parse("2018-08-19T16:02:42.00Z");
 		ZoneId zoneId = ZoneId.of("Asia/Calcutta");
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
@@ -57,6 +71,7 @@ public class LicenseChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
@@ -77,6 +92,7 @@ public class LicenseChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
@@ -96,6 +112,7 @@ public class LicenseChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
@@ -115,6 +132,7 @@ public class LicenseChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
@@ -132,6 +150,7 @@ public class LicenseChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.build();
 
 		new LicenseChore().doit(context);
@@ -150,6 +169,7 @@ public class LicenseChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
@@ -172,6 +192,7 @@ public class LicenseChoreTest {
 		ChoreContext context = extension.choreContext()
 				.toBuilder()
 				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
 				.clock(Clock.fixed(instant, zoneId))
 				.build();
 
