@@ -520,8 +520,10 @@ public class GitHubActionChore implements Chore {
 				checkActionsWorkflow = new GitHubActionsWorkflowFile(
 						FilesSilent.readString(checkActionsYaml)
 				);
-				templateWorkflow.setOnScheduleCron(
-						checkActionsWorkflow.getOnScheduleCron().orElseThrow()
+				keepWhatTheRepositoryDecided(
+						checkActionsWorkflow,
+						templateWorkflow,
+						randomDayOfMonth
 				);
 			} else {
 				checkActionsWorkflow = templateWorkflow.copy();
@@ -536,6 +538,36 @@ public class GitHubActionChore implements Chore {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Carries across the parts of an existing check-actions workflow that are
+	 * the repository's to decide, so that only the jobs are enforced.
+	 * <p>
+	 * The triggers are kept whole: a repository that limits the workflow to
+	 * changes under {@code .github} with {@code paths} filters, or comments on
+	 * why, would otherwise lose both on every run. A repository that already
+	 * uploads zizmor's findings as SARIF has code scanning and keeps doing so,
+	 * and one that has the debug job keeps it.
+	 */
+	private static void keepWhatTheRepositoryDecided(
+			GitHubActionsWorkflowFile existing,
+			GitHubActionsWorkflowFile template,
+			String randomDayOfMonth
+	) {
+		if (!template.copyTriggersFrom(existing)) {
+			template.setOnScheduleCron(randomDayOfMonth);
+		}
+		if (existing.hasStepUsing(
+				WorkflowJobs.ZIZMOR,
+				Template.UPLOAD_SARIF_ACTION
+		)) {
+			template.setJob(WorkflowJobs.ZIZMOR, Template.zizmorSarifJob());
+		}
+		template.putJobFirst(
+				WorkflowJobs.DEBUG,
+				existing.getJob(WorkflowJobs.DEBUG)
+		);
 	}
 
 	void actionsCheckoutWithPersistCredentials(ChoreContext context) {
@@ -776,15 +808,7 @@ public class GitHubActionChore implements Chore {
 	void useToolVersionsForSetupJava(ChoreContext context) {
 		GitHubActionsWorkflowFile.updateEach(context, workflow -> {
 			var pinnedJavaVersion = workflow.getPinnedJavaVersion();
-			workflow.removeInputParameterFromAction(
-					"actions/setup-java",
-					"java-version"
-			);
-			workflow.addInputParameterToAction(
-					"actions/setup-java",
-					"java-version-file",
-					".tool-versions"
-			);
+			workflow.useToolVersionsFileForSetupJava();
 			// A job asking for Temurin here builds no native image, and
 			// .tool-versions would hand it a GraalVM anyway, so it pins a
 			// version of its own that Renovate owns.

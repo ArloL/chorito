@@ -16,7 +16,12 @@ import org.snakeyaml.engine.v2.comments.CommentType;
 import org.snakeyaml.engine.v2.common.FlowStyle;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
 import org.snakeyaml.engine.v2.composer.Composer;
+import org.snakeyaml.engine.v2.emitter.Emitable;
 import org.snakeyaml.engine.v2.emitter.Emitter;
+import org.snakeyaml.engine.v2.events.CommentEvent;
+import org.snakeyaml.engine.v2.events.Event;
+import org.snakeyaml.engine.v2.events.ScalarEvent;
+import org.snakeyaml.engine.v2.exceptions.Mark;
 import org.snakeyaml.engine.v2.nodes.MappingNode;
 import org.snakeyaml.engine.v2.nodes.Node;
 import org.snakeyaml.engine.v2.nodes.NodeTuple;
@@ -194,9 +199,11 @@ public abstract class Yamls {
 	 * went in.
 	 */
 	private static void placeComments(Node root, String content) {
+		String[] lines = content.split("\n", -1);
 		List<Node> nodes = inDocumentOrder(root, new ArrayList<>());
-		leadNextNode(nodes, content.split("\n", -1));
+		leadNextNode(nodes, lines);
 		moveLeadingCommentsToSequenceItems(root);
+		markWhereSequenceItemCommentsStand(root, lines);
 	}
 
 	private static List<Node> inDocumentOrder(Node node, List<Node> nodes) {
@@ -228,6 +235,10 @@ public abstract class Yamls {
 	 * which.
 	 *
 	 * A comment with no node after it keeps its place, having nothing to lead.
+	 * <p>
+	 * The block scalar swallows the blank lines before the comment too, so a
+	 * blank line written between the two is put back in front of it -- without
+	 * it the comment reads as the last line of the script above.
 	 */
 	private static void leadNextNode(List<Node> nodes, String[] lines) {
 		for (int index = 0; index < nodes.size() - 1; index++) {
@@ -249,9 +260,35 @@ public abstract class Yamls {
 			}
 			node.setInLineComments(trailing);
 			next.setBlockComments(
-					append(asBlockComments(leading), next.getBlockComments())
+					append(
+							append(
+									blankLineAbove(lines, leading.getFirst()),
+									asBlockComments(leading)
+							),
+							next.getBlockComments()
+					)
 			);
 		}
+	}
+
+	private static List<CommentLine> blankLineAbove(
+			String[] lines,
+			CommentLine comment
+	) {
+		return comment.getStartMark()
+				.filter(mark -> mark.getLine() > 0)
+				.filter(mark -> lines[mark.getLine() - 1].isBlank())
+				.map(
+						mark -> List.of(
+								new CommentLine(
+										Optional.of(atColumn(mark, 0)),
+										Optional.of(atColumn(mark, 0)),
+										"\n",
+										CommentType.BLANK_LINE
+								)
+						)
+				)
+				.orElse(List.of());
 	}
 
 	private static List<CommentLine> asBlockComments(
@@ -323,12 +360,8 @@ public abstract class Yamls {
 	 * mapping, so a comment left on the key can only come out after the
 	 * indicator - a heading above a step ends up as the step's first line.
 	 *
-	 * Carrying it on the item is not enough on its own. The emitter places a
-	 * block comment by the column its start mark records: at or left of the
-	 * indicator goes above the {@code -}, further right stays behind it. That
-	 * is what makes both written forms round-trip, and it is also the catch for
-	 * a comment built by hand rather than parsed - without a start mark it
-	 * lands behind the {@code -} wherever it is attached.
+	 * Carrying it on the item is not enough on its own: see
+	 * {@link #markWhereSequenceItemCommentsStand}.
 	 */
 	private static void moveLeadingCommentsToSequenceItems(Node node) {
 		if (node instanceof MappingNode mappingNode) {
@@ -358,28 +391,176 @@ public abstract class Yamls {
 		});
 	}
 
+	/**
+	 * Rewrites the column of every comment heading a sequence item to say
+	 * whether it stood on a line of its own or behind the {@code -}.
+	 * <p>
+	 * The emitter decides by comparing the column the start mark records with
+	 * its own indentation: at or left of it goes above the {@code -}, further
+	 * right stays behind it. The two columns come from different files, though.
+	 * The mark is where the comment was in the source, and the emitter re-
+	 * indents every sequence to sit at its parent key, so a source that indents
+	 * its sequences under the key has every comment right of where the emitter
+	 * is and each one lands behind the {@code -}. Column 0 is left of any
+	 * indentation and the largest column right of it, so the answer no longer
+	 * depends on how the source was indented.
+	 * <p>
+	 * A comment built by hand rather than parsed has no start mark, and lands
+	 * behind the {@code -} wherever it is attached.
+	 */
+	private static void markWhereSequenceItemCommentsStand(
+			Node node,
+			String[] lines
+	) {
+		if (node instanceof MappingNode mappingNode) {
+			mappingNode.getValue().forEach(tuple -> {
+				markWhereSequenceItemCommentsStand(tuple.getKeyNode(), lines);
+				markWhereSequenceItemCommentsStand(tuple.getValueNode(), lines);
+			});
+		} else if (node instanceof SequenceNode sequenceNode) {
+			sequenceNode.getValue().forEach(item -> {
+				markWhereSequenceItemCommentsStand(item, lines);
+				List<CommentLine> comments = item.getBlockComments();
+				if (comments != null && !comments.isEmpty()) {
+					item.setBlockComments(
+							comments.stream()
+									.map(
+											comment -> markWhereItStands(
+													comment,
+													lines
+											)
+									)
+									.toList()
+					);
+				}
+			});
+		}
+	}
+
+	private static CommentLine markWhereItStands(
+			CommentLine comment,
+			String[] lines
+	) {
+		int column = startsItsOwnLine(lines, comment) ? 0 : Integer.MAX_VALUE;
+		return new CommentLine(
+				comment.getStartMark().map(mark -> atColumn(mark, column)),
+				comment.getEndMark(),
+				comment.getValue(),
+				comment.getCommentType()
+		);
+	}
+
+	private static Mark atColumn(Mark mark, int column) {
+		return new Mark(
+				mark.getName(),
+				mark.getIndex(),
+				mark.getLine(),
+				column,
+				mark.getBuffer(),
+				mark.getPointer()
+		);
+	}
+
 	public static String asString(Optional<Node> root) {
 		if (root.isEmpty()) {
 			return "";
 		}
+		var keeper = new LiteralBlockKeeper();
+		String string = emit(root.orElseThrow(), Optional.of(keeper));
+		boolean kept = !keeper.clashes;
+		if (!kept) {
+			string = emit(root.orElseThrow(), Optional.empty());
+		}
+		string = string.replaceAll("\n\s+\n", "\n\n");
+		if (kept) {
+			string = LiteralBlockKeeper.restore(string);
+		}
+		if (string.endsWith("\n")) {
+			return string;
+		}
+		return string + "\n";
+	}
+
+	private static String emit(Node root, Optional<LiteralBlockKeeper> keeper) {
 		DumpSettings dumpSettings = DumpSettings.builder()
 				.setDumpComments(true)
 				.setSplitLines(false)
 				.build();
 
 		YamlStreamToStringWriter writer = new YamlStreamToStringWriter();
+		Emitable emitter = new Emitter(dumpSettings, writer);
 		Serializer serializer = new Serializer(
 				dumpSettings,
-				new Emitter(dumpSettings, writer)
+				keeper.<Emitable>map(k -> k.around(emitter)).orElse(emitter)
 		);
 		serializer.emitStreamStart();
-		serializer.serializeDocument(root.orElseThrow());
-		String string = writer.toString();
-		string = string.replaceAll("\n\s+\n", "\n\n");
-		if (string.endsWith("\n")) {
-			return string;
+		serializer.serializeDocument(root);
+		return writer.toString();
+	}
+
+	/**
+	 * Keeps a scalar that was read as a literal block written as one.
+	 * <p>
+	 * The emitter refuses the literal style for a scalar holding a tab or a
+	 * space before a line break, and falls back to a double-quoted one-liner:
+	 * the same data, but a script nobody can read any more. A tab is ordinary
+	 * in a script -- {@code ${VAR%%<tab>*}} is how bash cuts a tab-separated
+	 * field -- and both are legal inside a literal block, so the emitter is
+	 * handed stand-ins it accepts and the characters are put back in what it
+	 * wrote.
+	 * <p>
+	 * The stand-ins are from the private use area, which no workflow has a
+	 * reason to contain. Should one anyway, the document is emitted again
+	 * without them rather than risk turning its characters into tabs.
+	 */
+	private static final class LiteralBlockKeeper {
+
+		private static final char TAB = '\uE009';
+		private static final char SPACE = '\uE020';
+		private static final Pattern SPACE_BEFORE_BREAK = Pattern
+				.compile(" (?= *(?:\n|\\z))");
+
+		private boolean clashes;
+
+		Emitable around(Emitable emitter) {
+			return event -> emitter.emit(keep(event));
 		}
-		return string + "\n";
+
+		private Event keep(Event event) {
+			if (event instanceof CommentEvent comment) {
+				notice(comment.getValue());
+			}
+			if (!(event instanceof ScalarEvent scalar)) {
+				return event;
+			}
+			notice(scalar.getValue());
+			if (scalar.getScalarStyle() != ScalarStyle.LITERAL) {
+				return event;
+			}
+			String value = SPACE_BEFORE_BREAK
+					.matcher(scalar.getValue().replace('\t', TAB))
+					.replaceAll(String.valueOf(SPACE));
+			return new ScalarEvent(
+					scalar.getAnchor(),
+					scalar.getTag(),
+					scalar.getImplicit(),
+					value,
+					scalar.getScalarStyle(),
+					scalar.getStartMark(),
+					scalar.getEndMark()
+			);
+		}
+
+		private void notice(String value) {
+			if (value.indexOf(TAB) >= 0 || value.indexOf(SPACE) >= 0) {
+				clashes = true;
+			}
+		}
+
+		static String restore(String emitted) {
+			return emitted.replace(TAB, '\t').replace(SPACE, ' ');
+		}
+
 	}
 
 	public static Optional<MappingNode> getKeyAsMap(

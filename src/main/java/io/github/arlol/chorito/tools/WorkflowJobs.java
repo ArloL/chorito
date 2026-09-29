@@ -19,6 +19,7 @@ public abstract class WorkflowJobs {
 	public static final String DEPLOY = "deploy";
 	public static final String DEBUG = "debug";
 	public static final String ANALYZE = "analyze";
+	public static final String ZIZMOR = "zizmor";
 
 	public static final String REQUIRED_STATUS_CHECK = "required-status-check";
 

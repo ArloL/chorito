@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
+import org.snakeyaml.engine.v2.nodes.Node;
 
 /**
  * The templates chorito ships are symlinks to the workflows it runs on itself,
@@ -52,6 +53,24 @@ public class TemplateTest {
 
 		assertThat(own).contains("attestations: write", "id-token: write");
 		assertThat(Template.attestReleaseAssetsStep()).isPresent();
+	}
+
+	@Test
+	public void checkActionsTemplateNeedsNoCodeScanning() {
+		var template = Template.checkActionsWorkflow();
+
+		assertThat(template.hasJob(WorkflowJobs.DEBUG)).isFalse();
+		assertThat(template.asString()).contains("--format github .")
+				.doesNotContain("sarif", "security-events", "actions: read");
+	}
+
+	@Test
+	public void choritosOwnCheckActionsStillUploadsSarif() {
+		// Keeps the assertion above honest, and is the job a repository that
+		// already uploads SARIF is handed.
+		assertThat(
+				Yamls.asString(Template.zizmorSarifJob().map(Node.class::cast))
+		).contains("--format sarif", "upload-sarif", "security-events: write");
 	}
 
 	@Test

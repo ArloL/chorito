@@ -3,6 +3,7 @@ package io.github.arlol.chorito.tools;
 import java.util.Optional;
 import java.util.Set;
 
+import org.snakeyaml.engine.v2.nodes.MappingNode;
 import org.snakeyaml.engine.v2.nodes.Node;
 
 /**
@@ -28,6 +29,14 @@ public abstract class Template {
 
 	private static final String WORKFLOWS = "github-settings/workflows/";
 	private static final String ATTEST_STEP = "Attest the release assets";
+	public static final String UPLOAD_SARIF_ACTION = "github/codeql-action/upload-sarif";
+	private static final String ZIZMOR_SARIF_FORMAT = "--format sarif . > results.sarif";
+	/**
+	 * What uploading SARIF asks for: {@code security-events} to write the
+	 * results, and {@code actions} to read the run in a private repository.
+	 */
+	private static final Set<String> CODE_SCANNING_PERMISSIONS = Set
+			.of("security-events", "actions");
 
 	/**
 	 * Permissions chorito's own jobs hold that no repository gets by default.
@@ -55,8 +64,39 @@ public abstract class Template {
 		return generalise(load("chores.yaml"));
 	}
 
+	/**
+	 * check-actions.yaml without what only suits chorito.
+	 * <p>
+	 * chorito's zizmor job uploads its findings to code scanning as SARIF. A
+	 * private repository only has code scanning with GitHub Code Security, and
+	 * without it the upload fails and turns the check red, so the template
+	 * reports the findings as annotations on the run instead. A repository that
+	 * has code scanning can go back to SARIF, and keeps it from then on: see
+	 * {@link #zizmorSarifJob()}.
+	 * <p>
+	 * The debug job dumps every context on every run, which is chorito's habit
+	 * and not something to hand to a repository that did not ask for it.
+	 */
 	public static GitHubActionsWorkflowFile checkActionsWorkflow() {
-		return generalise(load("check-actions.yaml"));
+		var workflow = generalise(load("check-actions.yaml"));
+		workflow.removeJob(WorkflowJobs.DEBUG);
+		workflow.replaceInRun(
+				WorkflowJobs.ZIZMOR,
+				ZIZMOR_SARIF_FORMAT,
+				"--format github ."
+		);
+		workflow.removeStepUsing(WorkflowJobs.ZIZMOR, UPLOAD_SARIF_ACTION);
+		workflow.revokeJobPermissions(CODE_SCANNING_PERMISSIONS);
+		return workflow;
+	}
+
+	/**
+	 * The zizmor job as chorito runs it, uploading SARIF to code scanning. It
+	 * is what a check-actions workflow already uploading SARIF keeps.
+	 */
+	public static Optional<MappingNode> zizmorSarifJob() {
+		return generalise(load("check-actions.yaml"))
+				.getJob(WorkflowJobs.ZIZMOR);
 	}
 
 	public static GitHubActionsWorkflowFile codeQlAnalysisWorkflow() {
