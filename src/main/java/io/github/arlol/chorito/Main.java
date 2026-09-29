@@ -1,11 +1,17 @@
 package io.github.arlol.chorito;
 
 import io.github.arlol.chorito.commands.ChoritoCommand;
+import io.github.arlol.chorito.commands.HelpCommand;
 import io.github.arlol.chorito.commands.VersionCommand;
 
 public class Main {
 
 	public static void main(String[] args) {
+		if (args.length == 1
+				&& ("--help".equals(args[0]) || "-h".equals(args[0]))) {
+			new HelpCommand().execute();
+			return;
+		}
 		if (args.length == 1 && "--version".equals(args[0])) {
 			new VersionCommand().execute();
 			return;
