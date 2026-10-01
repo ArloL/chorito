@@ -514,6 +514,12 @@ public class GitHubActionChore implements Chore {
 			// master needs the same file with the name swapped, or it gets a
 			// workflow whose triggers can never match.
 			context.mainBranch().ifPresent(templateWorkflow::renameOnBranches);
+			// A public repository always has code scanning, and a ruleset
+			// requiring zizmor's analysis blocks every merge until it arrives.
+			if (context.isPublicGitHubRepository()) {
+				templateWorkflow
+						.setJob(WorkflowJobs.ZIZMOR, Template.zizmorSarifJob());
+			}
 
 			GitHubActionsWorkflowFile checkActionsWorkflow;
 			if (FilesSilent.exists(checkActionsYaml)) {

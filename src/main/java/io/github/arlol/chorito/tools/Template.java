@@ -70,9 +70,9 @@ public abstract class Template {
 	 * chorito's zizmor job uploads its findings to code scanning as SARIF. A
 	 * private repository only has code scanning with GitHub Code Security, and
 	 * without it the upload fails and turns the check red, so the template
-	 * reports the findings as annotations on the run instead. A repository that
-	 * has code scanning can go back to SARIF, and keeps it from then on: see
-	 * {@link #zizmorSarifJob()}.
+	 * reports the findings as annotations on the run instead. A public
+	 * repository always has code scanning and gets SARIF, and any repository
+	 * that switches to it keeps it from then on: see {@link #zizmorSarifJob()}.
 	 * <p>
 	 * The debug job dumps every context on every run, which is chorito's habit
 	 * and not something to hand to a repository that did not ask for it.
@@ -92,7 +92,8 @@ public abstract class Template {
 
 	/**
 	 * The zizmor job as chorito runs it, uploading SARIF to code scanning. It
-	 * is what a check-actions workflow already uploading SARIF keeps.
+	 * is what a public repository gets, and what a check-actions workflow
+	 * already uploading SARIF keeps.
 	 */
 	public static Optional<MappingNode> zizmorSarifJob() {
 		return generalise(load("check-actions.yaml"))
