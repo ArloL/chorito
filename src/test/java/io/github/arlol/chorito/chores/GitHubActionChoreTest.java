@@ -604,6 +604,78 @@ public class GitHubActionChoreTest {
 		assertThat(workflow).content().isEqualTo(own);
 	}
 
+	/**
+	 * A public repository always has code scanning, and a ruleset that requires
+	 * zizmor's analysis waits forever for one that is never uploaded.
+	 */
+	@Test
+	void checkActionsWorkflowUploadsSarifOnAPublicRepository()
+			throws Exception {
+		Path workflow = extension.root()
+				.resolve(".github/workflows/check-actions.yaml");
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new GitHubActionChore().doit(context);
+
+		assertThat(workflow).content()
+				.contains("--format sarif . > results.sarif")
+				.contains("security-events: write")
+				.contains("github/codeql-action/upload-sarif");
+	}
+
+	@Test
+	void checkActionsWorkflowReportsAnnotationsOnAPrivateRepository()
+			throws Exception {
+		Path workflow = extension.root()
+				.resolve(".github/workflows/check-actions.yaml");
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> false)
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+
+		new GitHubActionChore().doit(context);
+
+		assertThat(workflow).content()
+				.contains("--format github .")
+				.doesNotContain("security-events")
+				.doesNotContain("upload-sarif");
+	}
+
+	/**
+	 * The annotation job chorito handed out before it could tell a public
+	 * repository from a private one moves to SARIF once it can.
+	 */
+	@Test
+	void checkActionsWorkflowMovesAPublicRepositoryToSarif() throws Exception {
+		Path workflow = extension.root()
+				.resolve(".github/workflows/check-actions.yaml");
+		ChoreContext privateContext = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.branches(List.of("main"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+		new GitHubActionChore().doit(privateContext);
+		assertThat(workflow).content().doesNotContain("upload-sarif");
+
+		new GitHubActionChore().doit(
+				privateContext.toBuilder()
+						.gitHubRepositoryIsPublic(_ -> true)
+						.build()
+		);
+
+		assertThat(workflow).content()
+				.contains("--format sarif . > results.sarif")
+				.contains("github/codeql-action/upload-sarif");
+	}
+
 	@Test
 	void actionsCheckoutWithPersistCredentials() throws Exception {
 		String input = ClassPathFiles
