@@ -69,7 +69,7 @@ public class GitHubActionChore implements Chore {
 					"it copies the version job from chorito's own main.yaml, whose ref condition names chorito's branch, and only narrowing afterwards points that copy at the branch the repository really has"
 			),
 			new Ordering(
-					"updateMainTriggers",
+					"updateTriggers",
 					"removeDeadDependabotCondition",
 					"the dependabot exclusion stays live until push is filtered to one branch, and this is the migration that filters it"
 			)
@@ -144,7 +144,7 @@ public class GitHubActionChore implements Chore {
 						"useToolVersionsForSetupJava",
 						this::useToolVersionsForSetupJava
 				),
-				new Migration("updateMainTriggers", this::updateMainTriggers),
+				new Migration("updateTriggers", this::updateTriggers),
 				new Migration(
 						"removeDeadDependabotCondition",
 						this::removeDeadDependabotCondition
@@ -840,31 +840,33 @@ public class GitHubActionChore implements Chore {
 	}
 
 	/**
-	 * Narrows main.yaml to the trunk branch and the pull requests aimed at it.
+	 * Narrows push to the trunk branch and lets pull_request cover the rest.
 	 * <p>
 	 * The shape chorito shipped was a bare {@code push:} -- every branch, every
 	 * time -- with {@code pull_request} cut down to {@code reopened}. That
-	 * covers a branch pushed to this repository and misses a fork completely: a
-	 * fork's push never reaches here, and without {@code opened} and
-	 * {@code synchronize} a fork's pull request builds only if somebody closes
-	 * and reopens it. Filtering push to the trunk and letting pull_request
-	 * cover everything else closes that, and hands fork pull requests to the
-	 * approval gate at the same time.
+	 * covers a branch pushed to this repository and misses a fork, or a pull
+	 * request opened by {@code GITHUB_TOKEN}, completely: no run is created
+	 * unless somebody closes and reopens it. Any workflow restricted to
+	 * {@code reopened} is migrated, and main.yaml also when its push is bare.
 	 */
-	void updateMainTriggers(ChoreContext context) {
+	void updateTriggers(ChoreContext context) {
 		Optional<String> branch = context.mainBranch();
 		if (branch.isEmpty()) {
 			return;
 		}
-		mainWorkflow(context).ifPresent(yaml -> {
-			var main = new GitHubActionsWorkflowFile(
-					FilesSilent.readString(yaml)
+		Optional<Path> mainWorkflow = mainWorkflow(context);
+		DirectoryStreams.githubWorkflows(context).forEach(path -> {
+			var workflow = new GitHubActionsWorkflowFile(
+					FilesSilent.readString(path)
 			);
-			if (!main.hasBarePush()) {
+			boolean shipped = workflow.hasPullRequestOnlyForReopened()
+					|| mainWorkflow.equals(Optional.of(path))
+							&& workflow.hasBarePush();
+			if (!shipped) {
 				return;
 			}
-			main.setOnPushAndPullRequestBranches(branch.orElseThrow());
-			FilesSilent.writeString(yaml, main.asString());
+			workflow.narrowPushToTrunk(branch.orElseThrow());
+			FilesSilent.writeString(path, workflow.asString());
 		});
 	}
 

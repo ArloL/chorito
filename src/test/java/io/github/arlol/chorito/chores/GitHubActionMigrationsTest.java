@@ -133,7 +133,7 @@ public class GitHubActionMigrationsTest {
 	}
 
 	@Test
-	public void updateMainTriggersFiltersPushAndPullRequestToTheTrunk() {
+	public void updateTriggersFiltersPushAndPullRequestToTheTrunk() {
 		Path workflow = workflow("""
 				on:
 				  push:
@@ -150,7 +150,7 @@ public class GitHubActionMigrationsTest {
 				    - run: true
 				""");
 
-		chore.updateMainTriggers(context("main"));
+		chore.updateTriggers(context("main"));
 
 		assertThat(workflow).content().contains("""
 				on:
@@ -160,6 +160,7 @@ public class GitHubActionMigrationsTest {
 				  pull_request:
 				    branches:
 				    - main
+				  workflow_dispatch:
 				  schedule:
 				  - cron: "14 3 2 * *"
 				""");
@@ -167,7 +168,7 @@ public class GitHubActionMigrationsTest {
 	}
 
 	@Test
-	public void updateMainTriggersNamesMasterWhenThatIsTheTrunk() {
+	public void updateTriggersNamesMasterWhenThatIsTheTrunk() {
 		Path workflow = workflow("""
 				on:
 				  push:
@@ -177,7 +178,7 @@ public class GitHubActionMigrationsTest {
 				    - run: true
 				""");
 
-		chore.updateMainTriggers(context("master"));
+		chore.updateTriggers(context("master"));
 
 		assertThat(workflow).content().contains("""
 				on:
@@ -187,7 +188,90 @@ public class GitHubActionMigrationsTest {
 				  pull_request:
 				    branches:
 				    - master
+				  workflow_dispatch:
 				""");
+	}
+
+	@Test
+	public void updateTriggersMigratesEveryWorkflowRestrictedToReopened() {
+		Path workflow = workflow("pr-check.yaml", """
+				on:
+				  push:
+				    paths:
+				    - src/**
+				  pull_request:
+				    branches:
+				    - main
+				    types:
+				    - reopened
+				jobs:
+				  build:
+				    steps:
+				    - run: true
+				""");
+
+		chore.updateTriggers(context("main"));
+
+		assertThat(workflow).content().contains("""
+				on:
+				  push:
+				    branches:
+				    - main
+				    paths:
+				    - src/**
+				  pull_request:
+				    branches:
+				    - main
+				  workflow_dispatch:
+				jobs:
+				""");
+	}
+
+	@Test
+	public void updateTriggersKeepsAFilteredPushWhileDroppingReopened() {
+		Path workflow = workflow("pr-check.yaml", """
+				on:
+				  push:
+				    tags:
+				    - v*
+				  pull_request:
+				    types:
+				    - reopened
+				jobs:
+				  build:
+				    steps:
+				    - run: true
+				""");
+
+		chore.updateTriggers(context("main"));
+
+		assertThat(workflow).content().contains("""
+				  push:
+				    tags:
+				    - v*
+				""").doesNotContain("reopened").contains("workflow_dispatch:");
+	}
+
+	/**
+	 * Outside main.yaml a bare push without a reopened pull request is not a
+	 * shape chorito shipped, so it may well mean every branch.
+	 */
+	@Test
+	public void updateTriggersLeavesABarePushOutsideMainAlone() {
+		Path workflow = workflow("deploy.yaml", """
+				on:
+				  push:
+				jobs:
+				  build:
+				    steps:
+				    - run: true
+				""");
+
+		chore.updateTriggers(context("main"));
+
+		assertThat(workflow).content()
+				.doesNotContain("branches")
+				.doesNotContain("pull_request");
 	}
 
 	/**
@@ -195,7 +279,7 @@ public class GitHubActionMigrationsTest {
 	 * block would throw away whatever they filtered on without saying so.
 	 */
 	@Test
-	public void updateMainTriggersLeavesAFilteredPushAlone() {
+	public void updateTriggersLeavesAFilteredPushAlone() {
 		Path workflow = workflow("""
 				on:
 				  push:
@@ -207,7 +291,7 @@ public class GitHubActionMigrationsTest {
 				    - run: true
 				""");
 
-		chore.updateMainTriggers(context("main"));
+		chore.updateTriggers(context("main"));
 
 		assertThat(workflow).content()
 				.contains("- release")
@@ -219,7 +303,7 @@ public class GitHubActionMigrationsTest {
 	 * leave it with triggers that match nothing at all.
 	 */
 	@Test
-	public void updateMainTriggersSkipsWhenTheTrunkIsUnknown() {
+	public void updateTriggersSkipsWhenTheTrunkIsUnknown() {
 		Path workflow = workflow("""
 				on:
 				  push:
@@ -229,7 +313,7 @@ public class GitHubActionMigrationsTest {
 				    - run: true
 				""");
 
-		chore.updateMainTriggers(extension.choreContext());
+		chore.updateTriggers(extension.choreContext());
 
 		assertThat(workflow).content().doesNotContain("branches");
 	}
@@ -371,7 +455,11 @@ public class GitHubActionMigrationsTest {
 	}
 
 	private Path workflow(String content) {
-		Path path = extension.root().resolve(".github/workflows/main.yaml");
+		return workflow("main.yaml", content);
+	}
+
+	private Path workflow(String name, String content) {
+		Path path = extension.root().resolve(".github/workflows/" + name);
 		FilesSilent.writeString(path, content);
 		return path;
 	}

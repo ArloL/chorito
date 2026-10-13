@@ -41,8 +41,15 @@ public class GitHubActionsWorkflowFile {
 	private static final String STEPS = "steps";
 	private static final String PERMISSIONS = "permissions";
 	private static final String MAIN_BRANCH = "main";
+	private static final String PUSH = "push";
+	private static final String PULL_REQUEST = "pull_request";
+	private static final String WORKFLOW_DISPATCH = "workflow_dispatch";
+	private static final String TYPES = "types";
+	private static final String REOPENED = "reopened";
 	private static final List<String> ON_BRANCH_TRIGGERS = List
-			.of("push", "pull_request");
+			.of(PUSH, PULL_REQUEST);
+	private static final List<String> PUSH_REF_FILTERS = List
+			.of("branches", "branches-ignore", "tags", "tags-ignore");
 	private static final String SETUP_JAVA_ACTION = "actions/setup-java";
 	private static final String DISTRIBUTION_TEMURIN = "temurin";
 	private static final String JAVA_VERSION = "java-version";
@@ -336,29 +343,67 @@ public class GitHubActionsWorkflowFile {
 	}
 
 	/**
-	 * Replaces the push and pull_request triggers with ones filtered to
-	 * {@code branch}, keeping every other trigger and the order they are
-	 * written in.
+	 * Whether {@code on.pull_request} fires for {@code reopened} and nothing
+	 * else.
 	 * <p>
-	 * The two are rebuilt rather than edited in place because a workflow
-	 * reaching this may have only one of them, or neither in the position it
-	 * ends up in. {@link #sortKeys()} orders the top level of a workflow and
-	 * the insides of a job, but nothing orders the triggers, so writing push
-	 * and pull_request first here is what keeps the block readable.
+	 * That is the other half of the shape chorito shipped, and it is not only
+	 * in main.yaml. A pull request opened from a fork, or by
+	 * {@code GITHUB_TOKEN}, then creates no run at all: nothing to approve, a
+	 * required check that never reports, auto-merge blocked.
 	 */
-	public void setOnPushAndPullRequestBranches(String branch) {
+	public boolean hasPullRequestOnlyForReopened() {
+		return getOn().flatMap(on -> getKeyAsMap(on, PULL_REQUEST))
+				.flatMap(pullRequest -> getKeyAsSequence(pullRequest, TYPES))
+				.map(SequenceNode::getValue)
+				.filter(
+						types -> types.size() == 1 && scalarValue(types.get(0))
+								.filter(REOPENED::equals)
+								.isPresent()
+				)
+				.isPresent();
+	}
+
+	/**
+	 * Moves branch builds from push to pull_request: push is filtered to
+	 * {@code branch}, pull_request runs for its default activity types, and
+	 * workflow_dispatch covers a branch with no pull request open.
+	 * <p>
+	 * A push already filtering on branches or tags is somebody's decision and
+	 * stays; a paths filter is kept. A missing pull_request is added filtered
+	 * to {@code branch}, a missing push is not -- the workflow never built the
+	 * trunk on push before. Nothing orders the triggers, so push, pull_request
+	 * and workflow_dispatch are put first to keep the block readable.
+	 */
+	public void narrowPushToTrunk(String branch) {
 		getOn().ifPresent(on -> {
-			List<NodeTuple> tuples = new ArrayList<>();
-			tuples.add(newTuple("push", branchFilter(branch)));
-			tuples.add(newTuple("pull_request", branchFilter(branch)));
-			on.getValue()
-					.stream()
-					.filter(
-							tuple -> !ON_BRANCH_TRIGGERS
-									.contains(keyName(tuple))
-					)
-					.forEach(tuples::add);
-			on.setValue(tuples);
+			getKeyAsNode(on, PUSH).ifPresent(push -> {
+				if (!(push instanceof MappingNode filters)) {
+					setKey(on, PUSH, branchFilter(branch));
+				} else if (filters.getValue()
+						.stream()
+						.map(GitHubActionsWorkflowFile::keyName)
+						.noneMatch(PUSH_REF_FILTERS::contains)) {
+					List<NodeTuple> tuples = new ArrayList<>(
+							branchFilter(branch).getValue()
+					);
+					tuples.addAll(filters.getValue());
+					filters.setValue(tuples);
+				}
+			});
+			if (hasPullRequestOnlyForReopened()) {
+				removeKey(getKeyAsMap(on, PULL_REQUEST), TYPES);
+			}
+			if (getKeyAsNode(on, PULL_REQUEST).isEmpty()) {
+				setKey(on, PULL_REQUEST, branchFilter(branch));
+			}
+			if (getKeyAsNode(on, WORKFLOW_DISPATCH).isEmpty()) {
+				setKey(
+						on,
+						WORKFLOW_DISPATCH,
+						new ScalarNode(Tag.NULL, "", ScalarStyle.PLAIN)
+				);
+			}
+			sortTuples(on, TRIGGER_ORDER);
 		});
 	}
 
@@ -1038,6 +1083,16 @@ public class GitHubActionsWorkflowFile {
 			case PERMISSIONS -> 70;
 			case "env" -> 80;
 			case "jobs" -> 200;
+			default -> 100;
+			},
+			100
+	);
+
+	private static final Comparator<NodeTuple> TRIGGER_ORDER = keyOrder(
+			key -> switch (key) {
+			case PUSH -> 10;
+			case PULL_REQUEST -> 20;
+			case WORKFLOW_DISPATCH -> 30;
 			default -> 100;
 			},
 			100
