@@ -163,6 +163,9 @@ public class GitChoreContext {
 						GitChoreContext::refresh,
 						GitChoreContext::deleteIgnoredFiles
 				).gitHubRepositoryIsPublic(GitHubRepositories.publicLookup())
+						.mavenDistributionSha256(
+								MavenDistributions.sha256Lookup()
+						)
 		);
 	}
 
