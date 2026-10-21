@@ -12,7 +12,7 @@ package io.github.arlol.chorito.tools;
  */
 public abstract class MavenVersions {
 
-	public static final String MAVEN = "3.9.16";
+	public static final String MAVEN = "3.10.0";
 
 	private MavenVersions() {
 	}
