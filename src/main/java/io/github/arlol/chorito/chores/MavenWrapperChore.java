@@ -1,9 +1,6 @@
 package io.github.arlol.chorito.chores;
 
 import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,11 +51,8 @@ public class MavenWrapperChore implements Chore {
 	private static final Pattern DISTRIBUTION_VERSION = Pattern
 			.compile("/apache-maven/([^/\n]+)/apache-maven-\\1-bin\\.zip");
 
-	private static final String DISTRIBUTION_ARTIFACT = "org.apache.maven:apache-maven:"
-			+ MavenVersions.MAVEN + ":zip:bin";
-
-	private static final String DISTRIBUTION_FILE = "apache-maven-"
-			+ MavenVersions.MAVEN + "-bin.zip";
+	private static final Pattern WRAPPER_VERSION = Pattern
+			.compile("(?m)^wrapperVersion=3\\.3\\.4$");
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
@@ -79,9 +73,25 @@ public class MavenWrapperChore implements Chore {
 						throw new IllegalStateException("No maven-wrapper.jar");
 					}
 					ExecutableFlagger.makeExecutableIfPossible(wrapper);
-					if (FilesSilent.exists(wrapperProperties) && !isCurrent(
-							FilesSilent.readString(wrapperProperties)
-					)) {
+					if (!FilesSilent.exists(wrapperProperties)) {
+						return;
+					}
+					String properties = FilesSilent
+							.readString(wrapperProperties);
+					if (isCurrent(properties)) {
+						return;
+					}
+					if (WRAPPER_VERSION.matcher(properties).find()) {
+						FilesSilent.writeString(
+								wrapperProperties,
+								DEFAULT_PROPERTIES.replace(
+										"-bin.zip\n",
+										"-bin.zip\ndistributionSha256Sum="
+												+ distributionSha256(context)
+												+ "\n"
+								)
+						);
+					} else {
 						generateWrapper(context, pomDir, "./mvnw");
 					}
 				});
@@ -137,12 +147,18 @@ public class MavenWrapperChore implements Chore {
 		}
 	}
 
+	/**
+	 * Runs Maven, which needs a JDK the chores runner lacks. Only for a wrapper
+	 * that is missing or on another wrapper version, since its scripts and jar
+	 * need replacing too; a wrapper already on 3.3.4 only has its properties
+	 * rewritten.
+	 */
 	private static void generateWrapper(
 			ChoreContext context,
 			Path pomDir,
 			String maven
 	) {
-		String sha256 = distributionSha256(context, pomDir, maven);
+		String sha256 = distributionSha256(context);
 		LOG.info("Running {} wrapper:3.3.4:wrapper", maven);
 		context.newProcessBuilder(
 				maven,
@@ -154,59 +170,15 @@ public class MavenWrapperChore implements Chore {
 		).inheritIO().directory(pomDir).start().waitFor(5, TimeUnit.MINUTES);
 	}
 
-	/**
-	 * Has Maven fetch the distribution and hashes it.
-	 * <p>
-	 * Central publishes SHA-1 and SHA-512 for it but no SHA-256, the one digest
-	 * the wrapper checks, so it has to be computed. Maven rather than a plain
-	 * download: its resolver retries when Central rate limits, and verifies
-	 * what it fetched against the published SHA-1, so the SHA-256 is of the
-	 * distribution Central actually serves.
-	 * <p>
-	 * The copy lands in a directory of its own inside the project, where the
-	 * process and this chore see the same path, and is deleted again so the
-	 * next commit does not pick it up.
-	 */
-	private static String distributionSha256(
-			ChoreContext context,
-			Path pomDir,
-			String maven
-	) {
-		Path directory = FilesSilent
-				.createTempDirectory(pomDir, ".chorito-maven-");
-		Path distribution = directory.resolve(DISTRIBUTION_FILE);
-		try {
-			LOG.info("Downloading {} to hash it", DISTRIBUTION_ARTIFACT);
-			context.newProcessBuilder(
-					maven,
-					"-N",
-					"dependency:3.11.0:copy",
-					"-Dartifact=" + DISTRIBUTION_ARTIFACT,
-					"-DoutputDirectory=" + directory.toAbsolutePath()
-			)
-					.inheritIO()
-					.directory(pomDir)
-					.start()
-					.waitFor(5, TimeUnit.MINUTES);
-			if (!FilesSilent.exists(distribution)) {
-				throw new IllegalStateException(
-						"Could not download " + DISTRIBUTION_ARTIFACT
+	private static String distributionSha256(ChoreContext context) {
+		LOG.info("Downloading Maven {} to hash it", MavenVersions.MAVEN);
+		return context.mavenDistributionSha256(MavenVersions.MAVEN)
+				.orElseThrow(
+						() -> new IllegalStateException(
+								"Could not download Maven "
+										+ MavenVersions.MAVEN
+						)
 				);
-			}
-			return HexFormat.of()
-					.formatHex(
-							MessageDigest.getInstance("SHA-256")
-									.digest(
-											FilesSilent
-													.readAllBytes(distribution)
-									)
-					);
-		} catch (NoSuchAlgorithmException e) {
-			throw new IllegalStateException(e);
-		} finally {
-			FilesSilent.deleteIfExists(distribution);
-			FilesSilent.deleteIfExists(directory);
-		}
 	}
 
 }

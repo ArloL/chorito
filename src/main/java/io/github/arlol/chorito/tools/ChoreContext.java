@@ -32,6 +32,8 @@ public class ChoreContext {
 		private Function<String[], ProcessBuilderSilent> processBuilderFactory = ProcessBuilderSilent
 				.factory();
 		private Predicate<String> gitHubRepositoryIsPublic = _ -> false;
+		private Function<String, Optional<String>> mavenDistributionSha256 = _ -> Optional
+				.empty();
 		private final BuilderRefresh builderRefresh;
 		private final Consumer<Path> deleteIgnoredFiles;
 
@@ -55,6 +57,7 @@ public class ChoreContext {
 			this.clock = choreContext.clock();
 			this.processBuilderFactory = choreContext.processBuilderFactory();
 			this.gitHubRepositoryIsPublic = choreContext.gitHubRepositoryIsPublic;
+			this.mavenDistributionSha256 = choreContext.mavenDistributionSha256;
 			this.builderRefresh = choreContext.builderRefresh;
 			this.deleteIgnoredFiles = choreContext.deleteIgnoredFiles;
 		}
@@ -93,6 +96,10 @@ public class ChoreContext {
 
 		public Predicate<String> gitHubRepositoryIsPublic() {
 			return gitHubRepositoryIsPublic;
+		}
+
+		public Function<String, Optional<String>> mavenDistributionSha256() {
+			return mavenDistributionSha256;
 		}
 
 		public Builder root(Path root) {
@@ -149,6 +156,17 @@ public class ChoreContext {
 			return this;
 		}
 
+		/**
+		 * Answers the SHA-256 of a Maven version's bin.zip. Defaults to empty,
+		 * for the same reason as {@link #gitHubRepositoryIsPublic(Predicate)}.
+		 */
+		public Builder mavenDistributionSha256(
+				Function<String, Optional<String>> mavenDistributionSha256
+		) {
+			this.mavenDistributionSha256 = mavenDistributionSha256;
+			return this;
+		}
+
 		public ChoreContext build() {
 			return new ChoreContext(
 					root,
@@ -160,6 +178,7 @@ public class ChoreContext {
 					clock,
 					processBuilderFactory,
 					gitHubRepositoryIsPublic,
+					mavenDistributionSha256,
 					builderRefresh,
 					deleteIgnoredFiles
 			);
@@ -176,6 +195,7 @@ public class ChoreContext {
 	private final Clock clock;
 	private final Function<String[], ProcessBuilderSilent> processBuilderFactory;
 	private final Predicate<String> gitHubRepositoryIsPublic;
+	private final Function<String, Optional<String>> mavenDistributionSha256;
 	private final BuilderRefresh builderRefresh;
 	private final Consumer<Path> deleteIgnoredFiles;
 
@@ -189,6 +209,7 @@ public class ChoreContext {
 			Clock clock,
 			Function<String[], ProcessBuilderSilent> processBuilderFactory,
 			Predicate<String> gitHubRepositoryIsPublic,
+			Function<String, Optional<String>> mavenDistributionSha256,
 			BuilderRefresh builderRefresh,
 			Consumer<Path> deleteIgnoredFilesConsumer
 	) {
@@ -201,6 +222,7 @@ public class ChoreContext {
 		this.clock = clock;
 		this.processBuilderFactory = processBuilderFactory;
 		this.gitHubRepositoryIsPublic = gitHubRepositoryIsPublic;
+		this.mavenDistributionSha256 = mavenDistributionSha256;
 		this.builderRefresh = builderRefresh;
 		this.deleteIgnoredFiles = deleteIgnoredFilesConsumer;
 	}
@@ -278,6 +300,10 @@ public class ChoreContext {
 
 	public RandomGenerator randomGenerator() {
 		return randomGenerator;
+	}
+
+	public Optional<String> mavenDistributionSha256(String version) {
+		return mavenDistributionSha256.apply(version);
 	}
 
 	public Path resolve(Path path) {
