@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -28,7 +29,8 @@ public class MavenWrapperChore implements Chore {
 	 * {@code requireMavenVersion}. A wrapper that installs an older Maven than
 	 * the pom demands fails every build in the repository, so the two are not
 	 * free to move apart: bumping {@link MavenVersions#MAVEN} moves both, and
-	 * the next chorito run brings each managed wrapper along.
+	 * the next chorito run brings each older managed wrapper along. A newer one
+	 * is Renovate's doing and stays.
 	 * <p>
 	 * Substituted rather than formatted because the properties file the wrapper
 	 * writes ends its lines with {@code \n} on every platform, which is what a
@@ -48,6 +50,9 @@ public class MavenWrapperChore implements Chore {
 
 	private static final Pattern DISTRIBUTION_SHA256_SUM = Pattern
 			.compile("(?m)^distributionSha256Sum=[^\n]*\n");
+
+	private static final Pattern DISTRIBUTION_VERSION = Pattern
+			.compile("/apache-maven/([^/\n]+)/apache-maven-\\1-bin\\.zip");
 
 	private static final String DISTRIBUTION_ARTIFACT = "org.apache.maven:apache-maven:"
 			+ MavenVersions.MAVEN + ":zip:bin";
@@ -84,7 +89,8 @@ public class MavenWrapperChore implements Chore {
 	}
 
 	/**
-	 * Whether the wrapper is on the declared Maven and pins its checksum.
+	 * Whether the wrapper is on at least the declared Maven and pins its
+	 * checksum.
 	 * <p>
 	 * The checksum is taken as it stands rather than checked: checking it would
 	 * download the distribution on every run, and a wrong one fails the
@@ -93,10 +99,42 @@ public class MavenWrapperChore implements Chore {
 	 * adds it.
 	 */
 	private static boolean isCurrent(String properties) {
-		return DISTRIBUTION_SHA256_SUM.matcher(properties).find()
-				&& DISTRIBUTION_SHA256_SUM.matcher(properties)
-						.replaceAll("")
-						.equals(DEFAULT_PROPERTIES);
+		Matcher version = DISTRIBUTION_VERSION.matcher(properties);
+		if (!DISTRIBUTION_SHA256_SUM.matcher(properties).find()
+				|| !version.find() || !isAtLeastDeclared(version.group(1))) {
+			return false;
+		}
+		String declared = properties.replace(
+				version.group(),
+				"/apache-maven/" + MavenVersions.MAVEN + "/apache-maven-"
+						+ MavenVersions.MAVEN + "-bin.zip"
+		);
+		return DISTRIBUTION_SHA256_SUM.matcher(declared)
+				.replaceAll("")
+				.equals(DEFAULT_PROPERTIES);
+	}
+
+	/**
+	 * Numeric parts only: a pre-release such as {@code 4.0.0-rc-4} does not
+	 * parse and is replaced with the declared release.
+	 */
+	private static boolean isAtLeastDeclared(String version) {
+		String[] actual = version.split("\\.");
+		String[] declared = MavenVersions.MAVEN.split("\\.");
+		try {
+			for (int i = 0; i < Math.max(actual.length, declared.length); i++) {
+				int compared = Integer.compare(
+						i < actual.length ? Integer.parseInt(actual[i]) : 0,
+						i < declared.length ? Integer.parseInt(declared[i]) : 0
+				);
+				if (compared != 0) {
+					return compared > 0;
+				}
+			}
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
+		}
 	}
 
 	private static void generateWrapper(

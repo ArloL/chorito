@@ -259,6 +259,66 @@ public class MavenWrapperChoreTest {
 	}
 
 	/**
+	 * Renovate bumps managed wrappers past {@link MavenVersions#MAVEN} before
+	 * chorito catches up. The constant is a floor, not a pin.
+	 */
+	@Test
+	void leavesAWrapperOnANewerMavenVersionAlone() throws Exception {
+		// given
+		List<String> commands = new ArrayList<>();
+		var context = recordingContext(commands);
+		FilesSilent.touch(context.resolve("pom.xml"));
+		FilesSilent.touch(context.resolve("mvnw"));
+		FilesSilent.touch(context.resolve(".mvn/wrapper/maven-wrapper.jar"));
+		FilesSilent.writeString(
+				context.resolve(".mvn/wrapper/maven-wrapper.properties"),
+				"""
+						wrapperVersion=3.3.4
+						distributionType=bin
+						distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/99.0.0/apache-maven-99.0.0-bin.zip
+						distributionSha256Sum=5af3b743dd8b876b5c45da33b676251e5f1687712644abb4ee519ca56e1d89ce
+						wrapperUrl=https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.3.4/maven-wrapper-3.3.4.jar
+						"""
+		);
+
+		// when
+		new MavenWrapperChore().doit(context.refresh());
+
+		// then
+		assertThat(commands).isEmpty();
+	}
+
+	@Test
+	void upgradesAWrapperOnAnOlderMavenVersion() throws Exception {
+		// given
+		List<String> commands = new ArrayList<>();
+		var context = recordingContext(commands);
+		FilesSilent.touch(context.resolve("pom.xml"));
+		FilesSilent.touch(context.resolve("mvnw"));
+		FilesSilent.touch(context.resolve(".mvn/wrapper/maven-wrapper.jar"));
+		FilesSilent.writeString(
+				context.resolve(".mvn/wrapper/maven-wrapper.properties"),
+				"""
+						wrapperVersion=3.3.4
+						distributionType=bin
+						distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.10/apache-maven-3.9.10-bin.zip
+						distributionSha256Sum=5af3b743dd8b876b5c45da33b676251e5f1687712644abb4ee519ca56e1d89ce
+						wrapperUrl=https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.3.4/maven-wrapper-3.3.4.jar
+						"""
+		);
+
+		// when
+		new MavenWrapperChore().doit(context.refresh());
+
+		// then
+		assertThat(wrapperCommands(commands)).singleElement()
+				.satisfies(
+						command -> assertThat(command)
+								.contains("-Dmaven=" + MavenVersions.MAVEN)
+				);
+	}
+
+	/**
 	 * A context whose fake wrapper records the command line it was asked to
 	 * run, so a test can assert on the version the chore passes rather than
 	 * only on the files it leaves behind.
