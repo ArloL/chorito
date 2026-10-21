@@ -14,6 +14,8 @@ import java.time.Duration;
 import java.util.HexFormat;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class MavenDistributions {
 
@@ -22,6 +24,9 @@ public final class MavenDistributions {
 	private static final Duration DOWNLOAD_TIMEOUT = Duration.ofMinutes(5);
 
 	private static final int ATTEMPTS = 3;
+
+	private static final Pattern PUBLISHED_SHA512 = Pattern
+			.compile("\\s*([0-9a-fA-F]{128})");
 
 	private MavenDistributions() {
 	}
@@ -75,10 +80,11 @@ public final class MavenDistributions {
 			if (sha512.isEmpty()) {
 				return Optional.empty();
 			}
-			String published = new String(sha512.orElseThrow(), UTF_8).trim()
-					.split("\\s+")[0];
-			if (!hex("SHA-512", distribution.orElseThrow())
-					.equalsIgnoreCase(published)) {
+			Matcher published = PUBLISHED_SHA512
+					.matcher(new String(sha512.orElseThrow(), UTF_8));
+			if (!published.lookingAt()
+					|| !hex("SHA-512", distribution.orElseThrow())
+							.equalsIgnoreCase(published.group(1))) {
 				return Optional.empty();
 			}
 			return Optional.of(hex("SHA-256", distribution.orElseThrow()));
