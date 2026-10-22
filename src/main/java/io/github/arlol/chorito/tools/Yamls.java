@@ -201,7 +201,7 @@ public abstract class Yamls {
 	private static void placeComments(Node root, String content) {
 		String[] lines = content.split("\n", -1);
 		List<Node> nodes = inDocumentOrder(root, new ArrayList<>());
-		leadNextNode(nodes, lines);
+		restoreBlankLinesAfterBlockScalars(nodes, lines);
 		moveLeadingCommentsToSequenceItems(root);
 		markWhereSequenceItemCommentsStand(root, lines);
 	}
@@ -221,52 +221,22 @@ public abstract class Yamls {
 	}
 
 	/**
-	 * Hands a comment the scanner read as trailing a value, but which was
-	 * written on a line of its own, to the node that follows it.
-	 *
-	 * A block scalar swallows the newline that ends it, so a comment on the
-	 * next line arrives as an in-line comment of that scalar. The emitter
-	 * writes an in-line comment where the value ended, which for a block scalar
-	 * is column 0, and the comment loses its indentation along with the entry
-	 * it was heading. Giving it to the next node in document order is what the
-	 * composer would have done had it read the comment as a block comment, and
-	 * the ordinary placement takes over from there - the next node being a
-	 * later key in the same mapping, or the next sequence item, is what decides
-	 * which.
-	 *
-	 * A comment with no node after it keeps its place, having nothing to lead.
-	 * <p>
-	 * The block scalar swallows the blank lines before the comment too, so a
-	 * blank line written between the two is put back in front of it -- without
-	 * it the comment reads as the last line of the script above.
+	 * Puts back the blank line written above a comment that follows a block
+	 * scalar. The scalar swallows the blank lines that end it, so without this
+	 * the comment reads as the last line of the script above.
 	 */
-	private static void leadNextNode(List<Node> nodes, String[] lines) {
-		for (int index = 0; index < nodes.size() - 1; index++) {
-			Node node = nodes.get(index);
-			Node next = nodes.get(index + 1);
-			List<CommentLine> inLine = node.getInLineComments();
-			if (inLine == null || inLine.isEmpty()) {
+	private static void restoreBlankLinesAfterBlockScalars(
+			List<Node> nodes,
+			String[] lines
+	) {
+		for (Node node : nodes) {
+			List<CommentLine> comments = node.getBlockComments();
+			if (comments == null || comments.isEmpty() || comments.getFirst()
+					.getCommentType() != CommentType.BLOCK) {
 				continue;
 			}
-			List<CommentLine> leading = new ArrayList<>();
-			List<CommentLine> trailing = new ArrayList<>();
-			for (CommentLine comment : inLine) {
-				boolean leads = startsItsOwnLine(lines, comment)
-						&& startsBefore(comment, next);
-				(leads ? leading : trailing).add(comment);
-			}
-			if (leading.isEmpty()) {
-				continue;
-			}
-			node.setInLineComments(trailing);
-			next.setBlockComments(
-					append(
-							append(
-									blankLineAbove(lines, leading.getFirst()),
-									asBlockComments(leading)
-							),
-							next.getBlockComments()
-					)
+			node.setBlockComments(
+					append(blankLineAbove(lines, comments.getFirst()), comments)
 			);
 		}
 	}
@@ -289,21 +259,6 @@ public abstract class Yamls {
 						)
 				)
 				.orElse(List.of());
-	}
-
-	private static List<CommentLine> asBlockComments(
-			List<CommentLine> comments
-	) {
-		return comments.stream()
-				.map(
-						comment -> new CommentLine(
-								comment.getStartMark(),
-								comment.getEndMark(),
-								comment.getValue(),
-								CommentType.BLOCK
-						)
-				)
-				.toList();
 	}
 
 	/**
@@ -336,20 +291,6 @@ public abstract class Yamls {
 			return line.substring(0, Math.min(mark.getColumn(), line.length()))
 					.isBlank();
 		}).isPresent();
-	}
-
-	/**
-	 * Whether the comment was written above the given node rather than below
-	 * it. The end of a document reads as an in-line comment of the root, which
-	 * begins long before it.
-	 */
-	private static boolean startsBefore(CommentLine comment, Node next) {
-		return comment.getStartMark()
-				.flatMap(
-						mark -> next.getStartMark()
-								.map(start -> mark.getLine() < start.getLine())
-				)
-				.orElse(false);
 	}
 
 	/**
