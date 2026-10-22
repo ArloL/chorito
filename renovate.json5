@@ -106,6 +106,9 @@
         "config:recommended",
         "customManagers:githubActionsVersions",
     ],
+    // config:recommended ignores **/test/**, which hides the fixtures the
+    // custom managers above list.
+    "ignorePaths": [],
     "labels": [
         "dependencies",
     ],
