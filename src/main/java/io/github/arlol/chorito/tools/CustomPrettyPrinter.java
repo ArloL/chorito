@@ -26,7 +26,7 @@ import tools.jackson.core.util.Separators;
  * {@code canWriteComments()} at false and the call throws, so the raw writes
  * below stay.
  */
-public class CustomPrettyPrinter extends DefaultPrettyPrinter {
+public final class CustomPrettyPrinter extends DefaultPrettyPrinter {
 
 	private static final long serialVersionUID = 1L;
 
