@@ -132,7 +132,7 @@
         },
     ],
     "schedule": [
-        "on the 20th day of the month",
+        "* * 20-23 * *",
     ],
     "vulnerabilityAlerts": {
         "addLabels": [

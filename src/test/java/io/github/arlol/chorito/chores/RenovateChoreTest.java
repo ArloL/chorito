@@ -51,7 +51,7 @@ public class RenovateChoreTest {
 						    ],
 						    "minimumReleaseAge": "7 days",
 						    "schedule": [
-						        "on the 20th day of the month",
+						        "* * 20-23 * *",
 						    ],
 						    "vulnerabilityAlerts": {
 						        "schedule": [
@@ -93,7 +93,7 @@ public class RenovateChoreTest {
 								    ],
 								    "minimumReleaseAge": "7 days",
 								    "schedule": [
-								        "on the 20th day of the month",
+								        "* * 20-23 * *",
 								    ],
 								    "vulnerabilityAlerts": {
 								        "addLabels": [
@@ -146,7 +146,7 @@ public class RenovateChoreTest {
 						  "labels": ["dependencies"],
 						  "addLabels": ["{{manager}}"],
 						  "minimumReleaseAge": "4 days",
-						  "schedule": ["on the 20th day of the month"],
+						  "schedule": ["* * 20-23 * *"],
 						  "vulnerabilityAlerts": {
 						    "schedule": ["at any time"],
 						    "minimumReleaseAge": "0 days",
@@ -174,7 +174,7 @@ public class RenovateChoreTest {
 								    ],
 								    "minimumReleaseAge": "7 days",
 								    "schedule": [
-								        "on the 20th day of the month",
+								        "* * 20-23 * *",
 								    ],
 								    "vulnerabilityAlerts": {
 								        "addLabels": [
@@ -188,6 +188,40 @@ public class RenovateChoreTest {
 								}
 								"""
 				);
+	}
+
+	@Test
+	public void testWidensTheMonthlyWindow() throws Exception {
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
+		FilesSilent.writeString(renovateJson5, """
+				{
+				  "schedule": ["on the 20th day of the month"]
+				}
+				""");
+
+		new RenovateChore().doit(githubContext());
+
+		assertThat(renovateJson5).content().contains("""
+				    "schedule": [
+				        "* * 20-23 * *",
+				    ],
+				""");
+	}
+
+	@Test
+	public void testKeepsACustomSchedule() throws Exception {
+		Path renovateJson5 = extension.root().resolve("renovate.json5");
+		FilesSilent.writeString(renovateJson5, """
+				{
+				  "schedule": ["on the 20th day of the month", "every weekend"]
+				}
+				""");
+
+		new RenovateChore().doit(githubContext());
+
+		assertThat(renovateJson5).content()
+				.contains("on the 20th day of the month")
+				.doesNotContain("20-23");
 	}
 
 	@Test
@@ -298,7 +332,7 @@ public class RenovateChoreTest {
 				    ],
 				    "minimumReleaseAge": "7 days",
 				    "schedule": [
-				        "on the 20th day of the month",
+				        "* * 20-23 * *",
 				    ],
 				    "vulnerabilityAlerts": {
 				        "addLabels": [
@@ -555,7 +589,7 @@ public class RenovateChoreTest {
 								    ],
 								    "minimumReleaseAge": "7 days",
 								    "schedule": [
-								        "on the 20th day of the month",
+								        "* * 20-23 * *",
 								    ],
 								    "vulnerabilityAlerts": {
 								        "addLabels": [
@@ -605,7 +639,7 @@ public class RenovateChoreTest {
 				    ],
 				    "minimumReleaseAge": "7 days",
 				    "schedule": [
-				        "on the 20th day of the month",
+				        "* * 20-23 * *",
 				    ],
 				    "vulnerabilityAlerts": {
 				        "addLabels": [
