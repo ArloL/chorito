@@ -1,5 +1,6 @@
 package io.github.arlol.chorito.tools;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public final class JsonMigrations {
@@ -13,6 +14,16 @@ public final class JsonMigrations {
 			String to
 	) {
 		return builder -> builder.migrateString(key, from, to);
+	}
+
+	public static JsonMigration replaceArray(
+			String key,
+			List<String> from,
+			List<String> to
+	) {
+		return builder -> from.equals(builder.arrayStrings(key))
+				? builder.array(key, to)
+				: builder;
 	}
 
 	public static JsonMigration ifAbsent(

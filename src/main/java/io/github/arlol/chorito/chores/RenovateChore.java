@@ -1,6 +1,7 @@
 package io.github.arlol.chorito.chores;
 
 import static io.github.arlol.chorito.tools.JsonMigrations.ifAbsent;
+import static io.github.arlol.chorito.tools.JsonMigrations.replaceArray;
 import static io.github.arlol.chorito.tools.JsonMigrations.replaceString;
 import static io.github.arlol.chorito.tools.JsonMigrations.whenObject;
 
@@ -20,6 +21,10 @@ import io.github.arlol.chorito.tools.JsonMigration;
 public class RenovateChore implements Chore {
 
 	private static final String MINIMUM_RELEASE_AGE = "minimumReleaseAge";
+	private static final String SCHEDULE = "schedule";
+	// Renovate opens at most two PRs an hour, and one day did not fit a busy
+	// repository's monthly updates.
+	private static final String MONTHLY_WINDOW = "* * 20-23 * *";
 	private static final String LABELS = "labels";
 	private static final String ADD_LABELS = "addLabels";
 	private static final String CUSTOM_MANAGERS = "customManagers";
@@ -42,6 +47,11 @@ public class RenovateChore implements Chore {
 
 	static final List<JsonMigration> MIGRATIONS = List.of(
 			replaceString(MINIMUM_RELEASE_AGE, "4 days", "7 days"),
+			replaceArray(
+					SCHEDULE,
+					List.of("on the 20th day of the month"),
+					List.of(MONTHLY_WINDOW)
+			),
 			ifAbsent(
 					LABELS,
 					root -> root.array(LABELS, "dependencies")
@@ -150,10 +160,10 @@ public class RenovateChore implements Chore {
 					.array(LABELS, "dependencies")
 					.array(ADD_LABELS, "{{manager}}")
 					.put(MINIMUM_RELEASE_AGE, "7 days")
-					.array("schedule", "on the 20th day of the month")
+					.array(SCHEDULE, MONTHLY_WINDOW)
 					.object(
 							"vulnerabilityAlerts",
-							v -> v.array("schedule", "at any time")
+							v -> v.array(SCHEDULE, "at any time")
 									.put(MINIMUM_RELEASE_AGE, "0 days")
 									.array(ADD_LABELS, "security")
 					)
