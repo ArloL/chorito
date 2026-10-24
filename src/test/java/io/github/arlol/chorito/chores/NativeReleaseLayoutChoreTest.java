@@ -82,6 +82,19 @@ public class NativeReleaseLayoutChoreTest {
 	}
 
 	@Test
+	public void testAddsNoArmJobForAGraalVmInnovationPin() {
+		FilesSilent.writeString(
+				extension.root().resolve(".tool-versions"),
+				"java graalvm-community-innovation-25.0.4.1.1\n"
+		);
+		Path workflow = writeMain(NATIVE_CLI);
+
+		new NativeReleaseLayoutChore().doit(extension.choreContext());
+
+		assertThat(workflow).content().isEqualTo(NATIVE_CLI);
+	}
+
+	@Test
 	public void testWaitsForTheArmBuildBeforeReleasing() {
 		Path workflow = writeMain(NATIVE_CLI);
 

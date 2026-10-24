@@ -179,7 +179,8 @@ public class GitHubActionChore implements Chore {
 
 	void updateGraalSteps(ChoreContext context) {
 		Optional<Path> mainWorkflow = mainWorkflow(context);
-		if (mainWorkflow.isEmpty()) {
+		if (mainWorkflow.isEmpty()
+				|| JavaVersions.pinsGraalVmInnovation(context)) {
 			return;
 		}
 		Path mainYaml = mainWorkflow.orElseThrow();

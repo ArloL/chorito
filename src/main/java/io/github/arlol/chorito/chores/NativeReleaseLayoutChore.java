@@ -2,6 +2,7 @@ package io.github.arlol.chorito.chores;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.GitHubActionsWorkflowFile;
+import io.github.arlol.chorito.tools.JavaVersions;
 import io.github.arlol.chorito.tools.Template;
 import io.github.arlol.chorito.tools.WorkflowJobs;
 
@@ -34,7 +35,8 @@ public class NativeReleaseLayoutChore implements Chore {
 		var armJob = template.getJob(WorkflowJobs.LINUX_ARM);
 		var prepareStep = template
 				.getStepByName(WorkflowJobs.RELEASE, PREPARE_ARTIFACTS_STEP);
-		if (armJob.isEmpty() || prepareStep.isEmpty()) {
+		if (armJob.isEmpty() || prepareStep.isEmpty()
+				|| JavaVersions.pinsGraalVmInnovation(context)) {
 			return context;
 		}
 
