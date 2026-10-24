@@ -45,6 +45,11 @@ public final class JsonBuilder {
 		return this;
 	}
 
+	public JsonBuilder put(String key, int value) {
+		node.put(key, value);
+		return this;
+	}
+
 	public JsonBuilder array(String key, String... values) {
 		ArrayNode arr = node.putArray(key);
 		for (var v : values) {

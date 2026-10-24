@@ -50,6 +50,8 @@ public class RenovateChoreTest {
 						        "{{manager}}",
 						    ],
 						    "minimumReleaseAge": "7 days",
+						    "prConcurrentLimit": 10,
+						    "prHourlyLimit": 5,
 						    "schedule": [
 						        "* * 20-23 * *",
 						    ],
@@ -92,6 +94,8 @@ public class RenovateChoreTest {
 								        "dependencies",
 								    ],
 								    "minimumReleaseAge": "7 days",
+								    "prConcurrentLimit": 10,
+								    "prHourlyLimit": 5,
 								    "schedule": [
 								        "* * 20-23 * *",
 								    ],
@@ -146,6 +150,8 @@ public class RenovateChoreTest {
 						  "labels": ["dependencies"],
 						  "addLabels": ["{{manager}}"],
 						  "minimumReleaseAge": "4 days",
+						  "prConcurrentLimit": 10,
+						  "prHourlyLimit": 5,
 						  "schedule": ["* * 20-23 * *"],
 						  "vulnerabilityAlerts": {
 						    "schedule": ["at any time"],
@@ -173,6 +179,8 @@ public class RenovateChoreTest {
 								        "dependencies",
 								    ],
 								    "minimumReleaseAge": "7 days",
+								    "prConcurrentLimit": 10,
+								    "prHourlyLimit": 5,
 								    "schedule": [
 								        "* * 20-23 * *",
 								    ],
@@ -195,6 +203,8 @@ public class RenovateChoreTest {
 		Path renovateJson5 = extension.root().resolve("renovate.json5");
 		FilesSilent.writeString(renovateJson5, """
 				{
+				  "prConcurrentLimit": 10,
+				  "prHourlyLimit": 5,
 				  "schedule": ["on the 20th day of the month"]
 				}
 				""");
@@ -213,6 +223,8 @@ public class RenovateChoreTest {
 		Path renovateJson5 = extension.root().resolve("renovate.json5");
 		FilesSilent.writeString(renovateJson5, """
 				{
+				  "prConcurrentLimit": 10,
+				  "prHourlyLimit": 5,
 				  "schedule": ["on the 20th day of the month", "every weekend"]
 				}
 				""");
@@ -235,7 +247,9 @@ public class RenovateChoreTest {
 						  "extends": [
 						    "config:recommended"
 						  ],
-						  "minimumReleaseAge": "7 days"
+						  "minimumReleaseAge": "7 days",
+						  "prConcurrentLimit": 10,
+						  "prHourlyLimit": 5,
 						}
 						"""
 		);
@@ -257,6 +271,8 @@ public class RenovateChoreTest {
 								        "dependencies",
 								    ],
 								    "minimumReleaseAge": "7 days",
+								    "prConcurrentLimit": 10,
+								    "prHourlyLimit": 5,
 								}
 								"""
 				);
@@ -276,6 +292,8 @@ public class RenovateChoreTest {
 						  "labels": ["dependencies"],
 						  "addLabels": ["{{manager}}"],
 						  "minimumReleaseAge": "7 days",
+						  "prConcurrentLimit": 10,
+						  "prHourlyLimit": 5,
 						  "vulnerabilityAlerts": {
 						    "schedule": ["at any time"],
 						    "minimumReleaseAge": "0 days"
@@ -301,6 +319,8 @@ public class RenovateChoreTest {
 								        "dependencies",
 								    ],
 								    "minimumReleaseAge": "7 days",
+								    "prConcurrentLimit": 10,
+								    "prHourlyLimit": 5,
 								    "vulnerabilityAlerts": {
 								        "addLabels": [
 								            "security",
@@ -331,6 +351,8 @@ public class RenovateChoreTest {
 				        "dependencies",
 				    ],
 				    "minimumReleaseAge": "7 days",
+				    "prConcurrentLimit": 10,
+				    "prHourlyLimit": 5,
 				    "schedule": [
 				        "* * 20-23 * *",
 				    ],
@@ -364,6 +386,8 @@ public class RenovateChoreTest {
 				        "custom",
 				    ],
 				    "minimumReleaseAge": "7 days",
+				    "prConcurrentLimit": 10,
+				    "prHourlyLimit": 5,
 				}
 				""";
 		FilesSilent.writeString(renovateJson5, content);
@@ -386,6 +410,8 @@ public class RenovateChoreTest {
 				        "dependencies",
 				    ],
 				    "minimumReleaseAge": "7 days",
+				    "prConcurrentLimit": 10,
+				    "prHourlyLimit": 5,
 				    "vulnerabilityAlerts": {
 				        "addLabels": [
 				            "security",
@@ -420,6 +446,8 @@ public class RenovateChoreTest {
 				        "dependencies",
 				    ],
 				    "minimumReleaseAge": "7 days",
+				    "prConcurrentLimit": 10,
+				    "prHourlyLimit": 5,
 				}
 				""";
 		FilesSilent.writeString(renovateJson5, content);
@@ -442,6 +470,8 @@ public class RenovateChoreTest {
 				    "addLabels": [
 				        "{{manager}}",
 				    ],
+				    "prConcurrentLimit": 10,
+				    "prHourlyLimit": 5,
 				}
 				""";
 		FilesSilent.writeString(renovateJson5, content);
@@ -465,6 +495,8 @@ public class RenovateChoreTest {
 				        "dependencies",
 				    ],
 				    "minimumReleaseAge": "4 days",
+				    "prConcurrentLimit": 10,
+				    "prHourlyLimit": 5,
 				}
 				""");
 
@@ -480,6 +512,8 @@ public class RenovateChoreTest {
 				        "dependencies",
 				    ],
 				    "minimumReleaseAge": "7 days",
+				    "prConcurrentLimit": 10,
+				    "prHourlyLimit": 5,
 				}
 				""");
 	}
@@ -525,6 +559,8 @@ public class RenovateChoreTest {
 				        "dependencies",
 				    ],
 				    "minimumReleaseAge": "7 days", // renovate's own default
+				    "prConcurrentLimit": 10,
+				    "prHourlyLimit": 5,
 				}
 				""");
 	}
@@ -575,6 +611,8 @@ public class RenovateChoreTest {
 								        "dependencies",
 								    ],
 								    "minimumReleaseAge": "7 days",
+								    "prConcurrentLimit": 10,
+								    "prHourlyLimit": 5,
 								    "schedule": [
 								        "* * 20-23 * *",
 								    ],
@@ -625,6 +663,8 @@ public class RenovateChoreTest {
 				        "dependencies",
 				    ],
 				    "minimumReleaseAge": "7 days",
+				    "prConcurrentLimit": 10,
+				    "prHourlyLimit": 5,
 				    "schedule": [
 				        "* * 20-23 * *",
 				    ],
@@ -695,6 +735,8 @@ public class RenovateChoreTest {
 				        "{{manager}}",
 				    ],
 				    "minimumReleaseAge": "7 days",
+				    "prConcurrentLimit": 10,
+				    "prHourlyLimit": 5,
 				}
 				""";
 		FilesSilent.writeString(renovateJson5, content);
@@ -742,6 +784,8 @@ public class RenovateChoreTest {
 						    "addLabels": [
 						        "{{manager}}",
 						    ],
+						    "prConcurrentLimit": 10,
+						    "prHourlyLimit": 5,
 						}
 						"""
 		);
@@ -767,6 +811,8 @@ public class RenovateChoreTest {
 								    "labels": [
 								        "dependencies",
 								    ],
+								    "prConcurrentLimit": 10,
+								    "prHourlyLimit": 5,
 								}
 								"""
 				);

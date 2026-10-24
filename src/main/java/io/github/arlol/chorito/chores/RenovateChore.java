@@ -22,9 +22,10 @@ public class RenovateChore implements Chore {
 
 	private static final String MINIMUM_RELEASE_AGE = "minimumReleaseAge";
 	private static final String SCHEDULE = "schedule";
-	// Renovate opens at most two PRs an hour, and one day did not fit a busy
-	// repository's monthly updates.
+	// One day did not fit a busy repository's monthly updates.
 	private static final String MONTHLY_WINDOW = "* * 20-23 * *";
+	private static final String PR_HOURLY_LIMIT = "prHourlyLimit";
+	private static final String PR_CONCURRENT_LIMIT = "prConcurrentLimit";
 	private static final String LABELS = "labels";
 	private static final String ADD_LABELS = "addLabels";
 	private static final String CUSTOM_MANAGERS = "customManagers";
@@ -51,6 +52,13 @@ public class RenovateChore implements Chore {
 					SCHEDULE,
 					List.of("on the 20th day of the month"),
 					List.of(MONTHLY_WINDOW)
+			),
+			// Dependabot's open-pull-requests-limit, with an hourly cap so a
+			// long build like drifty's is not handed ten at once.
+			ifAbsent(PR_HOURLY_LIMIT, root -> root.put(PR_HOURLY_LIMIT, 5)),
+			ifAbsent(
+					PR_CONCURRENT_LIMIT,
+					root -> root.put(PR_CONCURRENT_LIMIT, 10)
 			),
 			ifAbsent(
 					LABELS,
