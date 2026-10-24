@@ -24,4 +24,16 @@ public abstract class JavaVersions {
 				&& FilesSilent.readString(toolVersions).contains("graalvm");
 	}
 
+	/**
+	 * setup-java offers no GraalVM innovation release
+	 * (actions/setup-java#1295), so such a repository installs it its own way,
+	 * and the graalvm-community Renovate manager would misread its pin.
+	 */
+	public static boolean pinsGraalVmInnovation(ChoreContext context) {
+		var toolVersions = context.resolve(".tool-versions");
+		return FilesSilent.exists(toolVersions)
+				&& FilesSilent.readString(toolVersions)
+						.contains("graalvm-community-innovation-");
+	}
+
 }

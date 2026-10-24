@@ -113,7 +113,8 @@ public class RenovateChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		List<JsonMigration> migrations = new ArrayList<>(MIGRATIONS);
-		if (JavaVersions.buildsOnGraalVm(context)) {
+		if (JavaVersions.buildsOnGraalVm(context)
+				&& !JavaVersions.pinsGraalVmInnovation(context)) {
 			migrations.addAll(GRAAL_MIGRATIONS);
 		}
 		if (pinsToolVersions(context)) {

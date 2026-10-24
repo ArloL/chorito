@@ -504,6 +504,19 @@ public class RenovateChoreTest {
 	}
 
 	@Test
+	public void testAddsNoGraalVmManagerForAnInnovationPin() throws Exception {
+		FilesSilent.writeString(
+				extension.root().resolve(".tool-versions"),
+				"java graalvm-community-innovation-25.0.4.1.1\n"
+		);
+
+		new RenovateChore().doit(githubContext());
+
+		assertThat(extension.root().resolve("renovate.json5")).content()
+				.doesNotContain("graalvm-ce-builds");
+	}
+
+	@Test
 	public void testCreatesCustomManagersForGraalProject() throws Exception {
 		new RenovateChore().doit(graalGithubContext());
 

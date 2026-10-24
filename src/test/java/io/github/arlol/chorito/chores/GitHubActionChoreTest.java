@@ -1103,6 +1103,24 @@ public class GitHubActionChoreTest {
 	}
 
 	@Test
+	public void testLeavesGraalVmInnovationJobsAlone() throws Exception {
+		FilesSilent.writeString(
+				extension.root().resolve(".tool-versions"),
+				"java graalvm-community-innovation-25.0.4.1.1\n"
+		);
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		String content = GRAAL_MAIN_WITHOUT_RELEASE_ASSETS.replace(
+				"actions/setup-java@abc # v6.0.0",
+				"graalvm/setup-graalvm@abc # v1.6.7"
+		);
+		FilesSilent.writeString(workflow, content);
+
+		new GitHubActionChore().updateGraalSteps(extension.choreContext());
+
+		assertThat(workflow).content().isEqualTo(content);
+	}
+
+	@Test
 	public void testKeepsUploadsWhenTheReleaseDownloadsThem() throws Exception {
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(
