@@ -131,6 +131,8 @@
             ],
         },
     ],
+    "prConcurrentLimit": 10,
+    "prHourlyLimit": 5,
     "schedule": [
         "* * 20-23 * *",
     ],
