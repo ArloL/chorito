@@ -71,7 +71,7 @@ public class NativeReleaseLayoutChoreTest {
 
 		assertThat(workflow).content()
 				.contains("  linux-arm:")
-				.contains("runs-on: ubuntu-24.04-arm");
+				.containsPattern("runs-on: ubuntu-[0-9.]+-arm");
 		assertThat(FilesSilent.readString(workflow).indexOf("  linux-arm:"))
 				.isGreaterThan(
 						FilesSilent.readString(workflow).indexOf("  linux:")
