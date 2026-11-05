@@ -579,7 +579,7 @@ public class RenovateChoreTest {
 	private static final String INNOVATION_MANAGER = """
 			    "customManagers": [
 			        {
-			            // Renovate's mise manager maps only temurin- and
+			            // Renovate's asdf manager maps only temurin- and
 			            // adoptopenjdk- java versions to a datasource, so
 			            // nothing bumps a graalvm-community pin. Innovation
 			            // releases are not tagged jdk-*, so the pin is read

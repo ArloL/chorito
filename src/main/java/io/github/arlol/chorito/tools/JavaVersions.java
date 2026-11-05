@@ -16,6 +16,12 @@ public abstract class JavaVersions {
 	 */
 	public static final String GRAALVM = "25.0.5.0.3";
 
+	/**
+	 * The environment variable that makes CI builds skip the native image
+	 * build.
+	 */
+	public static final String SKIP_NATIVE_IMAGE_ENV = "SKIP_GRAALVM_NATIVE_IMAGE_BUILD";
+
 	private JavaVersions() {
 	}
 

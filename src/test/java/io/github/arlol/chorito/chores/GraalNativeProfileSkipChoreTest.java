@@ -112,4 +112,39 @@ public class GraalNativeProfileSkipChoreTest {
 		assertThat(pom).content().isEqualTo(EXPECTED);
 	}
 
+	@Test
+	public void testMovesReadmeActivationToLibGraal() {
+		Path pom = write(
+				"pom.xml",
+				PROFILE.replace("lib/graal", "GRAALVM-README.md")
+		);
+
+		doit();
+
+		assertThat(pom).content().isEqualTo(EXPECTED);
+	}
+
+	@Test
+	public void testReadmeActivationIsIdempotent() {
+		Path pom = write(
+				"pom.xml",
+				PROFILE.replace("lib/graal", "GRAALVM-README.md")
+		);
+		doit();
+
+		doit();
+
+		assertThat(pom).content().isEqualTo(EXPECTED);
+	}
+
+	@Test
+	public void testLeavesOtherExistsAlone() {
+		String content = PROFILE.replace("lib/graal", "other-file");
+		Path pom = write("pom.xml", content);
+
+		doit();
+
+		assertThat(pom).content().isEqualTo(content);
+	}
+
 }

@@ -49,7 +49,7 @@ public class RenovateChore implements Chore {
 	private static final String INNOVATION_TRANSFORM = "{\"releases\": [$[vendor = \"graalvm-community\" and \"innovation\" in features].{\"version\": version, \"releaseTimestamp\": created_at}]}";
 
 	private static final String GRAALVM_COMMENT = """
-			Renovate's mise manager maps only temurin- and
+			Renovate's asdf manager maps only temurin- and
 			adoptopenjdk- java versions to a datasource, so
 			nothing bumps a graalvm-community pin. Innovation
 			releases are not tagged jdk-*, so the pin is read
@@ -98,8 +98,8 @@ public class RenovateChore implements Chore {
 					OLD_GRAALVM_MATCH_STRING
 			),
 			// The Temurin pin used to be a java-version input with a manager of
-			// its own. It is a JAVA_VERSION env var now, which
-			// customManagers:githubActionsVersions updates.
+			// its own. It is a .tool-versions java line now, which
+			// Renovate's asdf manager updates.
 			builder -> builder.arrayRemoveObjectsContaining(
 					CUSTOM_MANAGERS,
 					MATCH_STRINGS,
