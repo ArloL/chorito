@@ -59,6 +59,10 @@ public class NativeReleaseChoreTest {
 	/** A library proving itself inside a native image: nothing to download. */
 	private static final String GRAAL_LIBRARY = """
 			jobs:
+			  version:
+			    runs-on: ubuntu-latest
+			    steps:
+			    - run: echo version
 			  linux:
 			    runs-on: ubuntu-latest
 			    steps:
@@ -259,6 +263,29 @@ public class NativeReleaseChoreTest {
 	public void testLibraryArmJobSurvivesGitHubActionChore() {
 		Path workflow = writeMain(GRAAL_LIBRARY);
 		new NativeReleaseChore().doit(extension.choreContext());
+
+		new GitHubActionChore().doit(extension.choreContext());
+		new NativeReleaseChore().doit(extension.choreContext());
+		String once = FilesSilent.readString(workflow);
+		new GitHubActionChore().doit(extension.choreContext());
+		new NativeReleaseChore().doit(extension.choreContext());
+
+		assertThat(workflow).content()
+				.contains("  linux-arm:")
+				.doesNotContain("upload-artifact")
+				.isEqualTo(once);
+	}
+
+	@Test
+	public void testLibraryWithArmJobAlreadyThereLosesItsUpload() {
+		String withArm = GRAAL_LIBRARY.replace(
+				"  windows:",
+				"  linux-arm:\n" + "    runs-on: ubuntu-24.04-arm\n"
+						+ "    steps:\n"
+						+ "    - uses: actions/upload-artifact@v7\n"
+						+ "  windows:"
+		);
+		Path workflow = writeMain(withArm);
 
 		new GitHubActionChore().doit(extension.choreContext());
 		new NativeReleaseChore().doit(extension.choreContext());

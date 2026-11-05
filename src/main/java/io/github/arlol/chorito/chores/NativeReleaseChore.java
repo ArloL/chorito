@@ -1,5 +1,7 @@
 package io.github.arlol.chorito.chores;
 
+import java.util.List;
+
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.GitHubActionsWorkflowFile;
 import io.github.arlol.chorito.tools.JavaVersions;
@@ -54,19 +56,9 @@ public class NativeReleaseChore implements Chore {
 					armJob,
 					WorkflowJobs.LINUX
 			);
-			if (!workflow.hasStepUsing(
-					WorkflowJobs.RELEASE,
-					DOWNLOAD_ARTIFACT_ACTION
-			)) {
-				workflow.removeStepByName(
-						WorkflowJobs.LINUX_ARM,
-						"Move artifacts"
-				);
-				workflow.removeStepUsing(
-						WorkflowJobs.LINUX_ARM,
-						"actions/upload-artifact"
-				);
-			}
+			workflow.removeUploadsUnlessReleaseDownloads(
+					List.of(WorkflowJobs.LINUX_ARM)
+			);
 			// Without these the release can start while the arm build is still
 			// running, and the step below fails on a binary that is not there
 			// yet -- intermittently, depending on which job finished first.
