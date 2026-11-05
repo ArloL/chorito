@@ -80,6 +80,17 @@ Local checks with mise 2026.11.0 and Maven 3.10.0:
 | Settings file with `${env.*}` | `help:effective-settings` resolved the `github` server |
 | `java temurin-25.0.5+8.0.LTS` in `.tool-versions` | mise resolves it |
 
+Temurin 26, `newlinechecker` (no GraalVM):
+
+| Command | Result |
+|---|---|
+| `./mvnw package` | Passes, no native image built |
+| `./mvnw -P graal package` | Fails: `native-image is not installed in your JAVA_HOME` |
+
+Maven 3.10.0 on an unknown profile: `./mvnw --batch-mode -P no-such-profile help:active-profiles`
+exits 0 (`BUILD SUCCESS`) with only `[WARNING] The requested profile "no-such-profile" could
+not be activated because it does not exist.`
+
 Autobuild's Maven command, from a real CodeQL log, passes `-DskipTests` and
 `-Dmaven.test.skip.exec` but nothing about native.
 
@@ -175,14 +186,11 @@ A step that used `cache: maven` is also followed by:
     restore-keys: ${{ runner.os }}-${{ runner.arch }}-maven-
 ```
 
-Native build jobs get a guard, so a missing `JAVA_HOME` cannot quietly skip the
-native profile:
-
-```yaml
-- name: Check GraalVM is JAVA_HOME
-  shell: bash
-  run: test -d "${JAVA_HOME}/lib/graal"
-```
+Platform jobs build with `-P graal` and have no guard step. A profile activated
+automatically can switch itself off, as on a JDK without `lib/graal`, and the build
+stays green with no native image. `-P graal` forces the profile, so a JDK without
+`native-image` fails the job instead (see Evidence). Unix jobs have `-P graal \` after
+`--batch-mode \`; Windows has `.\mvnw --batch-mode -P graal ...`.
 
 After migration a workflow no longer mentions `graalvm`, so `updateGraalSteps` and
 `NativeReleaseLayoutChore` must detect GraalVM from `.tool-versions`.
@@ -204,6 +212,11 @@ had before, including none. Maven requires both conditions to hold:
   </property>
 </activation>
 ```
+
+When a pom has exactly one profile containing the plugin, its `<id>` is also set to
+`graal`, because `-P graal` selects by id and Maven only warns about an unknown one
+(see Evidence), which would build no native image with a green result. With two or more,
+ids are left alone, since duplicates would be invalid.
 
 This covers every pom, because `pkl-config-java-native` has the profile in a child
 module.
@@ -312,6 +325,7 @@ GraalVM repos: `chorito`, `drifty`, `git-dora-lead-time-calculator`,
 - Setting the skip variable on every non-platform job, not a named list of steps.
 - Merging repo PRs before chorito, and `newlinechecker` first.
 - Overwriting a deliberately different activation on a `native-maven-plugin` profile.
+- Renaming a lone `native-maven-plugin` profile to `graal`.
 - Proving `deploy` on a real merge rather than a temporary branch.
 
 ## Left to the builder

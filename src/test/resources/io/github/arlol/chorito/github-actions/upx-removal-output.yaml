@@ -82,14 +82,12 @@ jobs:
         key: ${{ runner.os }}-${{ runner.arch }}-maven-${{ hashFiles('**/pom.xml') }}
         path: ~/.m2/repository
         restore-keys: ${{ runner.os }}-${{ runner.arch }}-maven-
-    - name: Check GraalVM is JAVA_HOME
-      shell: bash
-      run: test -d "${JAVA_HOME}/lib/graal"
     - name: Build with Maven
       run: |
         set -o xtrace
         ./mvnw \
           --batch-mode \
+          -P graal \
           -Dsha1="${GITHUB_SHA}" \
           -Drevision="${REVISION}" \
           verify
@@ -125,14 +123,12 @@ jobs:
         key: ${{ runner.os }}-${{ runner.arch }}-maven-${{ hashFiles('**/pom.xml') }}
         path: ~/.m2/repository
         restore-keys: ${{ runner.os }}-${{ runner.arch }}-maven-
-    - name: Check GraalVM is JAVA_HOME
-      shell: bash
-      run: test -d "${JAVA_HOME}/lib/graal"
     - name: Build with Maven
       run: |
         set -o xtrace
         ./mvnw \
           --batch-mode \
+          -P graal \
           -Dsha1="${GITHUB_SHA}" \
           -Drevision="${REVISION}" \
           verify
@@ -168,12 +164,9 @@ jobs:
         key: ${{ runner.os }}-${{ runner.arch }}-maven-${{ hashFiles('**/pom.xml') }}
         path: ~/.m2/repository
         restore-keys: ${{ runner.os }}-${{ runner.arch }}-maven-
-    - name: Check GraalVM is JAVA_HOME
-      shell: bash
-      run: test -d "${JAVA_HOME}/lib/graal"
     - name: Build with Maven
       run: |
-        .\mvnw --batch-mode -Dsha1="$env:GITHUB_SHA" -Drevision="$env:REVISION" verify
+        .\mvnw --batch-mode -P graal -Dsha1="$env:GITHUB_SHA" -Drevision="$env:REVISION" verify
     - name: Move artifacts
       run: |
         mkdir target/artifacts
