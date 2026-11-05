@@ -205,6 +205,11 @@ Maven requires both to hold:
 </activation>
 ```
 
+A profile that checks `GRAALVM-README.md` instead (`wait-for-ports`,
+`git-dora-lead-time-calculator`) is moved to `lib/graal` first, because mise's
+GraalVM ships that file too and the profile would never switch off. It then
+tests the same thing as the `Check GraalVM is JAVA_HOME` guard.
+
 This covers every pom, because `pkl-config-java-native` has the profile in a child
 module.
 
@@ -272,12 +277,21 @@ Still open:
 
 1. Try it on the three repos above, from source, without merging chorito.
 2. Merge those three repos' PRs, `newlinechecker` first.
-3. Run `mvn-exec.sh` with the full list, and open a PR for each changed repo, with
-   rebase auto-merge as usual for chore PRs.
+3. Run the Task 8 loop from the chorito worktree for every repo in `mvn-exec.sh`'s
+   list except `chorito` (`mvn-exec.sh` itself `cd`s to `ws/chorito`, which is
+   `main`), and open a PR for each changed repo, with rebase auto-merge as usual
+   for chore PRs. Chorito is excluded: this branch on chorito `main` changes 7
+   files and the templates are symlinks into `.github`, so an auto-merged PR would
+   release a binary with new templates and old chores and dispatch it to 10
+   repos. Chorito changes only through this branch.
 4. Merge chorito once those are in. Every merge to its `main` releases and
    dispatches chores to the 10 repos in `trigger-chores`, and a chores run that
-   needs to change a workflow cannot push it. Migrated repos have no such change
-   left, so this order avoids failed runs.
+   needs to change a workflow cannot push it. Until chorito merges, the released
+   chorito changes `codeql-analysis.yaml` back to `setup-java`, CI cannot push
+   that, and the Chores run fails with no PR opened. Nothing bad reaches `main`.
+   Monthly crons and any merge to chorito's `main` trigger this. Keep the window
+   short, hold other chorito merges during it, do not run `chorito-release.sh`
+   during it, and expect some red Chores runs.
 5. Update `~/Developer/chorito-main/projects/AGENTS.md`, whose `setup-java` note
    becomes wrong. Delete the `ci/mise` branch from `ArloL/newlinechecker`.
 
