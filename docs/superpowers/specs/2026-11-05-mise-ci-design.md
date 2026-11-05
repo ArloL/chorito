@@ -160,6 +160,15 @@ be removed later.
 Updates run in the existing window (`* * 20-23 * *`, 7 day minimum age), so
 "latest" can lag by about a month.
 
+### Truffle jars
+
+native-image rejects a JDK newer than the polyglot jars on the classpath, including
+jars that arrive indirectly. `drifty` gets them through `pkl-core`, so its PR failed on
+polyglot `25.0.1` with the 25.5 JDK. A repo using pkl or polyglot sets `graalvm.version`
+in its pom, manages the `org.graalvm` jars with it, and has a Renovate group tying them
+to the JDK. Chorito does not manage this: only `pkl-config-java-native` and `drifty` need
+it, and both are edited by hand.
+
 ### Workflows
 
 Chorito's own workflows are the templates (`Template.load` reads
