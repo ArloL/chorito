@@ -920,6 +920,23 @@ public class GitHubActionsWorkflowFile {
 		);
 	}
 
+	/**
+	 * Drops the upload plumbing from {@code jobs} when the {@code release} job
+	 * never downloads artifacts: a library proving it works inside a native
+	 * image rather than shipping one has nothing to collect. Keying on the
+	 * download rather than on what the release publishes keeps the older
+	 * release jobs, which attach assets from their own paths.
+	 */
+	public void removeUploadsUnlessReleaseDownloads(Iterable<String> jobs) {
+		if (hasStepUsing(WorkflowJobs.RELEASE, "actions/download-artifact")) {
+			return;
+		}
+		jobs.forEach(job -> {
+			removeStepByName(job, "Move artifacts");
+			removeStepUsing(job, "actions/upload-artifact");
+		});
+	}
+
 	public void removeStepUsing(String jobName, String actionName) {
 		removeSteps(
 				jobName,
