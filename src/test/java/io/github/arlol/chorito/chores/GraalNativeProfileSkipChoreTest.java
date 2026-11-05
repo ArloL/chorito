@@ -231,4 +231,58 @@ public class GraalNativeProfileSkipChoreTest {
 		assertThat(child).content().isEqualTo(EXPECTED);
 	}
 
+	@Test
+	public void testProfileIdBecomesGraal() {
+		Path pom = write(
+				"pom.xml",
+				pom(EXACT_ACTIVATION, true)
+						.replace("<id>graal</id>", "<id>native</id>")
+		);
+
+		doit();
+
+		assertThat(pom).content().isEqualTo(EXPECTED);
+		doit();
+		assertThat(pom).content().isEqualTo(EXPECTED);
+	}
+
+	@Test
+	public void testTwoPluginProfilesKeepTheirIds() {
+		String two = pom(EXACT_ACTIVATION, true)
+				.replace(
+						"\t</profiles>",
+						pom(EXACT_ACTIVATION, true)
+								.replace("<id>graal</id>", "<id>other</id>")
+								.lines()
+								.filter(
+										l -> !l.startsWith("<project")
+												&& !l.startsWith("</project")
+												&& !l.contains("<profiles>")
+												&& !l.contains("</profiles>")
+								)
+								.collect(
+										java.util.stream.Collectors
+												.joining("\n", "", "\n")
+								) + "\t</profiles>"
+				)
+				.replace("<id>graal</id>", "<id>native</id>");
+		Path pom = write("pom.xml", two);
+
+		doit();
+
+		assertThat(pom).content().contains("<id>native</id>", "<id>other</id>");
+		assertThat(pom).content().doesNotContain("<id>graal</id>");
+	}
+
+	@Test
+	public void testExactGraalProfileIsNotWritten() throws Exception {
+		Path pom = write("pom.xml", EXPECTED);
+		FileTime old = FileTime.fromMillis(1_000_000_000L);
+		Files.setLastModifiedTime(pom, old);
+
+		doit();
+
+		assertThat(Files.getLastModifiedTime(pom)).isEqualTo(old);
+	}
+
 }

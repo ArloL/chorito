@@ -127,22 +127,34 @@ public class MavenPomFile {
 	}
 
 	/**
-	 * Gives every {@code <profile>} that declares {@code plugin} exactly this
-	 * activation, whatever it had before, including none: a
-	 * {@code <file><exists>} of {@code fileExists} and a {@code <property>}
-	 * named {@code propertyName}. A profile that already has it, compared by
-	 * structure, is left byte-identical.
+	 * Makes every {@code <profile>} that declares {@code plugin} the profile a
+	 * build selects with {@code -P profileId}: exactly this activation,
+	 * whatever it had before, including none -- a {@code <file><exists>} of
+	 * {@code fileExists} and a {@code <property>} named {@code propertyName}.
+	 * When the pom has exactly one such profile its {@code <id>} is also made
+	 * {@code profileId}; with several, ids stay, because duplicates would be
+	 * invalid. A profile that already matches, compared by structure, is left
+	 * byte-identical.
 	 *
 	 * @return whether the pom changed
 	 */
-	public boolean setActivationOfProfilesWithPlugin(
+	public boolean setNativeProfile(
 			Id plugin,
+			String profileId,
 			String fileExists,
 			String propertyName
 	) {
 		boolean changed = false;
-		for (Element profile : document
-				.select("profile:has(" + selector(plugin) + ")")) {
+		Elements profiles = document
+				.select("profile:has(" + selector(plugin) + ")");
+		if (profiles.size() == 1) {
+			Element id = profiles.first().selectFirst("> id");
+			if (id != null && !id.ownText().trim().equals(profileId)) {
+				id.text(profileId);
+				changed = true;
+			}
+		}
+		for (Element profile : profiles) {
 			Element activation = profile.selectFirst("> activation");
 			if (activation != null
 					&& hasActivation(activation, fileExists, propertyName)) {
