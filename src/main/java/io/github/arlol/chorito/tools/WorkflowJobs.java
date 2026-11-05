@@ -30,9 +30,8 @@ public abstract class WorkflowJobs {
 	 * The job that builds the arm64 Linux native image.
 	 * <p>
 	 * The one platform job chorito adds to a repository rather than syncing:
-	 * the others predate it everywhere it runs.
-	 * {@code NativeReleaseLayoutChore} puts it in, after {@link #LINUX}, and
-	 * wires the jobs that wait on it.
+	 * the others predate it everywhere it runs. {@code NativeReleaseChore} puts
+	 * it in, after {@link #LINUX}, and wires the jobs that wait on it.
 	 */
 	public static final String LINUX_ARM = "linux-arm";
 

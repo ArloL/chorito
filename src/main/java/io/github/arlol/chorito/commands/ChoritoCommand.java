@@ -38,7 +38,7 @@ public class ChoritoCommand {
 				// release job up to the shape this one rewrites, and before
 				// AttestReleaseAssetsChore, so the attestation covers the
 				// assets as they are finally named.
-				new NativeReleaseLayoutChore(),
+				new NativeReleaseChore(),
 				new AttestReleaseAssetsChore(),
 				new GitIgnoreChore(),
 				new EclipseCompilerSettingsChore(),

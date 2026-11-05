@@ -193,9 +193,10 @@ stays green with no native image. `-P graal` forces the profile, so a JDK withou
 `--batch-mode \`; Windows has `.\mvnw --batch-mode -P graal ...`.
 
 After migration a workflow no longer mentions `graalvm`, so `updateGraalSteps` and
-`NativeReleaseLayoutChore` must detect GraalVM from `.tool-versions`.
+`NativeReleaseChore` must detect GraalVM from `.tool-versions`.
 `JavaVersions.buildsOnGraalVm` stays for this. `pinsGraalVmInnovation` goes, and
-innovation repos now get the same platform jobs as any other.
+innovation repos now get the same platform jobs as any other. Every GraalVM repo
+also gets a `linux-arm` job, native CLI or library; a library's has no upload step.
 
 ### Skipping native
 
