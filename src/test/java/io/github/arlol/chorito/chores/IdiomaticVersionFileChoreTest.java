@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
+import io.github.arlol.chorito.tools.JavaVersions;
 
 public class IdiomaticVersionFileChoreTest {
 
@@ -26,30 +27,123 @@ public class IdiomaticVersionFileChoreTest {
 		assertThat(extension.relativePaths()).isEmpty();
 	}
 
-	@Test
-	public void testCreate() throws Exception {
+	private void setUpProject() {
 		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
 		FilesSilent.touch(extension.root().resolve("pom.xml"));
+	}
+
+	private void writeToolVersions(String content) {
+		FilesSilent.writeString(
+				extension.root().resolve(".tool-versions"),
+				content
+		);
+	}
+
+	private void assertToolVersions(String expected) {
+		assertThat(extension.root().resolve(".tool-versions")).content()
+				.isEqualTo(expected);
+	}
+
+	private void assertUnchanged(String input) {
+		setUpProject();
+		writeToolVersions(input);
 
 		doit();
 
-		Path toolVersions = extension.root().resolve(".tool-versions");
-		assertThat(toolVersions).content().isEqualTo("""
-				java temurin-25
-				""");
+		assertToolVersions(input);
 	}
 
 	@Test
-	public void testNoOverwrite() throws Exception {
-		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
-		FilesSilent.touch(extension.root().resolve("pom.xml"));
-		FilesSilent.touch(extension.root().resolve(".tool-versions"));
+	public void testCreate() throws Exception {
+		setUpProject();
 
 		doit();
 
-		Path toolVersions = extension.root().resolve(".tool-versions");
-		assertThat(toolVersions).content().isEqualTo("""
-				""");
+		assertToolVersions("java temurin-" + JavaVersions.TEMURIN + "\n");
+	}
+
+	@Test
+	public void testCreateNative() throws Exception {
+		FilesSilent.touch(extension.root().resolve("src/main/java/Main.java"));
+		FilesSilent.writeString(
+				extension.root().resolve("pom.xml"),
+				"<project>native-maven-plugin</project>"
+		);
+
+		doit();
+
+		assertToolVersions(
+				"java graalvm-community-innovation-" + JavaVersions.GRAALVM
+						+ "\n"
+		);
+	}
+
+	@Test
+	public void testPinsFloatingTemurin() throws Exception {
+		setUpProject();
+		writeToolVersions("java temurin-25\n");
+
+		doit();
+
+		assertToolVersions("java temurin-" + JavaVersions.TEMURIN + "\n");
+	}
+
+	@Test
+	public void testKeepsExactTemurin() throws Exception {
+		assertUnchanged("java temurin-25.0.4+7.0.LTS\n");
+	}
+
+	@Test
+	public void testKeepsOtherTemurinMajor() throws Exception {
+		assertUnchanged("java temurin-21\n");
+	}
+
+	@Test
+	public void testMovesGraalToInnovation() throws Exception {
+		setUpProject();
+		writeToolVersions("java graalvm-community-25.0.2\n");
+
+		doit();
+
+		assertToolVersions(
+				"java graalvm-community-innovation-" + JavaVersions.GRAALVM
+						+ "\n"
+		);
+	}
+
+	@Test
+	public void testMovesFloatingGraalToInnovation() throws Exception {
+		setUpProject();
+		writeToolVersions("java graalvm-community-25\n");
+
+		doit();
+
+		assertToolVersions(
+				"java graalvm-community-innovation-" + JavaVersions.GRAALVM
+						+ "\n"
+		);
+	}
+
+	@Test
+	public void testKeepsInnovationPin() throws Exception {
+		assertUnchanged("java graalvm-community-innovation-25.0.4.1.1\n");
+	}
+
+	@Test
+	public void testKeepsOtherTools() throws Exception {
+		setUpProject();
+		writeToolVersions("nodejs 24.22.0\njava temurin-25\n");
+
+		doit();
+
+		assertToolVersions(
+				"nodejs 24.22.0\njava temurin-" + JavaVersions.TEMURIN + "\n"
+		);
+	}
+
+	@Test
+	public void testNoJavaLineLeftAlone() throws Exception {
+		assertUnchanged("nodejs 24.22.0\n");
 	}
 
 	@Test
@@ -117,9 +211,11 @@ public class IdiomaticVersionFileChoreTest {
 		doit();
 
 		Path toolVersions = extension.root().resolve(".tool-versions");
-		assertThat(toolVersions).content().isEqualTo("""
-				java graalvm-community-25
-				""");
+		assertThat(toolVersions).content()
+				.isEqualTo(
+						"java graalvm-community-innovation-"
+								+ JavaVersions.GRAALVM + "\n"
+				);
 	}
 
 }

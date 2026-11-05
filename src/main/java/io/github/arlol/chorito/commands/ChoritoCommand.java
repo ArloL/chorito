@@ -31,6 +31,7 @@ public class ChoritoCommand {
 				new DockerIgnoreChore(),
 				new DependabotChore(),
 				new NpmrcChore(),
+				new IdiomaticVersionFileChore(),
 				new CodeQlAnalysisChore(),
 				new GitHubActionChore(),
 				// After GitHubActionChore, whose migrations bring an older
@@ -67,7 +68,6 @@ public class ChoritoCommand {
 				new DeleteUnnecessaryFilesChore(),
 				new DeleteUnwantedFilesChore(),
 				new ProhibitedFilenameChore(),
-				new IdiomaticVersionFileChore(),
 				new RenovateChore()
 		);
 		ChoreContext currentContext = GitChoreContext.newBuilder(root).build();

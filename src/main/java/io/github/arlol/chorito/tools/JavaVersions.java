@@ -7,7 +7,14 @@ public abstract class JavaVersions {
 	 * keeps it current through the custom manager in chorito's own
 	 * renovate.json5.
 	 */
-	public static final String TEMURIN = "25.0.4";
+	public static final String TEMURIN = "25.0.5+8.0.LTS";
+
+	/**
+	 * The GraalVM community innovation release chorito pins in
+	 * {@code .tool-versions}. Renovate keeps it current through the custom
+	 * manager in chorito's own renovate.json5.
+	 */
+	public static final String GRAALVM = "25.0.5.0.3";
 
 	private JavaVersions() {
 	}
