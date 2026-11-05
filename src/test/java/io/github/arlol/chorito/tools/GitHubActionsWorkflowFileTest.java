@@ -807,4 +807,172 @@ public class GitHubActionsWorkflowFileTest {
 				""").releasePublishesAssets()).isFalse();
 	}
 
+	private static final String MISE_WORKFLOW = """
+			jobs:
+			  linux:
+			    steps:
+			    - uses: actions/setup-java@abc # v6.0.0
+			      env:
+			        JAVA_VERSION: 1.2.3
+			      with:
+			        cache: maven
+			        distribution: temurin
+			        java-version: ${{ env.JAVA_VERSION }}
+			    - run: ./mvnw verify
+			  native:
+			    steps:
+			    - uses: actions/setup-java@abc # v6.0.0
+			      with:
+			        distribution: graalvm
+			        java-version-file: .tool-versions
+			    - run: ./mvnw verify
+			  other:
+			    steps:
+			    - uses: actions/setup-java@abc # v6.0.0
+			      with:
+			        java-version-file: src/.tool-versions
+			  helpers:
+			    steps:
+			    - uses: jdx/mise-action@m # v4
+			    - uses: actions/cache@c
+			""";
+
+	private static GitHubActionsWorkflowFile miseSource() {
+		return new GitHubActionsWorkflowFile(MISE_WORKFLOW);
+	}
+
+	private static GitHubActionsWorkflowFile withMise(String workflow) {
+		var file = new GitHubActionsWorkflowFile(workflow);
+		var source = miseSource();
+		file.replaceSetupJavaWithMise(
+				source.getStepUsing("helpers", "jdx/mise-action").orElseThrow(),
+				source.getStepUsing("helpers", "actions/cache").orElseThrow()
+		);
+		return file;
+	}
+
+	@Test
+	public void replaceSetupJavaWithMiseReplacesTemurinAndGraal() {
+		var output = withMise(MISE_WORKFLOW).asString();
+
+		assertThat(output).doesNotContain("JAVA_VERSION")
+				.doesNotContain("distribution: temurin")
+				.doesNotContain("distribution: graalvm");
+		var file = new GitHubActionsWorkflowFile(output);
+		assertThat(file.hasStepUsing("linux", "jdx/mise-action")).isTrue();
+		assertThat(file.hasStepUsing("native", "jdx/mise-action")).isTrue();
+		assertThat(output).doesNotContainPattern("[&*]id\\d+");
+	}
+
+	@Test
+	public void replaceSetupJavaWithMiseAddsCacheOnlyForMaven() {
+		var file = withMise(MISE_WORKFLOW);
+
+		assertThat(file.hasStepUsing("linux", "actions/cache")).isTrue();
+		assertThat(file.hasStepUsing("native", "actions/cache")).isFalse();
+	}
+
+	@Test
+	public void replaceSetupJavaWithMiseKeepsOtherVersionFiles() {
+		var file = withMise(MISE_WORKFLOW);
+
+		assertThat(file.hasStepUsing("other", "actions/setup-java")).isTrue();
+		assertThat(file.hasStepUsing("other", "jdx/mise-action")).isFalse();
+	}
+
+	@Test
+	public void replaceSetupJavaWithMiseIsIdempotent() {
+		var once = withMise(MISE_WORKFLOW);
+		var source = miseSource();
+
+		once.replaceSetupJavaWithMise(
+				source.getStepUsing("helpers", "jdx/mise-action").orElseThrow(),
+				source.getStepUsing("helpers", "actions/cache").orElseThrow()
+		);
+
+		assertThat(once.asString())
+				.isEqualTo(withMise(MISE_WORKFLOW).asString());
+	}
+
+	private static final String MAVEN_STEPS = """
+			jobs:
+			  build:
+			    steps:
+			    - run: ./mvnw verify
+			      env:
+			        GITHUB_TOKEN: x
+			    - uses: github/codeql-action/autobuild@x
+			    - run: echo hi
+			""";
+
+	@Test
+	public void setEnvOnMavenStepsTargetsMvnwAndAutobuild() {
+		var file = new GitHubActionsWorkflowFile(MAVEN_STEPS);
+
+		file.setEnvOnMavenSteps(
+				"build",
+				"SKIP_GRAALVM_NATIVE_IMAGE_BUILD",
+				"true"
+		);
+
+		assertThat(file.asString()).isEqualTo("""
+				jobs:
+				  build:
+				    steps:
+				    - run: ./mvnw verify
+				      env:
+				        GITHUB_TOKEN: x
+				        SKIP_GRAALVM_NATIVE_IMAGE_BUILD: 'true'
+				    - uses: github/codeql-action/autobuild@x
+				      env:
+				        SKIP_GRAALVM_NATIVE_IMAGE_BUILD: 'true'
+				    - run: echo hi
+				""");
+	}
+
+	@Test
+	public void setEnvOnMavenStepsKeepsExistingEnv() {
+		var file = new GitHubActionsWorkflowFile(MAVEN_STEPS);
+
+		file.setEnvOnMavenSteps(
+				"build",
+				"SKIP_GRAALVM_NATIVE_IMAGE_BUILD",
+				"true"
+		);
+		var once = file.asString();
+		file.setEnvOnMavenSteps(
+				"build",
+				"SKIP_GRAALVM_NATIVE_IMAGE_BUILD",
+				"true"
+		);
+
+		assertThat(once).contains("GITHUB_TOKEN: x");
+		assertThat(file.asString()).isEqualTo(once);
+	}
+
+	@Test
+	public void removeEnvFromMavenStepsDropsEmptyEnv() {
+		var file = new GitHubActionsWorkflowFile(MAVEN_STEPS);
+		file.setEnvOnMavenSteps(
+				"build",
+				"SKIP_GRAALVM_NATIVE_IMAGE_BUILD",
+				"true"
+		);
+
+		file.removeEnvFromMavenSteps(
+				"build",
+				"SKIP_GRAALVM_NATIVE_IMAGE_BUILD"
+		);
+
+		assertThat(file.asString()).isEqualTo(
+				new GitHubActionsWorkflowFile(MAVEN_STEPS).asString()
+		);
+		assertThat(file.asString()).contains("GITHUB_TOKEN: x");
+		assertThat(
+				file.getStepUsing("build", "github/codeql-action/autobuild")
+						.map(n -> n.toString())
+						.orElse("")
+		).doesNotContain("env");
+	}
+
 }
