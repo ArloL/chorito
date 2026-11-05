@@ -65,7 +65,7 @@ public class IdiomaticVersionFileChore implements Chore {
 		if (line.equals("java temurin-25")) {
 			return "java temurin-" + JavaVersions.TEMURIN;
 		}
-		if (line.matches("java graalvm-community-\\d+(\\.\\d+)*")) {
+		if (line.matches("java graalvm-community-\\d[\\d.]*")) {
 			return "java graalvm-community-innovation-" + JavaVersions.GRAALVM;
 		}
 		return line;
