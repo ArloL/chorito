@@ -37,10 +37,27 @@ public class TemplateTest {
 	}
 
 	@Test
-	public void noTemplateHandsOutChoritosOwnJavaVersion() {
+	public void noTemplateUsesSetupJava() {
 		for (Supplier<GitHubActionsWorkflowFile> template : TEMPLATES) {
-			assertThat(template.get().getPinnedJavaVersion()).isEmpty();
+			assertThat(template.get().asString())
+					.doesNotContain("actions/setup-java");
 		}
+	}
+
+	@Test
+	public void miseStepIsPinnedAndUncached() {
+		assertThat(Yamls.asString(Template.miseStep())).contains(
+				"jdx/mise-action@",
+				"cache: false",
+				"MISE_VERSION",
+				"# renovate: datasource=github-releases depName=jdx/mise"
+		);
+	}
+
+	@Test
+	public void mavenCacheStepCachesTheMavenRepository() {
+		assertThat(Yamls.asString(Template.mavenCacheStep()))
+				.contains("~/.m2/repository");
 	}
 
 	@Test

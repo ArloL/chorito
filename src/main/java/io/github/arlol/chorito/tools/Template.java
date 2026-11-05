@@ -28,6 +28,8 @@ import org.snakeyaml.engine.v2.nodes.Node;
 public abstract class Template {
 
 	private static final String WORKFLOWS = "github-settings/workflows/";
+	private static final String MISE_ACTION = "jdx/mise-action";
+	private static final String CACHE_ACTION = "actions/cache";
 	private static final String ATTEST_STEP = "Attest the release assets";
 	public static final String UPLOAD_SARIF_ACTION = "github/codeql-action/upload-sarif";
 	private static final String ZIZMOR_SARIF_FORMAT = "--format sarif . > results.sarif";
@@ -118,6 +120,20 @@ public abstract class Template {
 				.getStepByName(WorkflowJobs.RELEASE, ATTEST_STEP);
 	}
 
+	/**
+	 * The step that installs the JDK from {@code .tool-versions}, as chorito's
+	 * own deploy job runs it.
+	 */
+	public static Optional<Node> miseStep() {
+		return load("main.yaml").getStepUsing(WorkflowJobs.DEPLOY, MISE_ACTION);
+	}
+
+	/** The step that caches the Maven repository, as the deploy job runs it. */
+	public static Optional<Node> mavenCacheStep() {
+		return load("main.yaml")
+				.getStepUsing(WorkflowJobs.DEPLOY, CACHE_ACTION);
+	}
+
 	private static GitHubActionsWorkflowFile load(String workflow) {
 		return new GitHubActionsWorkflowFile(
 				ClassPathFiles.readString(WORKFLOWS + workflow)
@@ -135,15 +151,6 @@ public abstract class Template {
 			GitHubActionsWorkflowFile workflow
 	) {
 		workflow.revokeJobPermissions(CHORITO_ONLY_PERMISSIONS);
-		// chorito builds a native image and so pins GraalVM in .tool-versions.
-		// Its jobs that build no native image -- analysis, publishing -- cannot
-		// use that, so they pin a Temurin of their own. That pin is chorito's
-		// answer to chorito's problem, not a default: pointing back at
-		// .tool-versions is the general form, and a chore that knows the target
-		// repository builds on GraalVM pins again on top, as
-		// CodeQlAnalysisChore does. The GraalVM setup-java steps are left
-		// alone; this only touches the Temurin ones.
-		workflow.useToolVersionsFile();
 		return workflow;
 	}
 
