@@ -87,7 +87,7 @@ Probe run `42007358579` on the same branch, with `.tool-versions` and mise 2026.
 
 | Probe | Result | Control |
 |---|---|---|
-| mise-action reads `.tool-versions` | Windows, Linux x64 and arm installed `25.0.5.0.3`; macOS was still queued at time of writing | JDK version and `lib/graal` checked |
+| mise-action reads `.tool-versions` | macOS, Windows, Linux x64 and arm installed `25.0.5.0.3` | JDK version and `lib/graal` checked |
 | Exact Temurin | `25.0.5+8.0.LTS` installed | No `lib/graal` |
 | Skip variable through `autobuild`, no `setup-java` files | 0 native images, job took 51s | Without it: 1 native image, 3m 53s |
 | Settings file authenticates | Downloaded a published pom from GitHub Packages with `packages: read` | Without it: 401 |
