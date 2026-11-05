@@ -52,6 +52,11 @@ public abstract class MavenPlugins {
 			"lifecycle-mapping"
 	);
 
+	public static final Id NATIVE = new Id(
+			"org.graalvm.buildtools",
+			"native-maven-plugin"
+	);
+
 	private MavenPlugins() {
 	}
 

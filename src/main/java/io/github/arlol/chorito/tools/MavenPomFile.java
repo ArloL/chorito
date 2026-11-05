@@ -10,6 +10,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
+import org.jsoup.select.Elements;
 import org.jsoup.parser.Parser;
 
 import io.github.arlol.chorito.tools.MavenPlugins.Id;
@@ -126,71 +127,82 @@ public class MavenPomFile {
 	}
 
 	/**
-	 * Adds a {@code <property>} named {@code propertyName} to the activation of
-	 * every profile whose {@code <file><exists>} ends with
-	 * {@code fileExistsSuffix}, so Maven requires both conditions. The new
-	 * element copies the indentation of the {@code <file>} it follows.
+	 * Gives every {@code <profile>} that declares {@code plugin} exactly this
+	 * activation, whatever it had before, including none: a
+	 * {@code <file><exists>} of {@code fileExists} and a {@code <property>}
+	 * named {@code propertyName}. A profile that already has it, compared by
+	 * structure, is left byte-identical.
 	 *
 	 * @return whether the pom changed
 	 */
-	public boolean addProfileActivationProperty(
-			String fileExistsSuffix,
+	public boolean setActivationOfProfilesWithPlugin(
+			Id plugin,
+			String fileExists,
 			String propertyName
 	) {
 		boolean changed = false;
-		for (Element file : document
-				.select("profile > activation > file:has(> exists)")) {
-			Element exists = file.selectFirst("> exists");
-			Element activation = file.parent();
-			if (exists == null || activation == null
-					|| !exists.ownText().trim().endsWith(fileExistsSuffix)
-					|| hasProperty(activation, propertyName)) {
+		for (Element profile : document
+				.select("profile:has(" + selector(plugin) + ")")) {
+			Element activation = profile.selectFirst("> activation");
+			if (activation != null
+					&& hasActivation(activation, fileExists, propertyName)) {
 				continue;
 			}
-			String indent = whitespaceBefore(file);
-			String existsIndent = whitespaceBefore(exists);
-			String step = existsIndent.startsWith(indent)
-					&& existsIndent.length() > indent.length()
-							? existsIndent.substring(indent.length())
-							: "\t";
-			file.after(
-					indent + "<property>" + indent + step + "<name>"
-							+ propertyName + "</name>" + indent + "</property>"
-			);
+			if (activation != null) {
+				String indent = whitespaceBefore(activation);
+				activation
+						.html(activationXml(indent, fileExists, propertyName));
+			} else {
+				Element id = profile.selectFirst("> id");
+				if (id == null) {
+					continue;
+				}
+				String indent = whitespaceBefore(id);
+				id.after(
+						indent + "<activation>"
+								+ activationXml(
+										indent,
+										fileExists,
+										propertyName
+								) + "</activation>"
+				);
+			}
 			changed = true;
 		}
 		return changed;
 	}
 
-	/**
-	 * Rewrites the end of every profile activation {@code <file><exists>} value
-	 * that ends with {@code oldSuffix} so it ends with {@code newSuffix}.
-	 *
-	 * @return whether the pom changed
-	 */
-	public boolean replaceProfileActivationFileSuffix(
-			String oldSuffix,
-			String newSuffix
+	private static String activationXml(
+			String indent,
+			String fileExists,
+			String propertyName
 	) {
-		boolean changed = false;
-		for (Element exists : document
-				.select("profile > activation > file > exists")) {
-			String value = exists.ownText().trim();
-			if (value.endsWith(oldSuffix)) {
-				exists.text(
-						value.substring(0, value.length() - oldSuffix.length())
-								+ newSuffix
-				);
-				changed = true;
-			}
-		}
-		return changed;
+		String step = "\t";
+		return indent + step + "<file>" + indent + step + step + "<exists>"
+				+ fileExists + "</exists>" + indent + step + "</file>" + indent
+				+ step + "<property>" + indent + step + step + "<name>"
+				+ propertyName + "</name>" + indent + step + "</property>"
+				+ indent;
 	}
 
-	private static boolean hasProperty(Element activation, String name) {
-		return activation.select("> property > name")
-				.stream()
-				.anyMatch(n -> n.ownText().trim().equals(name));
+	private static boolean hasActivation(
+			Element activation,
+			String fileExists,
+			String propertyName
+	) {
+		Elements children = activation.children();
+		if (children.size() != 2) {
+			return false;
+		}
+		Element file = children.get(0);
+		Element property = children.get(1);
+		return file.tagName().equals("file") && file.children().size() == 1
+				&& file.child(0).tagName().equals("exists")
+				&& file.child(0).ownText().trim().equals(fileExists)
+				&& property.tagName().equals("property")
+				&& property.children().size() == 1
+				&& property.child(0).tagName().equals("name")
+				&& property.child(0).ownText().trim().equals(propertyName);
 	}
 
 	private static String whitespaceBefore(Element element) {

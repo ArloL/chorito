@@ -191,8 +191,8 @@ innovation repos now get the same platform jobs as any other.
 
 ### Skipping native
 
-Every `graal` profile whose activation checks `lib/graal` gains a second condition.
-Maven requires both to hold:
+Every profile containing `native-maven-plugin` gets exactly this activation, whatever it
+had before, including none. Maven requires both conditions to hold:
 
 ```xml
 <activation>
@@ -204,11 +204,6 @@ Maven requires both to hold:
   </property>
 </activation>
 ```
-
-A profile that checks `GRAALVM-README.md` instead (`wait-for-ports`,
-`git-dora-lead-time-calculator`) is moved to `lib/graal` first, because mise's
-GraalVM ships that file too and the profile would never switch off. It then
-tests the same thing as the `Check GraalVM is JAVA_HOME` guard.
 
 This covers every pom, because `pkl-config-java-native` has the profile in a child
 module.
@@ -316,6 +311,7 @@ GraalVM repos: `chorito`, `drifty`, `git-dora-lead-time-calculator`,
 - Leaving a `temurin-<other major>` selector as it is.
 - Setting the skip variable on every non-platform job, not a named list of steps.
 - Merging repo PRs before chorito, and `newlinechecker` first.
+- Overwriting a deliberately different activation on a `native-maven-plugin` profile.
 - Proving `deploy` on a real merge rather than a temporary branch.
 
 ## Left to the builder
