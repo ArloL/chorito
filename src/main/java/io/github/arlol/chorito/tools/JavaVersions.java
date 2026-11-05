@@ -30,4 +30,14 @@ public abstract class JavaVersions {
 				&& FilesSilent.readString(toolVersions).contains("graalvm");
 	}
 
+	/**
+	 * Whether {@code .tool-versions} selects a Temurin JDK.
+	 */
+	public static boolean buildsOnTemurin(ChoreContext context) {
+		var toolVersions = context.resolve(".tool-versions");
+		return FilesSilent.exists(toolVersions)
+				&& FilesSilent.readString(toolVersions)
+						.contains("java temurin-");
+	}
+
 }
