@@ -780,6 +780,138 @@ public class GitHubActionsWorkflowFile {
 		});
 	}
 
+	/**
+	 * Replaces every setup-java step with {@code miseStep}, followed by
+	 * {@code mavenCacheStep} when the step cached Maven. A step reading a
+	 * version file other than {@code .tool-versions} stays, for the reason
+	 * {@link #useToolVersionsFileForSetupJava()} gives. Each use gets its own
+	 * copy of the nodes, as one instance in two places is emitted as an anchor.
+	 */
+	public void replaceSetupJavaWithMise(Node miseStep, Node mavenCacheStep) {
+		for (String jobName : jobNames()) {
+			var job = getJob(jobName).orElseThrow();
+			var stepsNode = getKeyAsSequence(Optional.of(job), STEPS);
+			if (stepsNode.isEmpty()) {
+				continue;
+			}
+			var replaced = new ArrayList<Node>();
+			boolean changed = false;
+			for (Node step : stepsNode.orElseThrow().getValue()) {
+				var stepNode = nodeAsMap(step);
+				var with = getKeyAsMap(stepNode, WITH);
+				boolean setupJava = scalarValue(getKeyAsNode(stepNode, "uses"))
+						.filter(
+								uses -> uses.startsWith(SETUP_JAVA_ACTION + "@")
+						)
+						.isPresent();
+				boolean keepsOtherFile = scalarValue(
+						getKeyAsNode(with, JAVA_VERSION_FILE)
+				).filter(file -> !TOOL_VERSIONS.equals(file)).isPresent();
+				if (!setupJava || keepsOtherFile) {
+					replaced.add(step);
+					continue;
+				}
+				changed = true;
+				replaced.add(deepCopy(miseStep));
+				if (scalarValue(getKeyAsNode(with, "cache"))
+						.filter("maven"::equals)
+						.isPresent()) {
+					replaced.add(deepCopy(mavenCacheStep));
+				}
+			}
+			if (changed) {
+				setKey(job, STEPS, newSequence(replaced));
+			}
+		}
+	}
+
+	private static Node deepCopy(Node node) {
+		Node copy;
+		if (node instanceof ScalarNode scalar) {
+			copy = new ScalarNode(
+					scalar.getTag(),
+					scalar.getValue(),
+					scalar.getScalarStyle()
+			);
+		} else if (node instanceof SequenceNode sequence) {
+			copy = new SequenceNode(
+					sequence.getTag(),
+					sequence.getValue().stream().map(n -> deepCopy(n)).toList(),
+					sequence.getFlowStyle()
+			);
+		} else {
+			var map = (MappingNode) node;
+			copy = new MappingNode(
+					map.getTag(),
+					map.getValue()
+							.stream()
+							.map(
+									t -> new NodeTuple(
+											deepCopy(t.getKeyNode()),
+											deepCopy(t.getValueNode())
+									)
+							)
+							.toList(),
+					map.getFlowStyle()
+			);
+		}
+		copy.setBlockComments(node.getBlockComments());
+		copy.setInLineComments(node.getInLineComments());
+		copy.setEndComments(node.getEndComments());
+		return copy;
+	}
+
+	public List<String> jobNames() {
+		return getJobs().map(MappingNode::getValue)
+				.orElse(List.of())
+				.stream()
+				.map(tuple -> scalarValue(tuple.getKeyNode()).orElseThrow())
+				.toList();
+	}
+
+	/** Sets {@code key} on the Maven-running steps of {@code jobName}. */
+	public void setEnvOnMavenSteps(String jobName, String key, String value) {
+		for (Node step : steps(jobName)) {
+			var stepNode = nodeAsMap(step);
+			if (!runsMaven(stepNode)) {
+				continue;
+			}
+			var env = getKeyAsMap(stepNode, ENV).orElseGet(() -> {
+				var newEnv = newMap();
+				setKey(stepNode, ENV, newEnv);
+				return newEnv;
+			});
+			setKey(env, key, newScalar(value, ScalarStyle.PLAIN));
+		}
+	}
+
+	public void removeEnvFromMavenSteps(String jobName, String key) {
+		for (Node step : steps(jobName)) {
+			var stepNode = nodeAsMap(step);
+			if (!runsMaven(stepNode)) {
+				continue;
+			}
+			var env = getKeyAsMap(stepNode, ENV);
+			removeKey(env, key);
+			if (env.map(e -> e.getValue().isEmpty()).orElse(false)) {
+				removeKey(Optional.of(stepNode), ENV);
+			}
+		}
+	}
+
+	private static boolean runsMaven(MappingNode step) {
+		return scalarValue(getKeyAsNode(step, "run"))
+				.filter(run -> run.contains("mvnw"))
+				.isPresent()
+				|| scalarValue(getKeyAsNode(step, "uses"))
+						.filter(
+								uses -> uses.startsWith(
+										"github/codeql-action/autobuild@"
+								)
+						)
+						.isPresent();
+	}
+
 	/** The step of {@code jobName} whose {@code name} is {@code stepName}. */
 	public Optional<Node> getStepByName(String jobName, String stepName) {
 		return steps(jobName).stream()
@@ -787,6 +919,17 @@ public class GitHubActionsWorkflowFile {
 						step -> scalarValue(
 								getKeyAsNode(nodeAsMap(step), "name")
 						).filter(stepName::equals).isPresent()
+				)
+				.findFirst();
+	}
+
+	public Optional<Node> getStepUsing(String jobName, String actionName) {
+		return steps(jobName).stream()
+				.filter(
+						step -> scalarValue(
+								getKeyAsNode(nodeAsMap(step), "uses")
+						).filter(uses -> uses.startsWith(actionName + "@"))
+								.isPresent()
 				)
 				.findFirst();
 	}
