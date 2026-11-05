@@ -9,6 +9,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.parser.Parser;
 
 import io.github.arlol.chorito.tools.MavenPlugins.Id;
@@ -122,6 +123,54 @@ public class MavenPomFile {
 			}
 			element.remove();
 		}
+	}
+
+	/**
+	 * Adds a {@code <property>} named {@code propertyName} to the activation of
+	 * every profile whose {@code <file><exists>} ends with
+	 * {@code fileExistsSuffix}, so Maven requires both conditions. The new
+	 * element copies the indentation of the {@code <file>} it follows.
+	 *
+	 * @return whether the pom changed
+	 */
+	public boolean addProfileActivationProperty(
+			String fileExistsSuffix,
+			String propertyName
+	) {
+		boolean changed = false;
+		for (Element file : document
+				.select("profile > activation > file:has(> exists)")) {
+			Element exists = file.selectFirst("> exists");
+			Element activation = file.parent();
+			if (exists == null || activation == null
+					|| !exists.ownText().trim().endsWith(fileExistsSuffix)
+					|| hasProperty(activation, propertyName)) {
+				continue;
+			}
+			String indent = whitespaceBefore(file);
+			String existsIndent = whitespaceBefore(exists);
+			String step = existsIndent.startsWith(indent)
+					&& existsIndent.length() > indent.length()
+							? existsIndent.substring(indent.length())
+							: "\t";
+			file.after(
+					indent + "<property>" + indent + step + "<name>"
+							+ propertyName + "</name>" + indent + "</property>"
+			);
+			changed = true;
+		}
+		return changed;
+	}
+
+	private static boolean hasProperty(Element activation, String name) {
+		return activation.select("> property > name")
+				.stream()
+				.anyMatch(n -> n.ownText().trim().equals(name));
+	}
+
+	private static String whitespaceBefore(Element element) {
+		return element.previousSibling() instanceof TextNode text
+				&& text.isBlank() ? text.getWholeText() : "";
 	}
 
 	public String asString() {

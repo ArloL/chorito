@@ -46,6 +46,7 @@ public class ChoritoCommand {
 				new JitpackChore(),
 				new GraalNativeImagePropertiesChore(),
 				new GraalNativeImageMavenPluginMigrationChore(),
+				new GraalNativeProfileSkipChore(),
 				new CodeFormatterProfileChore(),
 				// Formatter, spotbugs, modernizer and source/javadoc form a
 				// chain: each inserts its plugin after the one its predecessor
