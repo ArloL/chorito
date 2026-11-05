@@ -50,6 +50,11 @@ public final class JsonBuilder {
 		return this;
 	}
 
+	public JsonBuilder putNull(String key) {
+		node.putNull(key);
+		return this;
+	}
+
 	public JsonBuilder array(String key, String... values) {
 		ArrayNode arr = node.putArray(key);
 		for (var v : values) {

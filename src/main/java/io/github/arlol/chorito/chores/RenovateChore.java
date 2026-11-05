@@ -37,14 +37,29 @@ public class RenovateChore implements Chore {
 	private static final String EXTENDS = "extends";
 	private static final String GITHUB_ACTIONS_VERSIONS = "customManagers:githubActionsVersions";
 
-	private static final String GRAALVM_MATCH_STRING = "java graalvm-community-(?<currentValue>\\S+)";
+	private static final String OLD_GRAALVM_MATCH_STRING = "java graalvm-community-(?<currentValue>\\S+)";
+	private static final String INNOVATION = "graalvm-community-innovation";
+	private static final String INNOVATION_MATCH_STRING = "java graalvm-community-innovation-(?<currentValue>\\S+)";
+	private static final String CUSTOM_DATASOURCES = "customDatasources";
+	private static final String PACKAGE_RULES = "packageRules";
+	private static final String MATCH_DATASOURCES = "matchDatasources";
+	private static final String JAVA_VERSION = "java-version";
 	private static final String JAVA_VERSION_MATCH_STRING = "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+java-version: (?<currentValue>\\S+)";
+
+	private static final String INNOVATION_TRANSFORM = "{\"releases\": [$[vendor = \"graalvm-community\" and \"innovation\" in features].{\"version\": version, \"releaseTimestamp\": created_at}]}";
 
 	private static final String GRAALVM_COMMENT = """
 			Renovate's mise manager maps only temurin- and
 			adoptopenjdk- java versions to a datasource, so
-			nothing bumps a graalvm-community pin. The jdk-*
-			tags are what mise offers as graalvm-community-*.""";
+			nothing bumps a graalvm-community pin. Innovation
+			releases are not tagged jdk-*, so the pin is read
+			from mise's JDK index instead.""";
+
+	private static final String JAVA_VERSION_COMMENT = """
+			Adoptium's release_versions has no dates, so the
+			minimumReleaseAge never passes and the update stays
+			pending. null turns the age check off for it.
+			https://github.com/renovatebot/renovate/discussions/47778""";
 
 	static final List<JsonMigration> MIGRATIONS = List.of(
 			replaceString(MINIMUM_RELEASE_AGE, "4 days", "7 days"),
@@ -74,26 +89,13 @@ public class RenovateChore implements Chore {
 	/**
 	 * Each manager writes its own justification into renovate.json5 as a
 	 * comment, so the reason a custom manager exists is in front of whoever
-	 * reads the config rather than only here. What the comments leave out: the
-	 * graal-* and vm-* tags are GraalVM's own versioning and mise installs none
-	 * of them, which is why only jdk-* is extracted.
+	 * reads the config rather than only here.
 	 */
 	static final List<JsonMigration> GRAAL_MIGRATIONS = List.of(
-			customManager(
-					GRAALVM_MATCH_STRING,
-					manager -> manager.comment(CUSTOM_TYPE, GRAALVM_COMMENT)
-							.put(CUSTOM_TYPE, REGEX)
-							.put("datasourceTemplate", "github-releases")
-							.put("depNameTemplate", "graalvm/graalvm-ce-builds")
-							.put(
-									EXTRACT_VERSION_TEMPLATE,
-									"^jdk-(?<version>\\S+)"
-							)
-							.array(
-									MANAGER_FILE_PATTERNS,
-									"/^\\.tool-versions$/"
-							)
-							.array(MATCH_STRINGS, GRAALVM_MATCH_STRING)
+			builder -> builder.arrayRemoveObjectsContaining(
+					CUSTOM_MANAGERS,
+					MATCH_STRINGS,
+					OLD_GRAALVM_MATCH_STRING
 			),
 			// The Temurin pin used to be a java-version input with a manager of
 			// its own. It is a JAVA_VERSION env var now, which
@@ -102,8 +104,57 @@ public class RenovateChore implements Chore {
 					CUSTOM_MANAGERS,
 					MATCH_STRINGS,
 					JAVA_VERSION_MATCH_STRING
+			),
+			ifAbsent(
+					CUSTOM_DATASOURCES,
+					root -> root.object(
+							CUSTOM_DATASOURCES,
+							d -> d.object(
+									INNOVATION,
+									RenovateChore::innovationDatasource
+							)
+					)
+			),
+			whenObject(
+					CUSTOM_DATASOURCES,
+					ifAbsent(
+							INNOVATION,
+							d -> d.object(
+									INNOVATION,
+									RenovateChore::innovationDatasource
+							)
+					)
+			),
+			customManager(
+					INNOVATION_MATCH_STRING,
+					manager -> manager.comment(CUSTOM_TYPE, GRAALVM_COMMENT)
+							.put(CUSTOM_TYPE, REGEX)
+							.put("datasourceTemplate", "custom." + INNOVATION)
+							.put("depNameTemplate", INNOVATION)
+							.array(
+									MANAGER_FILE_PATTERNS,
+									"/^\\.tool-versions$/"
+							)
+							.array(MATCH_STRINGS, INNOVATION_MATCH_STRING)
+							.put("versioningTemplate", "loose")
 			)
 	);
+
+	static final List<JsonMigration> TEMURIN_MIGRATIONS = List.of(builder -> {
+		if (builder.arrayHasObjectContaining(
+				PACKAGE_RULES,
+				MATCH_DATASOURCES,
+				JAVA_VERSION
+		)) {
+			return builder;
+		}
+		return builder.arrayAddObject(
+				PACKAGE_RULES,
+				rule -> rule.comment(MATCH_DATASOURCES, JAVA_VERSION_COMMENT)
+						.array(MATCH_DATASOURCES, JAVA_VERSION)
+						.putNull(MINIMUM_RELEASE_AGE)
+		);
+	});
 
 	private static final JsonMigration GITHUB_ACTIONS_VERSIONS_MIGRATION = builder -> {
 		if (builder.arrayStrings(EXTENDS).contains(GITHUB_ACTIONS_VERSIONS)) {
@@ -111,6 +162,15 @@ public class RenovateChore implements Chore {
 		}
 		return builder.arrayAdd(EXTENDS, GITHUB_ACTIONS_VERSIONS);
 	};
+
+	private static void innovationDatasource(JsonBuilder datasource) {
+		datasource
+				.put(
+						"defaultRegistryUrlTemplate",
+						"https://mise-java.jdx.dev/jvm/ga/linux/x86_64.json"
+				)
+				.array("transformTemplates", INNOVATION_TRANSFORM);
+	}
 
 	private static JsonMigration customManager(
 			String matchString,
@@ -131,10 +191,11 @@ public class RenovateChore implements Chore {
 	@Override
 	public ChoreContext doit(ChoreContext context) {
 		List<JsonMigration> migrations = new ArrayList<>(MIGRATIONS);
-		if (JavaVersions.buildsOnGraalVm(context)
-				&& !FilesSilent.readString(context.resolve(".tool-versions"))
-						.contains("graalvm-community-innovation-")) {
+		if (JavaVersions.buildsOnGraalVm(context)) {
 			migrations.addAll(GRAAL_MIGRATIONS);
+		}
+		if (JavaVersions.buildsOnTemurin(context)) {
+			migrations.addAll(TEMURIN_MIGRATIONS);
 		}
 		if (pinsToolVersions(context)) {
 			migrations.add(GITHUB_ACTIONS_VERSIONS_MIGRATION);
