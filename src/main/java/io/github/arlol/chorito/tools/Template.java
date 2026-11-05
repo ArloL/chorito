@@ -28,6 +28,7 @@ import org.snakeyaml.engine.v2.nodes.Node;
 public abstract class Template {
 
 	private static final String WORKFLOWS = "github-settings/workflows/";
+	private static final String MAVEN_SETTINGS = "github-settings/maven-settings.xml";
 	private static final String MISE_ACTION = "jdx/mise-action";
 	private static final String CACHE_ACTION = "actions/cache";
 	private static final String ATTEST_STEP = "Attest the release assets";
@@ -132,6 +133,11 @@ public abstract class Template {
 	public static Optional<Node> mavenCacheStep() {
 		return load("main.yaml")
 				.getStepUsing(WorkflowJobs.DEPLOY, CACHE_ACTION);
+	}
+
+	/** The settings file chorito's own deploy job passes to Maven. */
+	public static String mavenSettings() {
+		return ClassPathFiles.readString(MAVEN_SETTINGS);
 	}
 
 	private static GitHubActionsWorkflowFile load(String workflow) {

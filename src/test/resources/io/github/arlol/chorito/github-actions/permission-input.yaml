@@ -68,11 +68,18 @@ jobs:
       REVISION: ${{ needs.version.outputs.new_version }}
     steps:
     - uses: actions/checkout@v4.1.1
-    - uses: actions/setup-java@v4.0.0
+    - uses: jdx/mise-action@v4.0.0
+      env:
+        # renovate: datasource=github-releases depName=jdx/mise extractVersion=^v(?<version>.+)
+        MISE_VERSION: 2026.1.0
       with:
-        java-version: ${{ env.JAVA_VERSION }}
-        distribution: temurin
-        cache: 'maven'
+        cache: false
+        version: ${{ env.MISE_VERSION }}
+    - uses: actions/cache@v4.0.0
+      with:
+        key: ${{ runner.os }}-${{ runner.arch }}-maven-${{ hashFiles('**/pom.xml') }}
+        path: ~/.m2/repository
+        restore-keys: ${{ runner.os }}-${{ runner.arch }}-maven-
     - name: Build with Maven
       run: |
         set -o xtrace
@@ -98,11 +105,18 @@ jobs:
       REVISION: ${{ needs.version.outputs.new_version }}
     steps:
     - uses: actions/checkout@v4.1.1
-    - uses: actions/setup-java@v4.0.0
+    - uses: jdx/mise-action@v4.0.0
+      env:
+        # renovate: datasource=github-releases depName=jdx/mise extractVersion=^v(?<version>.+)
+        MISE_VERSION: 2026.1.0
       with:
-        java-version: ${{ env.JAVA_VERSION }}
-        distribution: temurin
-        cache: 'maven'
+        cache: false
+        version: ${{ env.MISE_VERSION }}
+    - uses: actions/cache@v4.0.0
+      with:
+        key: ${{ runner.os }}-${{ runner.arch }}-maven-${{ hashFiles('**/pom.xml') }}
+        path: ~/.m2/repository
+        restore-keys: ${{ runner.os }}-${{ runner.arch }}-maven-
     - name: Build with Maven
       run: |
         set -o xtrace
@@ -129,11 +143,18 @@ jobs:
       REVISION: ${{ needs.version.outputs.new_version }}
     steps:
     - uses: actions/checkout@v4.1.1
-    - uses: actions/setup-java@v4.0.0
+    - uses: jdx/mise-action@v4.0.0
+      env:
+        # renovate: datasource=github-releases depName=jdx/mise extractVersion=^v(?<version>.+)
+        MISE_VERSION: 2026.1.0
       with:
-        java-version: ${{ env.JAVA_VERSION }}
-        distribution: temurin
-        cache: 'maven'
+        cache: false
+        version: ${{ env.MISE_VERSION }}
+    - uses: actions/cache@v4.0.0
+      with:
+        key: ${{ runner.os }}-${{ runner.arch }}-maven-${{ hashFiles('**/pom.xml') }}
+        path: ~/.m2/repository
+        restore-keys: ${{ runner.os }}-${{ runner.arch }}-maven-
     - name: Build with Maven
       run: |
         .\mvnw --batch-mode -Dsha1="$env:GITHUB_SHA" -Drevision="$env:REVISION" verify
@@ -205,11 +226,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4.1.1
-    - uses: actions/setup-java@v4.0.0
+    - uses: jdx/mise-action@v4.0.0
+      env:
+        # renovate: datasource=github-releases depName=jdx/mise extractVersion=^v(?<version>.+)
+        MISE_VERSION: 2026.1.0
       with:
-        java-version: ${{ env.JAVA_VERSION }}
-        distribution: temurin
-        cache: 'maven'
+        cache: false
+        version: ${{ env.MISE_VERSION }}
+    - uses: actions/cache@v4.0.0
+      with:
+        key: ${{ runner.os }}-${{ runner.arch }}-maven-${{ hashFiles('**/pom.xml') }}
+        path: ~/.m2/repository
+        restore-keys: ${{ runner.os }}-${{ runner.arch }}-maven-
     - name: Publish to GitHub Packages Apache Maven
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.snakeyaml.engine.v2.nodes.Node;
+
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.DirectoryStreams;
 import io.github.arlol.chorito.tools.FilesSilent;
@@ -26,6 +28,12 @@ public class GitHubActionChore implements Chore {
 	private static final List<String> TRUNK_BRANCHES = List
 			.of("main", "master");
 	private static final String DEPENDABOT_CONDITION = " && !startsWith(github.ref, 'refs/heads/dependabot/')";
+	private static final String SKIP_NATIVE = "SKIP_GRAALVM_NATIVE_IMAGE_BUILD";
+	private static final String SONAR_SKIP_NATIVE = "  -P '!graal' \\\n";
+	private static final String MAVEN_SETTINGS = ".github/maven-settings.xml";
+	private static final String MAVEN_SETTINGS_ARG = "--settings "
+			+ MAVEN_SETTINGS;
+	private static final String BATCH_MODE_LINE = "--batch-mode \\\n";
 
 	/**
 	 * One step of the chain, named so the sequence can be read and asserted.
@@ -140,9 +148,14 @@ public class GitHubActionChore implements Chore {
 						"migrateNcipoploReleaseAction",
 						this::migrateNcipoploReleaseAction
 				),
+				new Migration("useMiseForSetupJava", this::useMiseForSetupJava),
 				new Migration(
-						"useToolVersionsForSetupJava",
-						this::useToolVersionsForSetupJava
+						"skipNativeOutsidePlatformJobs",
+						this::skipNativeOutsidePlatformJobs
+				),
+				new Migration(
+						"useMavenSettingsInDeploy",
+						this::useMavenSettingsInDeploy
 				),
 				new Migration("updateTriggers", this::updateTriggers),
 				new Migration(
@@ -179,13 +192,12 @@ public class GitHubActionChore implements Chore {
 
 	void updateGraalSteps(ChoreContext context) {
 		Optional<Path> mainWorkflow = mainWorkflow(context);
-		if (mainWorkflow.isEmpty()
-				|| JavaVersions.pinsGraalVmInnovation(context)) {
+		if (mainWorkflow.isEmpty() || !JavaVersions.buildsOnGraalVm(context)) {
 			return;
 		}
 		Path mainYaml = mainWorkflow.orElseThrow();
 		String string = FilesSilent.readString(mainYaml);
-		if (!string.contains("graalvm") || string.contains("gluonfx")) {
+		if (string.contains("gluonfx")) {
 			return;
 		}
 		var main = new GitHubActionsWorkflowFile(string);
@@ -812,20 +824,63 @@ public class GitHubActionChore implements Chore {
 		});
 	}
 
-	void useToolVersionsForSetupJava(ChoreContext context) {
+	void useMiseForSetupJava(ChoreContext context) {
+		Node miseStep = Template.miseStep().orElseThrow();
+		Node mavenCacheStep = Template.mavenCacheStep().orElseThrow();
 		GitHubActionsWorkflowFile.updateEach(context, workflow -> {
-			var pinnedJavaVersion = workflow.getPinnedJavaVersion();
-			workflow.useToolVersionsFileForSetupJava();
-			// A job asking for Temurin here builds no native image, and
-			// .tool-versions would hand it a GraalVM anyway, so it pins a
-			// version of its own that Renovate owns.
-			if (JavaVersions.buildsOnGraalVm(context)) {
-				workflow.pinTemurinJavaVersion(
-						pinnedJavaVersion.orElse(JavaVersions.TEMURIN)
+			workflow.replaceSetupJavaWithMise(miseStep, mavenCacheStep);
+			workflow.singleToDoubleQuote();
+		});
+	}
+
+	/**
+	 * A job outside the platforms builds no native image, so in a GraalVM
+	 * repository its Maven steps skip the {@code graal} profile. Other
+	 * repositories have no such profile. Sorted because the variable can add a
+	 * step's {@code env}, and the next run's sort would move it.
+	 */
+	void skipNativeOutsidePlatformJobs(ChoreContext context) {
+		boolean graal = JavaVersions.buildsOnGraalVm(context);
+		GitHubActionsWorkflowFile.updateEach(context, workflow -> {
+			workflow.jobNames()
+					.stream()
+					.filter(job -> !WorkflowJobs.PLATFORMS.contains(job))
+					.forEach(job -> {
+						if (graal) {
+							workflow.setEnvOnMavenSteps(
+									job,
+									SKIP_NATIVE,
+									"true"
+							);
+							workflow.replaceInRun(job, SONAR_SKIP_NATIVE, "");
+						} else {
+							workflow.removeEnvFromMavenSteps(job, SKIP_NATIVE);
+						}
+					});
+			workflow.sortKeys();
+		});
+	}
+
+	void useMavenSettingsInDeploy(ChoreContext context) {
+		GitHubActionsWorkflowFile.updateEach(context, workflow -> {
+			if (!workflow.jobMentions(
+					WorkflowJobs.DEPLOY,
+					"altDeploymentRepository"
+			)) {
+				return;
+			}
+			if (!workflow
+					.jobMentions(WorkflowJobs.DEPLOY, MAVEN_SETTINGS_ARG)) {
+				workflow.replaceInRun(
+						WorkflowJobs.DEPLOY,
+						BATCH_MODE_LINE,
+						BATCH_MODE_LINE + "  " + MAVEN_SETTINGS_ARG + " \\\n"
 				);
 			}
-
-			workflow.singleToDoubleQuote();
+			FilesSilent.writeString(
+					context.resolve(MAVEN_SETTINGS),
+					Template.mavenSettings()
+			);
 		});
 	}
 
