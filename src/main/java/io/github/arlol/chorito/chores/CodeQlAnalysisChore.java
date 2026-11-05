@@ -4,7 +4,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.FilesSilent;
@@ -61,7 +60,6 @@ public class CodeQlAnalysisChore implements Chore {
 		Path codeqlWorkflow = context
 				.resolve(".github/workflows/codeql-analysis.yaml");
 		String before = "";
-		Optional<String> pinnedJavaVersion = Optional.empty();
 		if (FilesSilent.exists(codeqlWorkflow)) {
 			var workflowFile = new GitHubActionsWorkflowFile(
 					FilesSilent.readString(codeqlWorkflow)
@@ -69,7 +67,6 @@ public class CodeQlAnalysisChore implements Chore {
 			before = workflowFile.asStringWithoutVersions();
 			template.setOn(workflowFile.getOn());
 			template.setEnv(workflowFile.getEnv());
-			pinnedJavaVersion = workflowFile.getPinnedJavaVersion();
 		}
 
 		// After setOn, so it catches both the block just copied from the
@@ -81,18 +78,17 @@ public class CodeQlAnalysisChore implements Chore {
 		if (!languages.contains("java-kotlin")) {
 			template.removeActionFromJob(
 					WorkflowJobs.ANALYZE,
-					"actions/setup-java"
+					"jdx/mise-action"
 			);
+			template.removeActionFromJob(WorkflowJobs.ANALYZE, "actions/cache");
 			template.removeEnv();
 		}
 
-		// Analysis builds no native image, so .tool-versions would install a
-		// GraalVM it never uses. Renovate owns the pin once it is written.
-		// Template hands over a workflow already pointing at .tool-versions,
-		// so only the repositories that need a pin get one.
-		if (JavaVersions.buildsOnGraalVm(context)) {
-			template.pinTemurinJavaVersion(
-					pinnedJavaVersion.orElse(JavaVersions.TEMURIN)
+		// Only a repository with a native profile has anything to skip.
+		if (!JavaVersions.buildsOnGraalVm(context)) {
+			template.removeEnvFromMavenSteps(
+					WorkflowJobs.ANALYZE,
+					"SKIP_GRAALVM_NATIVE_IMAGE_BUILD"
 			);
 		}
 

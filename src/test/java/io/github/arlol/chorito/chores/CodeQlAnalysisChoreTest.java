@@ -15,7 +15,6 @@ import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FakeRandomGenerator;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.JavaVersions;
 
 public class CodeQlAnalysisChoreTest {
 
@@ -251,7 +250,7 @@ public class CodeQlAnalysisChoreTest {
 	}
 
 	@Test
-	public void testGraalProjectPinsTemurinVersion() throws Exception {
+	public void testGraalProjectGetsMiseAndSkipsNative() throws Exception {
 		FilesSilent.touch(extension.root().resolve("pom.xml"));
 		FilesSilent.writeString(
 				extension.root().resolve(".tool-versions"),
@@ -277,8 +276,7 @@ public class CodeQlAnalysisChoreTest {
 	}
 
 	@Test
-	public void testGraalProjectKeepsTheVersionRenovateBumped()
-			throws Exception {
+	public void testGraalProjectSkipsNativeInAutobuild() throws Exception {
 		FilesSilent.touch(extension.root().resolve("pom.xml"));
 		FilesSilent.writeString(
 				extension.root().resolve(".tool-versions"),
@@ -290,22 +288,40 @@ public class CodeQlAnalysisChoreTest {
 				.gitHubRepositoryIsPublic(_ -> true)
 				.randomGenerator(new FakeRandomGenerator())
 				.build();
+
 		new CodeQlAnalysisChore().doit(context);
-		Path workflow = context
-				.resolve(".github/workflows/codeql-analysis.yaml");
-		FilesSilent.writeString(
-				workflow,
-				FilesSilent.readString(workflow)
-						.replace(
-								"JAVA_VERSION: " + JavaVersions.TEMURIN,
-								"JAVA_VERSION: 26.0.1"
+
+		assertThat(
+				FilesSilent.readString(
+						context.resolve(
+								".github/workflows/codeql-analysis.yaml"
 						)
+				)
+		).containsPattern(
+				"(?s)name: Autobuild.*?SKIP_GRAALVM_NATIVE_IMAGE_BUILD: true"
+						+ ".*?name: Perform CodeQL Analysis"
 		);
+	}
+
+	@Test
+	public void testJavaProjectHasNoSkipVariable() throws Exception {
+		FilesSilent.touch(extension.root().resolve("pom.xml"));
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.gitHubRepositoryIsPublic(_ -> true)
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
 
 		new CodeQlAnalysisChore().doit(context);
 
-		assertThat(FilesSilent.readString(workflow))
-				.contains("JAVA_VERSION: 26.0.1");
+		assertThat(
+				FilesSilent.readString(
+						context.resolve(
+								".github/workflows/codeql-analysis.yaml"
+						)
+				)
+		).doesNotContain("SKIP_GRAALVM_NATIVE_IMAGE_BUILD");
 	}
 
 }
