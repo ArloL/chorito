@@ -88,7 +88,7 @@ public class CodeQlAnalysisChore implements Chore {
 		if (!JavaVersions.buildsOnGraalVm(context)) {
 			template.removeEnvFromMavenSteps(
 					WorkflowJobs.ANALYZE,
-					"SKIP_GRAALVM_NATIVE_IMAGE_BUILD"
+					JavaVersions.SKIP_NATIVE_IMAGE_ENV
 			);
 		}
 

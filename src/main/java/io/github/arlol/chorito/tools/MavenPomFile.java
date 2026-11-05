@@ -162,6 +162,31 @@ public class MavenPomFile {
 		return changed;
 	}
 
+	/**
+	 * Rewrites the end of every profile activation {@code <file><exists>} value
+	 * that ends with {@code oldSuffix} so it ends with {@code newSuffix}.
+	 *
+	 * @return whether the pom changed
+	 */
+	public boolean replaceProfileActivationFileSuffix(
+			String oldSuffix,
+			String newSuffix
+	) {
+		boolean changed = false;
+		for (Element exists : document
+				.select("profile > activation > file > exists")) {
+			String value = exists.ownText().trim();
+			if (value.endsWith(oldSuffix)) {
+				exists.text(
+						value.substring(0, value.length() - oldSuffix.length())
+								+ newSuffix
+				);
+				changed = true;
+			}
+		}
+		return changed;
+	}
+
 	private static boolean hasProperty(Element activation, String name) {
 		return activation.select("> property > name")
 				.stream()

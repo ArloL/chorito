@@ -142,8 +142,52 @@ public class IdiomaticVersionFileChoreTest {
 	}
 
 	@Test
-	public void testNoJavaLineLeftAlone() throws Exception {
-		assertUnchanged("nodejs 24.22.0\n");
+	public void testNoJavaLineGetsOne() throws Exception {
+		setUpProject();
+		writeToolVersions("nodejs 24.22.0\n");
+
+		doit();
+
+		assertToolVersions(
+				"nodejs 24.22.0\njava temurin-" + JavaVersions.TEMURIN + "\n"
+		);
+	}
+
+	@Test
+	public void testRootPinnedWhenOnlySubdirectoryIsJava() throws Exception {
+		FilesSilent
+				.touch(extension.root().resolve("demo/src/main/java/A.java"));
+		FilesSilent.touch(extension.root().resolve("demo/pom.xml"));
+		writeToolVersions("java temurin-25\n");
+
+		doit();
+
+		assertToolVersions("java temurin-" + JavaVersions.TEMURIN + "\n");
+	}
+
+	@Test
+	public void testRootNotCreatedWhenOnlySubdirectoryIsJava()
+			throws Exception {
+		FilesSilent
+				.touch(extension.root().resolve("demo/src/main/java/A.java"));
+		FilesSilent.touch(extension.root().resolve("demo/pom.xml"));
+
+		doit();
+
+		assertThat(extension.root().resolve(".tool-versions")).doesNotExist();
+	}
+
+	@Test
+	public void testRootWithoutJavaLineOutsideJavaDirUntouched()
+			throws Exception {
+		FilesSilent
+				.touch(extension.root().resolve("demo/src/main/java/A.java"));
+		FilesSilent.touch(extension.root().resolve("demo/pom.xml"));
+		writeToolVersions("nodejs 24.22.0\n");
+
+		doit();
+
+		assertToolVersions("nodejs 24.22.0\n");
 	}
 
 	@Test

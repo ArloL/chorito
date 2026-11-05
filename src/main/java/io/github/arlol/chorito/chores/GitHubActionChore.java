@@ -28,7 +28,7 @@ public class GitHubActionChore implements Chore {
 	private static final List<String> TRUNK_BRANCHES = List
 			.of("main", "master");
 	private static final String DEPENDABOT_CONDITION = " && !startsWith(github.ref, 'refs/heads/dependabot/')";
-	private static final String SKIP_NATIVE = "SKIP_GRAALVM_NATIVE_IMAGE_BUILD";
+	private static final String SKIP_NATIVE = JavaVersions.SKIP_NATIVE_IMAGE_ENV;
 	private static final String SONAR_SKIP_NATIVE = "  -P '!graal' \\\n";
 	private static final String MAVEN_SETTINGS = ".github/maven-settings.xml";
 	private static final String MAVEN_SETTINGS_ARG = "--settings "
