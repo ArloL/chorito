@@ -148,7 +148,7 @@ public class MavenPomFile {
 		Elements profiles = document
 				.select("profile:has(" + selector(plugin) + ")");
 		if (profiles.size() == 1) {
-			Element id = profiles.first().selectFirst("> id");
+			Element id = profiles.get(0).selectFirst("> id");
 			if (id != null && !id.ownText().trim().equals(profileId)) {
 				id.text(profileId);
 				changed = true;
