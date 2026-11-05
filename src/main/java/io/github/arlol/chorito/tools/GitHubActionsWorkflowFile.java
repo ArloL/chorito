@@ -881,7 +881,13 @@ public class GitHubActionsWorkflowFile {
 				setKey(stepNode, ENV, newEnv);
 				return newEnv;
 			});
-			setKey(env, key, newScalar(value, ScalarStyle.PLAIN));
+			boolean bool = "true".equals(value) || "false".equals(value);
+			setKey(
+					env,
+					key,
+					bool ? newScalar(Boolean.parseBoolean(value))
+							: newScalar(value, ScalarStyle.PLAIN)
+			);
 		}
 	}
 

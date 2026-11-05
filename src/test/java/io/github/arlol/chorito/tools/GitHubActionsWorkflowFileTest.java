@@ -922,10 +922,10 @@ public class GitHubActionsWorkflowFileTest {
 				    - run: ./mvnw verify
 				      env:
 				        GITHUB_TOKEN: x
-				        SKIP_GRAALVM_NATIVE_IMAGE_BUILD: 'true'
+				        SKIP_GRAALVM_NATIVE_IMAGE_BUILD: true
 				    - uses: github/codeql-action/autobuild@x
 				      env:
-				        SKIP_GRAALVM_NATIVE_IMAGE_BUILD: 'true'
+				        SKIP_GRAALVM_NATIVE_IMAGE_BUILD: true
 				    - run: echo hi
 				""");
 	}
@@ -948,6 +948,27 @@ public class GitHubActionsWorkflowFileTest {
 
 		assertThat(once).contains("GITHUB_TOKEN: x");
 		assertThat(file.asString()).isEqualTo(once);
+	}
+
+	@Test
+	public void setEnvOnMavenStepsLeavesUnquotedBooleanUnchanged() {
+		var input = """
+				jobs:
+				  build:
+				    steps:
+				    - run: ./mvnw verify
+				      env:
+				        SKIP_GRAALVM_NATIVE_IMAGE_BUILD: true
+				""";
+		var file = new GitHubActionsWorkflowFile(input);
+
+		file.setEnvOnMavenSteps(
+				"build",
+				"SKIP_GRAALVM_NATIVE_IMAGE_BUILD",
+				"true"
+		);
+
+		assertThat(file.asString()).isEqualTo(input);
 	}
 
 	@Test
