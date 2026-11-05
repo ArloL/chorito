@@ -15,21 +15,20 @@ public class NativeReleaseLayoutChoreTest {
 	@RegisterExtension
 	final FileSystemExtension extension = new FileSystemExtension();
 
-	/** The shape every chorito-managed native CLI was on before this chore. */
+	/**
+	 * The shape every chorito-managed native CLI was on before this chore. It
+	 * does not mention GraalVM: only .tool-versions says what it builds on.
+	 */
 	private static final String NATIVE_CLI = """
 			jobs:
 			  linux:
 			    runs-on: ubuntu-latest
 			    steps:
-			    - uses: actions/setup-java@v6
-			      with:
-			        distribution: graalvm
+			    - uses: jdx/mise-action@v5
 			  windows:
 			    runs-on: windows-latest
 			    steps:
-			    - uses: actions/setup-java@v6
-			      with:
-			        distribution: graalvm
+			    - uses: jdx/mise-action@v5
 			  release:
 			    needs:
 			    - version
@@ -57,7 +56,15 @@ public class NativeReleaseLayoutChoreTest {
 			    - run: echo hi
 			""";
 
+	private void writeToolVersions(String content) {
+		FilesSilent.writeString(
+				extension.root().resolve(".tool-versions"),
+				content
+		);
+	}
+
 	private Path writeMain(String content) {
+		writeToolVersions("java graalvm-community-25.0.2\n");
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(workflow, content);
 		return workflow;
@@ -82,16 +89,25 @@ public class NativeReleaseLayoutChoreTest {
 	}
 
 	@Test
-	public void testAddsNoArmJobForAGraalVmInnovationPin() {
-		FilesSilent.writeString(
-				extension.root().resolve(".tool-versions"),
-				"java graalvm-community-innovation-25.0.4.1.1\n"
-		);
+	public void testInnovationPinGetsReleaseLayout() {
+		Path workflow = writeMain(NATIVE_CLI);
+		writeToolVersions("java graalvm-community-innovation-25.0.5.0.3\n");
+
+		new NativeReleaseLayoutChore().doit(extension.choreContext());
+
+		assertThat(workflow).content()
+				.contains("  linux-arm:")
+				.contains("${ARTIFACT}-${os}-${arch}.tar.gz");
+	}
+
+	@Test
+	public void testDetectsNativeCliFromToolVersions() {
+		assertThat(NATIVE_CLI).doesNotContain("graalvm");
 		Path workflow = writeMain(NATIVE_CLI);
 
 		new NativeReleaseLayoutChore().doit(extension.choreContext());
 
-		assertThat(workflow).content().isEqualTo(NATIVE_CLI);
+		assertThat(workflow).content().contains("  linux-arm:");
 	}
 
 	@Test
@@ -132,12 +148,12 @@ public class NativeReleaseLayoutChoreTest {
 
 	@Test
 	public void testLeavesAWorkflowThatBuildsNoNativeImage() {
-		String noGraal = NATIVE_CLI.replace("graalvm", "temurin");
-		Path workflow = writeMain(noGraal);
+		Path workflow = writeMain(NATIVE_CLI);
+		writeToolVersions("java temurin-25.0.5+8.0.LTS\n");
 
 		new NativeReleaseLayoutChore().doit(extension.choreContext());
 
-		assertThat(workflow).content().isEqualTo(noGraal);
+		assertThat(workflow).content().isEqualTo(NATIVE_CLI);
 	}
 
 	@Test

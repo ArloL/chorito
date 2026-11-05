@@ -85,8 +85,8 @@ jobs:
         version: ${{ env.MISE_VERSION }}
     - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
-        path: ~/.m2/repository
         key: ${{ runner.os }}-${{ runner.arch }}-maven-${{ hashFiles('**/pom.xml') }}
+        path: ~/.m2/repository
         restore-keys: ${{ runner.os }}-${{ runner.arch }}-maven-
     - name: Check GraalVM is JAVA_HOME
       shell: bash
@@ -128,8 +128,8 @@ jobs:
         version: ${{ env.MISE_VERSION }}
     - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
-        path: ~/.m2/repository
         key: ${{ runner.os }}-${{ runner.arch }}-maven-${{ hashFiles('**/pom.xml') }}
+        path: ~/.m2/repository
         restore-keys: ${{ runner.os }}-${{ runner.arch }}-maven-
     - name: Check GraalVM is JAVA_HOME
       shell: bash
@@ -171,8 +171,8 @@ jobs:
         version: ${{ env.MISE_VERSION }}
     - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
-        path: ~/.m2/repository
         key: ${{ runner.os }}-${{ runner.arch }}-maven-${{ hashFiles('**/pom.xml') }}
+        path: ~/.m2/repository
         restore-keys: ${{ runner.os }}-${{ runner.arch }}-maven-
     - name: Check GraalVM is JAVA_HOME
       shell: bash
@@ -214,8 +214,8 @@ jobs:
         version: ${{ env.MISE_VERSION }}
     - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
-        path: ~/.m2/repository
         key: ${{ runner.os }}-${{ runner.arch }}-maven-${{ hashFiles('**/pom.xml') }}
+        path: ~/.m2/repository
         restore-keys: ${{ runner.os }}-${{ runner.arch }}-maven-
     - name: Check GraalVM is JAVA_HOME
       shell: bash
@@ -324,8 +324,8 @@ jobs:
         version: ${{ env.MISE_VERSION }}
     - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
-        path: ~/.m2/repository
         key: ${{ runner.os }}-${{ runner.arch }}-maven-${{ hashFiles('**/pom.xml') }}
+        path: ~/.m2/repository
         restore-keys: ${{ runner.os }}-${{ runner.arch }}-maven-
     - name: Publish to GitHub Packages Apache Maven
       env:

@@ -27,7 +27,6 @@ public class NativeReleaseLayoutChore implements Chore {
 
 	private static final String PREPARE_ARTIFACTS_STEP = "Prepare artifacts";
 	private static final String DOWNLOAD_ARTIFACT_ACTION = "actions/download-artifact";
-	private static final String GRAALVM = "graalvm";
 
 	@Override
 	public ChoreContext doit(ChoreContext context) {
@@ -35,13 +34,13 @@ public class NativeReleaseLayoutChore implements Chore {
 		var armJob = template.getJob(WorkflowJobs.LINUX_ARM);
 		var prepareStep = template
 				.getStepByName(WorkflowJobs.RELEASE, PREPARE_ARTIFACTS_STEP);
-		if (armJob.isEmpty() || prepareStep.isEmpty()
-				|| JavaVersions.pinsGraalVmInnovation(context)) {
+		if (armJob.isEmpty() || prepareStep.isEmpty()) {
 			return context;
 		}
 
+		boolean buildsOnGraalVm = JavaVersions.buildsOnGraalVm(context);
 		GitHubActionsWorkflowFile.updateEach(context, workflow -> {
-			if (!buildsNativeCli(workflow)) {
+			if (!buildsNativeCli(workflow, buildsOnGraalVm)) {
 				return;
 			}
 			workflow.putJobAfter(
@@ -83,8 +82,11 @@ public class NativeReleaseLayoutChore implements Chore {
 	 * attaching assets from its own paths -- the shape chorito shipped before
 	 * -- is left for the migrations in that chore to bring forward first.
 	 */
-	private boolean buildsNativeCli(GitHubActionsWorkflowFile workflow) {
-		return workflow.jobMentions(WorkflowJobs.LINUX, GRAALVM) && workflow
+	private boolean buildsNativeCli(
+			GitHubActionsWorkflowFile workflow,
+			boolean buildsOnGraalVm
+	) {
+		return buildsOnGraalVm && workflow
 				.hasStepUsing(WorkflowJobs.RELEASE, DOWNLOAD_ARTIFACT_ACTION)
 				&& workflow.releasePublishesAssets();
 	}

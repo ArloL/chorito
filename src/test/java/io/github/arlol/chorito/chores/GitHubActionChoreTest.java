@@ -5,16 +5,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.snakeyaml.engine.v2.nodes.Node;
 
 import io.github.arlol.chorito.tools.ChoreContext;
 import io.github.arlol.chorito.tools.ClassPathFiles;
 import io.github.arlol.chorito.tools.FakeRandomGenerator;
 import io.github.arlol.chorito.tools.FileSystemExtension;
 import io.github.arlol.chorito.tools.FilesSilent;
-import io.github.arlol.chorito.tools.JavaVersions;
+import io.github.arlol.chorito.tools.GitHubActionsWorkflowFile;
+import io.github.arlol.chorito.tools.Template;
+import io.github.arlol.chorito.tools.WorkflowJobs;
+import io.github.arlol.chorito.tools.Yamls;
 
 public class GitHubActionChoreTest {
 
@@ -28,7 +34,6 @@ public class GitHubActionChoreTest {
 			        distribution: adopt
 			""";
 	private static final String EXPECTED_ADOPT = """
-			permissions: {}
 			jobs:
 			  linux:
 			    runs-on: ubuntu-latest
@@ -36,7 +41,21 @@ public class GitHubActionChoreTest {
 			    - uses: actions/setup-java@v3.5.1
 			      with:
 			        distribution: temurin
-			        java-version-file: .tool-versions
+			""";
+
+	private static final String GRAAL_TOOL_VERSIONS = "java graalvm-community-innovation-25.0.5.0.3\n";
+	private static final String TEMURIN_TOOL_VERSIONS = "java temurin-25.0.5+8.0.LTS\n";
+	private static final String DEPLOY_WITH_ALT_DEPLOYMENT_REPOSITORY = """
+			jobs:
+			  deploy:
+			    runs-on: ubuntu-latest
+			    steps:
+			    - name: Publish
+			      run: |
+			        ./mvnw \\
+			          --batch-mode \\
+			          -DaltDeploymentRepository="github::https://maven.pkg.github.com/${GITHUB_REPOSITORY}" \\
+			          deploy
 			""";
 
 	@RegisterExtension
@@ -108,7 +127,9 @@ public class GitHubActionChoreTest {
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(workflow, INPUT_ADOPT);
 
-		new GitHubActionChore().doit(extension.choreContext());
+		new GitHubActionChore().migrateJavaDistributionFromAdoptToTemurin(
+				extension.choreContext()
+		);
 
 		assertThat(workflow).content().isEqualTo(EXPECTED_ADOPT);
 	}
@@ -254,6 +275,7 @@ public class GitHubActionChoreTest {
 
 	@Test
 	public void testUpxRemoval() {
+		writeToolVersions(GRAAL_TOOL_VERSIONS);
 		Path pom = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(
 				pom,
@@ -873,43 +895,12 @@ public class GitHubActionChoreTest {
 				.doesNotContain("shogo82148/actions-upload-release-asset");
 	}
 
-	@Test
-	public void testJavaVersionIsReplacedByTheToolVersionsFile()
-			throws Exception {
-		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
-		FilesSilent.writeString(workflow, """
-				permissions: {}
-				jobs:
-				  linux:
-				    runs-on: ubuntu-latest
-				    steps:
-				    - uses: actions/setup-java@abc # v6.0.0
-				      with:
-				        distribution: temurin
-				        java-version: 21
-				""");
-
-		new GitHubActionChore().doit(extension.choreContext());
-
-		assertThat(workflow).content().isEqualTo("""
-				permissions: {}
-				jobs:
-				  linux:
-				    runs-on: ubuntu-latest
-				    steps:
-				    - uses: actions/setup-java@abc # v6.0.0
-				      with:
-				        distribution: temurin
-				        java-version-file: .tool-versions
-				""");
-	}
-
 	/**
 	 * A project checked out into a subdirectory keeps its .tool-versions there,
-	 * and pointing setup-java at the workspace root fails the build.
+	 * which mise would not find from the workspace root.
 	 */
 	@Test
-	public void testJavaVersionFileOfTheAuthorsChoosingIsKept()
+	public void testKeepsSetupJavaForSubdirectoryVersionFile()
 			throws Exception {
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		String content = """
@@ -989,85 +980,6 @@ public class GitHubActionChoreTest {
 		assertThat(workflow).content().isEqualTo(content);
 	}
 
-	@Test
-	public void testGraalProjectPinsTemurinSteps() throws Exception {
-		FilesSilent.writeString(
-				extension.root().resolve(".tool-versions"),
-				"java graalvm-community-25.0.2\n"
-		);
-		Path workflow = extension.root()
-				.resolve(".github/workflows/sonarcloud.yaml");
-		FilesSilent.writeString(workflow, """
-				jobs:
-				  sonarcloud:
-				    runs-on: ubuntu-latest
-				    steps:
-				    - uses: actions/setup-java@abc # v6.0.0
-				      with:
-				        cache: maven
-				        distribution: temurin
-				        java-version-file: .tool-versions
-				""");
-
-		new GitHubActionChore().doit(extension.choreContext());
-
-		assertThat(workflow).content()
-				.isEqualTo(
-						"""
-								permissions: {}
-								jobs:
-								  sonarcloud:
-								    runs-on: ubuntu-latest
-								    steps:
-								    - uses: actions/setup-java@abc # v6.0.0
-								      env:
-								        # renovate: datasource=java-version depName=java extractVersion=^(?<version>\\d+\\.\\d+\\.\\d+)
-								        JAVA_VERSION: $TEMURIN
-								      with:
-								        cache: maven
-								        distribution: temurin
-								        java-version: ${{ env.JAVA_VERSION }}
-								"""
-								.replace("$TEMURIN", JavaVersions.TEMURIN)
-				);
-	}
-
-	@Test
-	public void testGraalProjectLeavesNativeImageStepsOnToolVersions()
-			throws Exception {
-		FilesSilent.writeString(
-				extension.root().resolve(".tool-versions"),
-				"java graalvm-community-25.0.2\n"
-		);
-		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
-		FilesSilent.writeString(workflow, """
-				jobs:
-				  linux:
-				    runs-on: ubuntu-latest
-				    steps:
-				    - uses: actions/setup-java@abc # v6.0.0
-				      with:
-				        cache: maven
-				        distribution: graalvm
-				        java-version-file: .tool-versions
-				""");
-
-		new GitHubActionChore().doit(extension.choreContext());
-
-		assertThat(workflow).content().isEqualTo("""
-				permissions: {}
-				jobs:
-				  linux:
-				    runs-on: ubuntu-latest
-				    steps:
-				    - uses: actions/setup-java@abc # v6.0.0
-				      with:
-				        cache: maven
-				        distribution: graalvm
-				        java-version-file: .tool-versions
-				""");
-	}
-
 	private static final String GRAAL_MAIN_WITHOUT_RELEASE_ASSETS = """
 			jobs:
 			  version:
@@ -1092,6 +1004,7 @@ public class GitHubActionChoreTest {
 	@Test
 	public void testKeepsUploadsOutOfAReleaseThatDownloadsNothing()
 			throws Exception {
+		writeToolVersions(GRAAL_TOOL_VERSIONS);
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(workflow, GRAAL_MAIN_WITHOUT_RELEASE_ASSETS);
 
@@ -1103,25 +1016,8 @@ public class GitHubActionChoreTest {
 	}
 
 	@Test
-	public void testLeavesGraalVmInnovationJobsAlone() throws Exception {
-		FilesSilent.writeString(
-				extension.root().resolve(".tool-versions"),
-				"java graalvm-community-innovation-25.0.4.1.1\n"
-		);
-		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
-		String content = GRAAL_MAIN_WITHOUT_RELEASE_ASSETS.replace(
-				"actions/setup-java@abc # v6.0.0",
-				"graalvm/setup-graalvm@abc # v1.6.7"
-		);
-		FilesSilent.writeString(workflow, content);
-
-		new GitHubActionChore().updateGraalSteps(extension.choreContext());
-
-		assertThat(workflow).content().isEqualTo(content);
-	}
-
-	@Test
 	public void testKeepsUploadsWhenTheReleaseDownloadsThem() throws Exception {
+		writeToolVersions(GRAAL_TOOL_VERSIONS);
 		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
 		FilesSilent.writeString(
 				workflow,
@@ -1137,6 +1033,388 @@ public class GitHubActionChoreTest {
 		assertThat(workflow).content()
 				.contains("upload-artifact")
 				.contains("Move artifacts");
+	}
+
+	@Test
+	public void testReplacesSetupJavaWithMise() throws Exception {
+		writeToolVersions(TEMURIN_TOOL_VERSIONS);
+		Path workflow = extension.root()
+				.resolve(".github/workflows/sonarcloud.yaml");
+		FilesSilent.writeString(workflow, """
+				jobs:
+				  sonarcloud:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - uses: actions/setup-java@abc # v6.0.0
+				      with:
+				        cache: maven
+				        distribution: temurin
+				        java-version: 21
+				    - name: Build
+				      run: ./mvnw verify
+				""");
+
+		new GitHubActionChore().doit(extension.choreContext());
+
+		assertThat(removeVersions(FilesSilent.readString(workflow))).isEqualTo(
+				removeVersions(
+						"""
+								permissions: {}
+								jobs:
+								  sonarcloud:
+								    runs-on: ubuntu-latest
+								    steps:
+								    - uses: jdx/mise-action@abc # v5
+								      env:
+								        # renovate: datasource=github-releases depName=jdx/mise extractVersion=^v(?<version>.+)
+								        MISE_VERSION: 1.2.3
+								      with:
+								        cache: false
+								        version: ${{ env.MISE_VERSION }}
+								    - uses: actions/cache@abc # v6
+								      with:
+								        key: ${{ runner.os }}-${{ runner.arch }}-maven-${{ hashFiles('**/pom.xml') }}
+								        path: ~/.m2/repository
+								        restore-keys: ${{ runner.os }}-${{ runner.arch }}-maven-
+								    - name: Build
+								      run: ./mvnw verify
+								"""
+				)
+		);
+	}
+
+	@Test
+	public void testGraalProjectSkipsNativeOutsidePlatformJobs()
+			throws Exception {
+		writeToolVersions(GRAAL_TOOL_VERSIONS);
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(workflow, """
+				jobs:
+				  linux:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - name: Build
+				      run: ./mvnw verify
+				  deploy:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - name: Publish
+				      run: |
+				        ./mvnw \\
+				          --batch-mode \\
+				          -P '!graal' \\
+				          deploy
+				    - name: Unrelated
+				      run: echo hi
+				  analyze:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - uses: github/codeql-action/autobuild@v3
+				""");
+
+		new GitHubActionChore().doit(extension.choreContext());
+
+		assertThat(workflow).content().isEqualTo("""
+				permissions: {}
+				jobs:
+				  linux:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - name: Build
+				      run: ./mvnw verify
+				  deploy:
+				    runs-on: ubuntu-latest
+				    permissions:
+				      packages: write
+				    steps:
+				    - name: Publish
+				      env:
+				        SKIP_GRAALVM_NATIVE_IMAGE_BUILD: true
+				      run: |
+				        ./mvnw \\
+				          --batch-mode \\
+				          deploy
+				    - name: Unrelated
+				      run: echo hi
+				  analyze:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - uses: github/codeql-action/autobuild@v3
+				      env:
+				        SKIP_GRAALVM_NATIVE_IMAGE_BUILD: true
+				""");
+	}
+
+	@Test
+	public void testNonGraalProjectLosesSkipVariable() throws Exception {
+		writeToolVersions(TEMURIN_TOOL_VERSIONS);
+		Path workflow = extension.root()
+				.resolve(".github/workflows/sonarcloud.yaml");
+		FilesSilent.writeString(workflow, """
+				jobs:
+				  sonarcloud:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - name: Build
+				      env:
+				        SKIP_GRAALVM_NATIVE_IMAGE_BUILD: true
+				      run: ./mvnw verify
+				""");
+
+		new GitHubActionChore().doit(extension.choreContext());
+
+		assertThat(workflow).content().isEqualTo("""
+				permissions: {}
+				jobs:
+				  sonarcloud:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - name: Build
+				      run: ./mvnw verify
+				""");
+	}
+
+	@Test
+	public void testInnovationProjectGetsPlatformJobs() throws Exception {
+		writeToolVersions(GRAAL_TOOL_VERSIONS);
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(workflow, """
+				jobs:
+				  version:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - run: echo version
+				  linux:
+				    needs: version
+				    runs-on: ubuntu-latest
+				    steps:
+				    - name: Read GraalVM version
+				      id: graalvm
+				      run: echo "version=1" >> "${GITHUB_OUTPUT}"
+				    - uses: graalvm/setup-graalvm@abc # v1.6.7
+				      with:
+				        distribution: graalvm-community
+				        version: ${{ steps.graalvm.outputs.version }}
+				  release:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - uses: actions/download-artifact@abc # v8.0.1
+				""");
+
+		new GitHubActionChore().doit(extension.choreContext());
+
+		assertThat(workflow).content().doesNotContain("Read GraalVM version");
+		assertThat(jobWithoutVersions(workflow, WorkflowJobs.LINUX))
+				.isEqualTo(templateJobWithoutVersions(WorkflowJobs.LINUX));
+	}
+
+	@Test
+	public void testGraalProjectWithoutGraalInWorkflowStillUpdates()
+			throws Exception {
+		writeToolVersions(GRAAL_TOOL_VERSIONS);
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(workflow, """
+				jobs:
+				  version:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - run: echo version
+				  linux:
+				    needs: version
+				    runs-on: ubuntu-latest
+				    steps:
+				    - uses: actions/setup-java@abc # v6.0.0
+				      with:
+				        distribution: temurin
+				        java-version-file: .tool-versions
+				  release:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - uses: actions/download-artifact@abc # v8.0.1
+				""");
+
+		new GitHubActionChore().doit(extension.choreContext());
+
+		assertThat(jobWithoutVersions(workflow, WorkflowJobs.LINUX))
+				.isEqualTo(templateJobWithoutVersions(WorkflowJobs.LINUX));
+	}
+
+	@Test
+	public void testCreatesMavenSettingsForDeploy() throws Exception {
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent
+				.writeString(workflow, DEPLOY_WITH_ALT_DEPLOYMENT_REPOSITORY);
+
+		new GitHubActionChore().doit(extension.choreContext());
+
+		assertThat(extension.root().resolve(".github/maven-settings.xml"))
+				.content()
+				.isEqualTo("""
+						<?xml version="1.0" encoding="UTF-8"?>
+						<settings>
+						  <servers>
+						    <server>
+						      <id>github</id>
+						      <username>${env.GITHUB_ACTOR}</username>
+						      <password>${env.GITHUB_TOKEN}</password>
+						    </server>
+						  </servers>
+						</settings>
+						""");
+		assertThat(workflow).content()
+				.contains(
+						"""
+								        ./mvnw \\
+								          --batch-mode \\
+								          --settings .github/maven-settings.xml \\
+								          -DaltDeploymentRepository="github::https://maven.pkg.github.com/${GITHUB_REPOSITORY}" \\
+								          deploy
+								"""
+				);
+	}
+
+	@Test
+	public void testNoMavenSettingsWithoutDeploy() throws Exception {
+		Path workflow = extension.root().resolve(".github/workflows/main.yaml");
+		FilesSilent.writeString(workflow, """
+				jobs:
+				  deploy:
+				    runs-on: ubuntu-latest
+				    steps:
+				    - name: Publish
+				      run: |
+				        ./mvnw \\
+				          --batch-mode \\
+				          deploy
+				""");
+
+		new GitHubActionChore().doit(extension.choreContext());
+
+		assertThat(extension.root().resolve(".github/maven-settings.xml"))
+				.doesNotExist();
+		assertThat(workflow).content().doesNotContain("--settings");
+	}
+
+	@Test
+	public void testMigrationsAreIdempotent() throws Exception {
+		writeToolVersions(GRAAL_TOOL_VERSIONS);
+		FilesSilent.writeString(
+				extension.root().resolve(".github/workflows/main.yaml"),
+				"""
+						on:
+						  push:
+						jobs:
+						  version:
+						    runs-on: ubuntu-latest
+						    steps:
+						    - run: echo version
+						  linux:
+						    needs: version
+						    runs-on: ubuntu-latest
+						    steps:
+						    - uses: actions/setup-java@abc # v6.0.0
+						      with:
+						        cache: maven
+						        distribution: graalvm
+						        java-version-file: .tool-versions
+						  release:
+						    runs-on: ubuntu-latest
+						    steps:
+						    - uses: actions/download-artifact@abc # v8.0.1
+						  deploy:
+						    runs-on: ubuntu-latest
+						    steps:
+						    - uses: actions/setup-java@abc # v6.0.0
+						      with:
+						        cache: maven
+						        distribution: temurin
+						        java-version-file: .tool-versions
+						    - name: Publish
+						      env:
+						        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+						      run: |
+						        ./mvnw \\
+						          --batch-mode \\
+						          -DaltDeploymentRepository="github::https://maven.pkg.github.com/${GITHUB_REPOSITORY}" \\
+						          deploy
+						"""
+		);
+		FilesSilent.writeString(
+				extension.root().resolve(".github/workflows/sonarcloud.yaml"),
+				"""
+						jobs:
+						  sonarcloud:
+						    runs-on: ubuntu-latest
+						    steps:
+						    - uses: actions/setup-java@abc # v6.0.0
+						      with:
+						        cache: maven
+						        distribution: temurin
+						        java-version: 21
+						    - name: Build
+						      run: |
+						        ./mvnw \\
+						          --batch-mode \\
+						          -P '!graal' \\
+						          verify
+						"""
+		);
+
+		runChoresWithXmlPreamble();
+		Map<String, String> once = fileContents();
+		runChoresWithXmlPreamble();
+
+		assertThat(once).containsKey(".github/maven-settings.xml");
+		assertThat(fileContents()).isEqualTo(once);
+	}
+
+	private void runChoresWithXmlPreamble() {
+		ChoreContext context = extension.choreContext()
+				.toBuilder()
+				.remotes(List.of("https://github.com/example/example"))
+				.branches(List.of("main"))
+				.randomGenerator(new FakeRandomGenerator())
+				.build();
+		new GitHubActionChore().doit(context);
+		new XmlPreambleChore().doit(extension.choreContext());
+	}
+
+	private Map<String, String> fileContents() {
+		Map<String, String> contents = new TreeMap<>();
+		for (String relative : extension.relativePaths()) {
+			Path path = extension.root().resolve(relative);
+			if (FilesSilent.isRegularFile(path)) {
+				contents.put(relative, FilesSilent.readString(path));
+			}
+		}
+		return contents;
+	}
+
+	private void writeToolVersions(String content) {
+		FilesSilent.writeString(
+				extension.root().resolve(".tool-versions"),
+				content
+		);
+	}
+
+	private static String jobWithoutVersions(Path workflow, String job) {
+		return removeVersions(
+				Yamls.asString(
+						new GitHubActionsWorkflowFile(
+								FilesSilent.readString(workflow)
+						).getJob(job).map(Node.class::cast)
+				)
+		);
+	}
+
+	private static String templateJobWithoutVersions(String job) {
+		return removeVersions(
+				Yamls.asString(
+						Template.mainWorkflow()
+								.getJob(job)
+								.map(Node.class::cast)
+				)
+		);
 	}
 
 }

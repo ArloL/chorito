@@ -26,8 +26,6 @@ import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 
-import org.snakeyaml.engine.v2.comments.CommentLine;
-import org.snakeyaml.engine.v2.comments.CommentType;
 import org.snakeyaml.engine.v2.common.ScalarStyle;
 import org.snakeyaml.engine.v2.nodes.MappingNode;
 import org.snakeyaml.engine.v2.nodes.Node;
@@ -51,15 +49,10 @@ public class GitHubActionsWorkflowFile {
 	private static final List<String> PUSH_REF_FILTERS = List
 			.of("branches", "branches-ignore", "tags", "tags-ignore");
 	private static final String SETUP_JAVA_ACTION = "actions/setup-java";
-	private static final String DISTRIBUTION_TEMURIN = "temurin";
-	private static final String JAVA_VERSION = "java-version";
 	private static final String JAVA_VERSION_FILE = "java-version-file";
 	private static final String TOOL_VERSIONS = ".tool-versions";
-	private static final String JAVA_VERSION_ENV = "JAVA_VERSION";
 	private static final String ENV = "env";
 	private static final String WITH = "with";
-	// Adoptium's semver carries a build suffix setup-java cannot resolve.
-	private static final String RENOVATE_JAVA_VERSION_COMMENT = "renovate: datasource=java-version depName=java extractVersion=^(?<version>\\d+\\.\\d+\\.\\d+)";
 	private static final Pattern USES_VERSION = Pattern
 			.compile("(?m)^([ \\t-]*uses:[^@\\n]*)@[^\\n]*");
 	/**
@@ -604,188 +597,12 @@ public class GitHubActionsWorkflowFile {
 	}
 
 	/**
-	 * Points every setup-java step that names its version inline, or names
-	 * none, at {@code .tool-versions}.
-	 * <p>
-	 * A step that already reads a version file keeps the one it reads. Which
-	 * file that is belongs to the author: a project checked out into a
-	 * subdirectory keeps its {@code .tool-versions} there, and pointing the
-	 * step at the workspace root fails the build.
-	 */
-	public void useToolVersionsFileForSetupJava() {
-		forEachSetupJava(step -> {
-			var with = getKeyAsMap(step, WITH).orElseGet(() -> {
-				var newWith = newMap();
-				setKey(step, WITH, newWith);
-				return newWith;
-			});
-			if (getKeyAsNode(with, JAVA_VERSION_FILE).isPresent()) {
-				return;
-			}
-			removeKey(Optional.of(with), JAVA_VERSION);
-			setKey(
-					with,
-					JAVA_VERSION_FILE,
-					newScalar(TOOL_VERSIONS, ScalarStyle.PLAIN)
-			);
-		});
-	}
-
-	/**
-	 * The version a Temurin setup-java step is pinned to, if any. The chores
-	 * that regenerate a workflow from a template carry it across so the bump
-	 * Renovate made survives. A version written straight into
-	 * {@code java-version} is how chorito pinned before the env var, and is
-	 * read so that pin moves across too.
-	 */
-	public Optional<String> getPinnedJavaVersion() {
-		List<String> versions = new ArrayList<>();
-		forEachTemurinSetupJava(step -> {
-			var version = scalarValue(
-					getKeyAsNode(getKeyAsMap(step, ENV), JAVA_VERSION_ENV)
-			).or(
-					() -> scalarValue(
-							getKeyAsNode(getKeyAsMap(step, WITH), JAVA_VERSION)
-					).filter(v -> !v.startsWith("${{"))
-			);
-			version.ifPresent(versions::add);
-		});
-		return versions.stream().findFirst();
-	}
-
-	/**
-	 * Pins every Temurin setup-java step to {@code version}, replacing whatever
-	 * the step said before. Carrying a version across belongs to the caller,
-	 * which reads it with {@link #getPinnedJavaVersion()} first: a chore that
-	 * rebuilds a workflow from a template must not inherit the template's own
-	 * pin, and chorito's template for this file is a symlink to the workflow it
-	 * runs itself.
-	 * <p>
-	 * The version lives in a step env var so Renovate's
-	 * customManagers:githubActionsVersions preset finds it.
-	 * <p>
-	 * A step reading a version file other than the repository's own
-	 * {@code .tool-versions} is left alone, for the reason
-	 * {@link #useToolVersionsFileForSetupJava()} gives.
-	 */
-	public void pinTemurinJavaVersion(String version) {
-		forEachTemurinSetupJava(step -> {
-			if (scalarValue(
-					getKeyAsNode(getKeyAsMap(step, WITH), JAVA_VERSION_FILE)
-			).filter(file -> !TOOL_VERSIONS.equals(file)).isPresent()) {
-				return;
-			}
-			var env = getKeyAsMap(step, ENV).orElseGet(() -> {
-				var newEnv = newMap();
-				var tuples = new ArrayList<NodeTuple>();
-				for (NodeTuple tuple : step.getValue()) {
-					if (scalarValue(tuple.getKeyNode()).filter(WITH::equals)
-							.isPresent()) {
-						tuples.add(newTuple(ENV, newEnv));
-					}
-					tuples.add(tuple);
-				}
-				step.setValue(tuples);
-				return newEnv;
-			});
-			removeKey(Optional.of(env), JAVA_VERSION_ENV);
-			var keyNode = newScalar(JAVA_VERSION_ENV, ScalarStyle.PLAIN);
-			keyNode.setBlockComments(
-					List.of(
-							new CommentLine(
-									Optional.empty(),
-									Optional.empty(),
-									" " + RENOVATE_JAVA_VERSION_COMMENT,
-									CommentType.BLOCK
-							)
-					)
-			);
-			var envTuples = new ArrayList<>(env.getValue());
-			envTuples.add(
-					new NodeTuple(
-							keyNode,
-							newScalar(version, ScalarStyle.PLAIN)
-					)
-			);
-			env.setValue(envTuples);
-
-			var with = getKeyAsMap(step, WITH);
-			removeKey(with, JAVA_VERSION_FILE);
-			// Removed rather than overwritten: the key of an older pin carries
-			// the renovate comment that now belongs to the env var.
-			removeKey(with, JAVA_VERSION);
-			setKey(
-					with.orElseThrow(),
-					JAVA_VERSION,
-					newScalar(
-							"${{ env." + JAVA_VERSION_ENV + " }}",
-							ScalarStyle.PLAIN
-					)
-			);
-		});
-	}
-
-	/**
-	 * Runs {@code body} against every setup-java step asking for Temurin. Those
-	 * are the steps that build no native image, so they are the ones whose JDK
-	 * is chorito's to decide.
-	 */
-	private void forEachTemurinSetupJava(Consumer<MappingNode> body) {
-		forEachSetupJava(step -> {
-			if (scalarValue(
-					getKeyAsNode(getKeyAsMap(step, WITH), "distribution")
-			).filter(DISTRIBUTION_TEMURIN::equals).isPresent()) {
-				body.accept(step);
-			}
-		});
-	}
-
-	private void forEachSetupJava(Consumer<MappingNode> body) {
-		for (NodeTuple jobTuple : getJobs().map(MappingNode::getValue)
-				.orElse(List.of())) {
-			var jobNode = nodeAsMap(jobTuple.getValueNode());
-			for (Node step : getKeyAsSequence(jobNode, STEPS)
-					.map(SequenceNode::getValue)
-					.orElse(List.of())) {
-				var stepNode = nodeAsMap(step);
-				if (scalarValue(getKeyAsNode(stepNode, "uses"))
-						.filter(
-								uses -> uses.startsWith(SETUP_JAVA_ACTION + "@")
-						)
-						.isPresent()) {
-					body.accept(stepNode);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Points every Temurin setup-java step back at {@code .tool-versions},
-	 * dropping a pin and the renovate comment above it.
-	 */
-	public void useToolVersionsFile() {
-		forEachTemurinSetupJava(step -> {
-			var env = getKeyAsMap(step, ENV);
-			removeKey(env, JAVA_VERSION_ENV);
-			if (env.map(e -> e.getValue().isEmpty()).orElse(false)) {
-				removeKey(Optional.of(step), ENV);
-			}
-			var with = getKeyAsMap(step, WITH);
-			removeKey(with, JAVA_VERSION);
-			setKey(
-					with.orElseThrow(),
-					JAVA_VERSION_FILE,
-					newScalar(TOOL_VERSIONS, ScalarStyle.PLAIN)
-			);
-		});
-	}
-
-	/**
 	 * Replaces every setup-java step with {@code miseStep}, followed by
 	 * {@code mavenCacheStep} when the step cached Maven. A step reading a
-	 * version file other than {@code .tool-versions} stays, for the reason
-	 * {@link #useToolVersionsFileForSetupJava()} gives. Each use gets its own
-	 * copy of the nodes, as one instance in two places is emitted as an anchor.
+	 * version file other than {@code .tool-versions} stays: a project checked
+	 * out into a subdirectory keeps its version file there, out of mise's
+	 * reach. Each use gets its own copy of the nodes, as one instance in two
+	 * places is emitted as an anchor.
 	 */
 	public void replaceSetupJavaWithMise(Node miseStep, Node mavenCacheStep) {
 		for (String jobName : jobNames()) {
