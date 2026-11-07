@@ -16,6 +16,7 @@ env:
 jobs:
   debug:
     runs-on: ubuntu-slim
+    timeout-minutes: 5
     steps:
     - name: Dump GitHub context
       env:
@@ -45,6 +46,7 @@ jobs:
       run: set
   version:
     runs-on: ubuntu-slim
+    timeout-minutes: 5
     permissions:
       contents: write
     outputs:
@@ -69,6 +71,7 @@ jobs:
   macos:
     needs: version
     runs-on: macos-latest
+    timeout-minutes: 60
     env:
       REVISION: ${{ needs.version.outputs.new_version }}
       BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
@@ -110,6 +113,7 @@ jobs:
   linux:
     needs: version
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       REVISION: ${{ needs.version.outputs.new_version }}
       BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
@@ -151,6 +155,7 @@ jobs:
   linux-arm:
     needs: version
     runs-on: ubuntu-26.04-arm
+    timeout-minutes: 30
     env:
       REVISION: ${{ needs.version.outputs.new_version }}
       BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
@@ -192,6 +197,7 @@ jobs:
   windows:
     needs: version
     runs-on: windows-latest
+    timeout-minutes: 30
     env:
       REVISION: ${{ needs.version.outputs.new_version }}
       BUILD_TIMESTAMP: ${{ needs.version.outputs.build_timestamp }}
@@ -233,6 +239,7 @@ jobs:
     - windows
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-slim
+    timeout-minutes: 15
     permissions:
       attestations: write
       contents: write
@@ -300,6 +307,7 @@ jobs:
     - windows
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       packages: write
     steps:
@@ -346,6 +354,7 @@ jobs:
     # ourselves if necessary
     if: always()
     runs-on: ubuntu-slim
+    timeout-minutes: 5
     steps:
     - run: echo "Use this job as the required status check of this workflow"
     - name: Check that all jobs were successful
@@ -369,6 +378,7 @@ jobs:
         - ArloL/wait-for-ports
         - ArloL/website-janitor
     runs-on: ubuntu-slim
+    timeout-minutes: 5
     steps:
     - name: Trigger chores on ${{ matrix.repo }}
       uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
