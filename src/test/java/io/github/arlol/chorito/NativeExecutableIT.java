@@ -29,4 +29,19 @@ class NativeExecutableIT {
 		assertEquals(expected, output);
 	}
 
+	/**
+	 * Runs chorito on its own checkout. The workflow's git diff step after the
+	 * build fails if anything changed.
+	 */
+	@Test
+	void choresOnItself() throws IOException, InterruptedException {
+		String nativeExecutable = System.getProperty("native.executable");
+
+		Process process = new ProcessBuilder(
+				Path.of(nativeExecutable).toAbsolutePath().toString()
+		).inheritIO().start();
+
+		assertEquals(0, process.waitFor());
+	}
+
 }
